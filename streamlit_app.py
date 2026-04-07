@@ -85,19 +85,10 @@ def load_discharge_data():
     with engine.connect() as conn:
         df = pd.read_sql(query, conn, parse_dates=["discharge_date"])
 
-    if "discharge_date" in df.columns:
-        df["discharge_date"] = pd.to_datetime(df["discharge_date"])
-    
-    # Format integer columns - handle float->int conversion
-    if "age" in df.columns:
-        df["age"] = pd.to_numeric(df["age"], errors="coerce").fillna(0).astype(int)
-    if "provider_npi" in df.columns:
-        df["provider_npi"] = pd.to_numeric(df["provider_npi"], errors="coerce").fillna(0).astype(int)
-    if "attributed_tin" in df.columns:
-        df["attributed_tin"] = pd.to_numeric(df["attributed_tin"], errors="coerce").fillna(0).astype(int)
-    
-    # Clean up column headers - replace underscores with spaces
-    df.columns = df.columns.str.replace("_", " ").str.title()
+    # Convert date columns to date-only format (no time)
+    for col in ["Admit Date", "Discharge Date"]:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col]).dt.date
     
     return df
 
@@ -149,8 +140,8 @@ def main():
         st.warning("No discharge records found.")
         return
 
-    dashboard_start = df["Discharge Date"].min().date()
-    dashboard_end = df["Discharge Date"].max().date()
+    dashboard_start = df["Discharge Date"].min()
+    dashboard_end = df["Discharge Date"].max()
 
     practices = sorted(df["Practice Name"].dropna().astype(str).unique())
     selected_practices = st.multiselect(
@@ -177,8 +168,8 @@ def main():
     if selected_practices:
         filtered_df = filtered_df[filtered_df["Practice Name"].astype(str).isin(selected_practices)]
     filtered_df = filtered_df.loc[
-        (filtered_df["Discharge Date"].dt.date >= date_min)
-        & (filtered_df["Discharge Date"].dt.date <= date_max)
+        (filtered_df["Discharge Date"] >= date_min)
+        & (filtered_df["Discharge Date"] <= date_max)
     ]
 
     recent_cutoff = datetime.now().date() - timedelta(days=14)
@@ -195,30 +186,14 @@ def main():
     for tab, start_date, end_date, label in tab_filters:
         with tab:
             view_df = filtered_df.copy()
-            view_df = view_df[view_df["Discharge Date"].dt.date >= start_date]
+            view_df = view_df[view_df["Discharge Date"] >= start_date]
             if end_date is not None:
-                view_df = view_df[view_df["Discharge Date"].dt.date <= end_date]
+                view_df = view_df[view_df["Discharge Date"] <= end_date]
 
             count = len(view_df)
-            unique_hospitals = view_df["Discharge Hospital"].nunique()
-            latest = view_df["Discharge Date"].max()
 
             st.markdown(
                 f"### {label} — {format_count(count)} records"
-            )
-            cols = st.columns([1, 1, 1, 2])
-            cols[0].markdown("<div class='metric-label'>Rows</div><div class='metric-value'>{count:,}</div>", unsafe_allow_html=True)
-            cols[1].markdown(
-                f"<div class='metric-label'>Hospitals</div><div class='metric-value'>{unique_hospitals:,}</div>",
-                unsafe_allow_html=True,
-            )
-            cols[2].markdown(
-                f"<div class='metric-label'>Latest discharge</div><div class='metric-value'>{latest.date() if pd.notna(latest) else '—'}</div>",
-                unsafe_allow_html=True,
-            )
-            cols[3].markdown(
-                f"<div class='metric-label'>Date range</div><div class='metric-value'>{start_date} to {datetime.now().date()}</div>",
-                unsafe_allow_html=True,
             )
 
             if view_df.empty:
