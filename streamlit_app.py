@@ -34,10 +34,11 @@ def _auth_enabled() -> bool:
 
 
 def _get_msal_app() -> msal.ConfidentialClientApplication:
-    tenant_id = _auth_secret("AUTH_TENANT_ID")
+    # Use /organizations to accept any Azure AD tenant (multi-tenant).
+    # Domain allowlist is the security gate — not the tenant.
     return msal.ConfidentialClientApplication(
         client_id=_auth_secret("AUTH_CLIENT_ID"),
-        authority=f"https://login.microsoftonline.com/{tenant_id}",
+        authority="https://login.microsoftonline.com/organizations",
         client_credential=_auth_secret("AUTH_CLIENT_SECRET"),
     )
 
