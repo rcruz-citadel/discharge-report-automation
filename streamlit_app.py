@@ -135,12 +135,12 @@ def main():
     dashboard_start = df["discharge_date"].min().date()
     dashboard_end = df["discharge_date"].max().date()
 
-    facilities = sorted(df["facility"].dropna().astype(str).unique())
-    selected_facilities = st.multiselect(
-        "Filter by facility",
-        options=facilities,
-        default=facilities,
-        help="Choose one or more facilities to limit the report view.",
+    hospitals = sorted(df["discharge_hospital"].dropna().astype(str).unique())
+    selected_hospitals = st.multiselect(
+        "Filter by discharge hospital",
+        options=hospitals,
+        default=hospitals,
+        help="Choose one or more hospitals to limit the report view.",
     )
 
     with st.expander("Advanced filters", expanded=False):
@@ -158,7 +158,7 @@ def main():
         )
 
     filtered_df = df.copy()
-    filtered_df = filtered_df[filtered_df["facility"].astype(str).isin(selected_facilities)]
+    filtered_df = filtered_df[filtered_df["discharge_hospital"].astype(str).isin(selected_hospitals)]
     filtered_df = filtered_df.loc[
         (filtered_df["discharge_date"].dt.date >= date_min)
         & (filtered_df["discharge_date"].dt.date <= date_max)
@@ -183,7 +183,7 @@ def main():
                 view_df = view_df[view_df["discharge_date"].dt.date <= end_date]
 
             count = len(view_df)
-            unique_facilities = view_df["facility"].nunique()
+            unique_hospitals = view_df["discharge_hospital"].nunique()
             latest = view_df["discharge_date"].max()
 
             st.markdown(
@@ -192,7 +192,7 @@ def main():
             cols = st.columns([1, 1, 1, 2])
             cols[0].markdown("<div class='metric-label'>Rows</div><div class='metric-value'>{count:,}</div>", unsafe_allow_html=True)
             cols[1].markdown(
-                f"<div class='metric-label'>Facilities</div><div class='metric-value'>{unique_facilities:,}</div>",
+                f"<div class='metric-label'>Hospitals</div><div class='metric-value'>{unique_hospitals:,}</div>",
                 unsafe_allow_html=True,
             )
             cols[2].markdown(
