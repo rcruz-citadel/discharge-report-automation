@@ -286,31 +286,43 @@ def build_download_button(df: pd.DataFrame, label: str, key: str) -> None:
 
 
 def render_header() -> None:
-    logo_b64 = ""
-    if os.path.exists(LOGO_PATH):
-        import base64
-        with open(LOGO_PATH, "rb") as f:
-            logo_b64 = base64.b64encode(f.read()).decode()
-        logo_html = f"<img src='data:image/png;base64,{logo_b64}' style='height:54px; width:auto;' />"
-    else:
-        logo_html = "<span style='font-size:1.5rem;font-weight:900;color:#fff;'>CH</span>"
-
-    st.markdown(
-        f"""
-        <div class='citadel-header'>
-            {logo_html}
-            <div class='citadel-header-text'>
-                <h1>Discharge Report Dashboard</h1>
-                <p>Live report view for discharge activity &mdash; filter, explore, and export.</p>
+    with st.container():
+        st.markdown(
+            """
+            <div style="
+                background: linear-gradient(135deg, #132e45 0%, #1b4459 100%);
+                border-radius: 14px;
+                padding: 1.25rem 1.75rem;
+                margin-bottom: 1.25rem;
+                box-shadow: 0 4px 18px rgba(19,46,69,0.18);
+            ">
+                <div style="font-size:0.8rem; color:#a8c4d8; margin-bottom:0.15rem; letter-spacing:0.04em;">
+                    CITADEL HEALTH
+                </div>
+                <div style="font-size:1.7rem; font-weight:800; color:#ffffff; line-height:1.2; margin-bottom:0.25rem;">
+                    Discharge Report Dashboard
+                </div>
+                <div style="color:#a8c4d8; font-size:0.88rem;">
+                    Live report view for discharge activity &mdash; filter, explore, and export.
+                </div>
             </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
+
+    if os.path.exists(LOGO_PATH):
+        pass  # logo rendered in sidebar instead
 
 
 def render_sidebar_filters(df: pd.DataFrame):
     with st.sidebar:
+        if os.path.exists(LOGO_PATH):
+            st.image(LOGO_PATH, use_container_width=True)
+        else:
+            st.markdown(
+                "<div style='font-size:1.1rem;font-weight:900;color:#fff;margin-bottom:0.5rem;'>Citadel Health</div>",
+                unsafe_allow_html=True,
+            )
         st.markdown("### Filters")
 
         practices = sorted(df["Practice Name"].dropna().astype(str).unique())
