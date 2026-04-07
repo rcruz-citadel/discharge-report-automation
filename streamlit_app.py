@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 from sqlalchemy import create_engine, text
 
-LOGO_PATH = r"c:\Users\rcruz\Documents\dcm-dashboard\assets\citadel_logo.png"
+LOGO_PATH = r"c:\Users\rcruz\Documents\discharge_report_automation\citadel-logo-hd-transparent.png"
 
 PAGE_TITLE = "Discharge Report Dashboard"
 PAGE_ICON = LOGO_PATH if os.path.exists(LOGO_PATH) else "📄"
