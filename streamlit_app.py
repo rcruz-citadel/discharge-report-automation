@@ -90,13 +90,14 @@ def format_count(value: int) -> str:
     return f"{value:,}"
 
 
-def build_download_button(df: pd.DataFrame, label: str) -> None:
+def build_download_button(df: pd.DataFrame, label: str, key: str) -> None:
     csv_bytes = df.to_csv(index=False).encode("utf-8")
     st.download_button(
         label=label,
         data=csv_bytes,
         file_name=f"discharge_report_{datetime.now():%Y%m%d_%H%M%S}.csv",
         mime="text/csv",
+        key=key,
     )
 
 
@@ -210,7 +211,7 @@ def main():
 
             view_df = view_df.sort_values(by="discharge_date", ascending=False)
             st.dataframe(view_df, use_container_width=True, height=650)
-            build_download_button(view_df, "Download current view as CSV")
+            build_download_button(view_df, "Download current view as CSV", key=f"download_{label.replace(' ', '_').lower()}")
 
     st.markdown(
         "---\n"
