@@ -85,10 +85,21 @@ def load_discharge_data():
     with engine.connect() as conn:
         df = pd.read_sql(query, conn, parse_dates=["discharge_date"])
 
+    # Clean up column headers first - replace underscores with spaces
+    df.columns = df.columns.str.replace("_", " ").str.title()
+    
     # Convert date columns to date-only format (no time)
     for col in ["Admit Date", "Discharge Date"]:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col]).dt.date
+    
+    # Format integer columns - handle float->int conversion
+    if "Age" in df.columns:
+        df["Age"] = pd.to_numeric(df["Age"], errors="coerce").fillna(0).astype(int)
+    if "Provider Npi" in df.columns:
+        df["Provider Npi"] = pd.to_numeric(df["Provider Npi"], errors="coerce").fillna(0).astype(int)
+    if "Attributed Tin" in df.columns:
+        df["Attributed Tin"] = pd.to_numeric(df["Attributed Tin"], errors="coerce").fillna(0).astype(int)
     
     return df
 
