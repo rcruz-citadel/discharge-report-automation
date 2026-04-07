@@ -34,11 +34,12 @@ def _auth_enabled() -> bool:
 
 
 def _get_msal_app() -> msal.ConfidentialClientApplication:
-    # Use /organizations to accept any Azure AD tenant (multi-tenant).
-    # Domain allowlist is the security gate — not the tenant.
+    # Single-tenant: only users in your Entra ID directory can sign in.
+    # Citadel Health and Aylo Health share the same tenant — no multi-tenant needed.
+    tenant_id = _auth_secret("AUTH_TENANT_ID")
     return msal.ConfidentialClientApplication(
         client_id=_auth_secret("AUTH_CLIENT_ID"),
-        authority="https://login.microsoftonline.com/organizations",
+        authority=f"https://login.microsoftonline.com/{tenant_id}",
         client_credential=_auth_secret("AUTH_CLIENT_SECRET"),
     )
 
