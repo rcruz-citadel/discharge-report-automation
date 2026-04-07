@@ -88,10 +88,13 @@ def load_discharge_data():
     if "discharge_date" in df.columns:
         df["discharge_date"] = pd.to_datetime(df["discharge_date"])
     
-    # Format integer columns
-    for col in ["age", "provider_npi"]:
-        if col in df.columns:
-            df[col] = df[col].astype("Int64")
+    # Format integer columns - handle float->int conversion
+    if "age" in df.columns:
+        df["age"] = pd.to_numeric(df["age"], errors="coerce").fillna(0).astype(int)
+    if "provider_npi" in df.columns:
+        df["provider_npi"] = pd.to_numeric(df["provider_npi"], errors="coerce").fillna(0).astype(int)
+    if "attributed_tin" in df.columns:
+        df["attributed_tin"] = pd.to_numeric(df["attributed_tin"], errors="coerce").fillna(0).astype(int)
     
     return df
 
