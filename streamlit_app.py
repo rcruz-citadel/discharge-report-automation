@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
+import msal
 import pandas as pd
 import streamlit as st
 from sqlalchemy import create_engine, text
@@ -16,6 +17,173 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+
+# ── Auth helpers ─────────────────────────────────────────────────────────────
+
+def _auth_secret(key: str, default: str = "") -> str:
+    """Read from st.secrets first, then env vars."""
+    try:
+        return st.secrets[key]
+    except (KeyError, FileNotFoundError):
+        return os.environ.get(key, default)
+
+
+def _auth_enabled() -> bool:
+    return bool(_auth_secret("AUTH_CLIENT_ID"))
+
+
+def _get_msal_app() -> msal.ConfidentialClientApplication:
+    tenant_id = _auth_secret("AUTH_TENANT_ID")
+    return msal.ConfidentialClientApplication(
+        client_id=_auth_secret("AUTH_CLIENT_ID"),
+        authority=f"https://login.microsoftonline.com/{tenant_id}",
+        client_credential=_auth_secret("AUTH_CLIENT_SECRET"),
+    )
+
+
+def _redirect_uri() -> str:
+    return _auth_secret("AUTH_REDIRECT_URI", "http://localhost:8501")
+
+
+def _allowed_domains() -> list[str]:
+    raw = _auth_secret("AUTH_ALLOWED_DOMAINS", "")
+    if isinstance(raw, (list, tuple)):
+        return [d.lower().strip() for d in raw if d.strip()]
+    return [d.lower().strip() for d in raw.split(",") if d.strip()]
+
+
+def _build_auth_url() -> str:
+    return _get_msal_app().get_authorization_request_url(
+        scopes=["User.Read"],
+        redirect_uri=_redirect_uri(),
+        state="discharge_report",
+        prompt="select_account",
+    )
+
+
+def _exchange_code(code: str) -> dict:
+    return _get_msal_app().acquire_token_by_authorization_code(
+        code=code,
+        scopes=["User.Read"],
+        redirect_uri=_redirect_uri(),
+    )
+
+
+def _render_login_page() -> None:
+    """Full-page branded login screen."""
+    # Hide the sidebar on the login page
+    st.markdown(
+        "<style>section[data-testid='stSidebar']{display:none}</style>",
+        unsafe_allow_html=True,
+    )
+
+    # Centre the card
+    _, col, _ = st.columns([1, 1.4, 1])
+    with col:
+        if os.path.exists(LOGO_PATH):
+            st.image(LOGO_PATH, width=220)
+        else:
+            st.markdown(
+                "<h2 style='color:#132e45;font-weight:900;'>Citadel Health</h2>",
+                unsafe_allow_html=True,
+            )
+
+        st.markdown(
+            """
+            <div style="
+                background: linear-gradient(135deg,#132e45 0%,#1b4459 100%);
+                border-radius:16px; padding:2rem 2rem 1.75rem;
+                box-shadow:0 6px 28px rgba(19,46,69,0.22);
+                margin-top:1.25rem;
+            ">
+                <div style="color:#ffffff;font-size:1.35rem;font-weight:800;margin-bottom:0.35rem;">
+                    Discharge Report Dashboard
+                </div>
+                <div style="color:#a8c4d8;font-size:0.88rem;margin-bottom:1.75rem;">
+                    Sign in with your Citadel Health Microsoft account to continue.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        auth_url = _build_auth_url()
+        st.markdown(
+            f"""
+            <a href="{auth_url}" target="_self" style="
+                display:block; text-align:center;
+                background:#e07b2a; color:#fff;
+                font-weight:700; font-size:0.95rem;
+                padding:0.75rem 1.5rem; border-radius:9px;
+                text-decoration:none; margin-top:1rem;
+                box-shadow:0 2px 8px rgba(224,123,42,0.35);
+            ">
+                Sign in with Microsoft
+            </a>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        domains = _allowed_domains()
+        if domains:
+            st.markdown(
+                f"<div style='color:#7e96a6;font-size:0.75rem;text-align:center;margin-top:1rem;'>"
+                f"Access restricted to: {', '.join('@' + d for d in domains)}"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+
+def check_auth() -> bool:
+    """
+    Returns True if the user is authenticated.
+    Handles the OAuth callback code if present in URL params.
+    If auth is not configured (no CLIENT_ID), skips auth entirely.
+    """
+    if not _auth_enabled():
+        return True  # auth not configured — open access
+
+    if st.session_state.get("authenticated"):
+        return True
+
+    params = st.query_params
+    if "code" in params:
+        with st.spinner("Signing you in..."):
+            result = _exchange_code(params["code"])
+
+        if "error" in result:
+            st.error(f"Sign-in failed: {result.get('error_description', result['error'])}")
+            st.query_params.clear()
+            return False
+
+        claims = result.get("id_token_claims", {})
+        email = (
+            claims.get("preferred_username")
+            or claims.get("email")
+            or claims.get("upn", "")
+        )
+        name = claims.get("name", email)
+
+        allowed = _allowed_domains()
+        if allowed:
+            domain = email.split("@")[-1].lower() if "@" in email else ""
+            if domain not in allowed:
+                st.error(
+                    f"Access denied — @{domain} is not an authorized domain. "
+                    f"Contact your administrator."
+                )
+                st.query_params.clear()
+                return False
+
+        st.session_state["authenticated"] = True
+        st.session_state["user_email"] = email
+        st.session_state["user_name"] = name
+        st.query_params.clear()
+        st.rerun()
+
+    _render_login_page()
+    return False
 
 st.markdown(
     """
@@ -375,6 +543,25 @@ def render_sidebar_filters(df: pd.DataFrame):
         if st.button("Clear All Filters", use_container_width=True):
             st.rerun()
 
+        # ── Signed-in user + sign-out ──
+        if _auth_enabled() and st.session_state.get("authenticated"):
+            st.markdown("---")
+            name = st.session_state.get("user_name", "")
+            email = st.session_state.get("user_email", "")
+            st.markdown(
+                f"<div style='color:#a8c4d8;font-size:0.75rem;line-height:1.5;'>"
+                f"Signed in as<br>"
+                f"<span style='color:#ffffff;font-weight:700;'>{name}</span><br>"
+                f"<span style='color:#7ea8c0;font-size:0.7rem;'>{email}</span>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+            st.markdown("<div style='margin-top:0.5rem'></div>", unsafe_allow_html=True)
+            if st.button("Sign Out", use_container_width=True):
+                for key in ["authenticated", "user_email", "user_name"]:
+                    st.session_state.pop(key, None)
+                st.rerun()
+
     return selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max
 
 
@@ -473,5 +660,5 @@ def main():
     )
 
 
-if __name__ == "__main__":
+if check_auth():
     main()
