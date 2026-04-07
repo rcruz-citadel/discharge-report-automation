@@ -70,7 +70,11 @@ def get_engine():
 def load_discharge_data():
     query = text(
         """
-        SELECT *
+        SELECT 
+            insurance_member_id, patient_id, patient_full_name, birth_date, age, 
+            phone, payer, line_of_business, admit_date, discharge_date, 
+            dx_code, dx_desc, disposition, stay_type, discharge_hospital, 
+            provider_full_name, provider_npi, attributed_tin, practice_name, report_type
         FROM discharge_master
         WHERE discharge_date IS NOT NULL
         ORDER BY discharge_date DESC
@@ -83,6 +87,12 @@ def load_discharge_data():
 
     if "discharge_date" in df.columns:
         df["discharge_date"] = pd.to_datetime(df["discharge_date"])
+    
+    # Format integer columns
+    for col in ["age", "provider_npi"]:
+        if col in df.columns:
+            df[col] = df[col].astype("Int64")
+    
     return df
 
 
