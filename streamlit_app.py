@@ -74,7 +74,7 @@ def load_discharge_data():
             insurance_member_id, patient_id, patient_full_name, birth_date, age, 
             phone, payer, line_of_business, admit_date, discharge_date, 
             dx_code, dx_desc, disposition, stay_type, discharge_hospital, 
-            provider_full_name, provider_npi, attributed_tin, practice_name, report_type
+            provider_full_name, provider_npi, attributed_tin, practice_name
         FROM discharge_master
         WHERE discharge_date IS NOT NULL
         ORDER BY discharge_date DESC
@@ -95,6 +95,9 @@ def load_discharge_data():
         df["provider_npi"] = pd.to_numeric(df["provider_npi"], errors="coerce").fillna(0).astype(int)
     if "attributed_tin" in df.columns:
         df["attributed_tin"] = pd.to_numeric(df["attributed_tin"], errors="coerce").fillna(0).astype(int)
+    
+    # Clean up column headers - replace underscores with spaces
+    df.columns = df.columns.str.replace("_", " ").str.title()
     
     return df
 
@@ -146,15 +149,14 @@ def main():
         st.warning("No discharge records found.")
         return
 
-    dashboard_start = df["discharge_date"].min().date()
-    dashboard_end = df["discharge_date"].max().date()
+    dashboard_start = df["Discharge Date"].min().date()
+    dashboard_end = df["Discharge Date"].max().date()
 
-    hospitals = sorted(df["discharge_hospital"].dropna().astype(str).unique())
-    selected_hospitals = st.multiselect(
-        "Filter by discharge hospital",
-        options=hospitals,
-        default=hospitals,
-        help="Choose one or more hospitals to limit the report view.",
+    practices = sorted(df["Practice Name"].dropna().astype(str).unique())
+    selected_practices = st.multiselect(
+        "Filter by practice",
+        options=practices,
+        help="Choose one or more practices to limit the report view. Leave empty to show all.",
     )
 
     with st.expander("Advanced filters", expanded=False):
@@ -172,33 +174,34 @@ def main():
         )
 
     filtered_df = df.copy()
-    filtered_df = filtered_df[filtered_df["discharge_hospital"].astype(str).isin(selected_hospitals)]
+    if selected_practices:
+        filtered_df = filtered_df[filtered_df["Practice Name"].astype(str).isin(selected_practices)]
     filtered_df = filtered_df.loc[
-        (filtered_df["discharge_date"].dt.date >= date_min)
-        & (filtered_df["discharge_date"].dt.date <= date_max)
+        (filtered_df["Discharge Date"].dt.date >= date_min)
+        & (filtered_df["Discharge Date"].dt.date <= date_max)
     ]
 
     recent_cutoff = datetime.now().date() - timedelta(days=14)
     six_months_cutoff = datetime.now().date() - timedelta(days=182)
 
-    tabs = st.tabs(["Recent discharges", "Last 6 months", "All discharges"])
+    tabs = st.tabs(["Recent Discharges", "Last 6 Months", "All Discharges"])
 
     tab_filters = [
-        (tabs[0], recent_cutoff, None, "Last 14 days"),
-        (tabs[1], six_months_cutoff, None, "Last 6 months"),
-        (tabs[2], dashboard_start, dashboard_end, "All discharges"),
+        (tabs[0], recent_cutoff, None, "Recent Discharges"),
+        (tabs[1], six_months_cutoff, None, "Last 6 Months"),
+        (tabs[2], dashboard_start, dashboard_end, "All Discharges"),
     ]
 
     for tab, start_date, end_date, label in tab_filters:
         with tab:
             view_df = filtered_df.copy()
-            view_df = view_df[view_df["discharge_date"].dt.date >= start_date]
+            view_df = view_df[view_df["Discharge Date"].dt.date >= start_date]
             if end_date is not None:
-                view_df = view_df[view_df["discharge_date"].dt.date <= end_date]
+                view_df = view_df[view_df["Discharge Date"].dt.date <= end_date]
 
             count = len(view_df)
-            unique_hospitals = view_df["discharge_hospital"].nunique()
-            latest = view_df["discharge_date"].max()
+            unique_hospitals = view_df["Discharge Hospital"].nunique()
+            latest = view_df["Discharge Date"].max()
 
             st.markdown(
                 f"### {label} — {format_count(count)} records"
@@ -222,9 +225,9 @@ def main():
                 st.info("No records match the selected filters.")
                 continue
 
-            view_df = view_df.sort_values(by="discharge_date", ascending=False)
+            view_df = view_df.sort_values(by="Discharge Date", ascending=False)
             st.dataframe(view_df, use_container_width=True, height=650)
-            build_download_button(view_df, "Download current view as CSV", key=f"download_{label.replace(' ', '_').lower()}")
+            build_download_button(view_df, "Download Current View as CSV", key=f"download_{label.replace(' ', '_').lower()}")
 
     st.markdown(
         "---\n"
