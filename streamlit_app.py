@@ -398,13 +398,34 @@ def load_discharge_data():
     query = text(
         """
         SELECT
-            insurance_member_id, patient_id, patient_full_name, birth_date, age,
-            phone, payer, line_of_business, admit_date, discharge_date,
-            dx_code, dx_desc, disposition, stay_type, discharge_hospital,
-            provider_full_name, provider_npi, attributed_tin, practice_name
-        FROM discharge_master
-        WHERE discharge_date IS NOT NULL
-        ORDER BY discharge_date DESC
+            de.patient_id,
+            (pt.first_name || ' '::text) || pt.last_name AS patient_name,
+            de.admit_date,
+            de.discharge_date,
+            de.disposition,
+            de.stay_type,
+            de.discharge_hospital,
+            de.length_of_stay,
+            py.payer_name,
+            lob.lob_name,
+            p.full_name AS provider_name,
+            l.location_name AS practice,
+            d.dx_code,
+            d.description,
+            d.dx_grouping,
+            pt.address AS patient_address,
+            pt.city,
+            pt.zip_code::character varying(5) AS zip_code,
+            pt.state
+        FROM discharge_event de
+            LEFT JOIN provider p ON p.provider_id = de.provider_id
+            LEFT JOIN payer py ON py.payer_id = de.payer_id
+            LEFT JOIN line_of_business lob ON lob.lob_id = de.lob_id
+            LEFT JOIN patient pt ON pt.patient_id = de.patient_id
+            LEFT JOIN diagnosis_code d ON d.dx_id = de.dx_id
+            LEFT JOIN location l ON l.location_id = p.location_id
+        WHERE de.discharge_date IS NOT NULL
+        ORDER BY de.discharge_date DESC
         """
     )
 
@@ -418,12 +439,8 @@ def load_discharge_data():
         if col in df.columns:
             df[col] = pd.to_datetime(df[col]).dt.date
 
-    if "Age" in df.columns:
-        df["Age"] = pd.to_numeric(df["Age"], errors="coerce").fillna(0).astype(int)
-    if "Provider Npi" in df.columns:
-        df["Provider Npi"] = pd.to_numeric(df["Provider Npi"], errors="coerce").fillna(0).astype(int)
-    if "Attributed Tin" in df.columns:
-        df["Attributed Tin"] = pd.to_numeric(df["Attributed Tin"], errors="coerce").fillna(0).astype(int)
+    if "Length Of Stay" in df.columns:
+        df["Length Of Stay"] = pd.to_numeric(df["Length Of Stay"], errors="coerce").fillna(0).astype(int)
 
     return df
 
@@ -495,23 +512,23 @@ def render_sidebar_filters(df: pd.DataFrame):
             )
         st.markdown("### Filters")
 
-        practices = sorted(df["Practice Name"].dropna().astype(str).unique())
+        practices = sorted(df["Practice"].dropna().astype(str).unique())
         selected_practices = st.multiselect(
-            "Practice Name",
+            "Practice",
             options=practices,
             help="Filter by practice. Leave empty to show all.",
         )
 
-        payers = sorted(df["Payer"].dropna().astype(str).unique()) if "Payer" in df.columns else []
+        payers = sorted(df["Payer Name"].dropna().astype(str).unique()) if "Payer Name" in df.columns else []
         selected_payers = st.multiselect(
-            "Payer",
+            "Payer Name",
             options=payers,
             help="Filter by insurance payer.",
         ) if payers else []
 
-        lob_options = sorted(df["Line Of Business"].dropna().astype(str).unique()) if "Line Of Business" in df.columns else []
+        lob_options = sorted(df["Lob Name"].dropna().astype(str).unique()) if "Lob Name" in df.columns else []
         selected_lob = st.multiselect(
-            "Line of Business",
+            "Line Of Business",
             options=lob_options,
             help="Filter by line of business.",
         ) if lob_options else []
@@ -570,11 +587,11 @@ def render_sidebar_filters(df: pd.DataFrame):
 def apply_filters(df, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max):
     filtered = df.copy()
     if selected_practices:
-        filtered = filtered[filtered["Practice Name"].astype(str).isin(selected_practices)]
-    if selected_payers and "Payer" in filtered.columns:
-        filtered = filtered[filtered["Payer"].astype(str).isin(selected_payers)]
-    if selected_lob and "Line Of Business" in filtered.columns:
-        filtered = filtered[filtered["Line Of Business"].astype(str).isin(selected_lob)]
+        filtered = filtered[filtered["Practice"].astype(str).isin(selected_practices)]
+    if selected_payers and "Payer Name" in filtered.columns:
+        filtered = filtered[filtered["Payer Name"].astype(str).isin(selected_payers)]
+    if selected_lob and "Lob Name" in filtered.columns:
+        filtered = filtered[filtered["Lob Name"].astype(str).isin(selected_lob)]
     if selected_stay_types and "Stay Type" in filtered.columns:
         filtered = filtered[filtered["Stay Type"].astype(str).isin(selected_stay_types)]
     filtered = filtered.loc[
@@ -586,7 +603,7 @@ def apply_filters(df, selected_practices, selected_payers, selected_lob, selecte
 def render_stats(view_df: pd.DataFrame) -> None:
     total = len(view_df)
     unique_patients = view_df["Patient Id"].nunique() if "Patient Id" in view_df.columns else total
-    unique_practices = view_df["Practice Name"].nunique() if "Practice Name" in view_df.columns else "-"
+    unique_practices = view_df["Practice"].nunique() if "Practice" in view_df.columns else "-"
     unique_hospitals = view_df["Discharge Hospital"].nunique() if "Discharge Hospital" in view_df.columns else "-"
 
     chips = (
