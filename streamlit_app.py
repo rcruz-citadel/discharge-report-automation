@@ -452,7 +452,7 @@ def load_discharge_data():
             py.payer_name,
             lob.lob_name,
             p.full_name AS provider_name,
-            l.location_name AS practice,
+            l.parent_org AS practice,
             d.dx_code,
             d.description,
             d.dx_grouping,
