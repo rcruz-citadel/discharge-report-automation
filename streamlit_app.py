@@ -269,6 +269,12 @@ st.markdown(
     section[data-testid="stSidebar"] * {
         color: #d6e6f0 !important;
     }
+    section[data-testid="stSidebar"] [data-baseweb="select"] * {
+        color: #1a1a2e !important;
+    }
+    section[data-testid="stSidebar"] [data-baseweb="input"] * {
+        color: #1a1a2e !important;
+    }
     section[data-testid="stSidebar"] .stMultiSelect [data-baseweb="tag"] {
         background-color: #e07b2a !important;
     }
