@@ -8,6 +8,49 @@ from sqlalchemy import create_engine, text
 
 LOGO_PATH = r"c:\Users\rcruz\Documents\discharge_report_automation\citadel-logo-hd-transparent.png"
 
+# Person-to-practice assignments (drives the "Assigned To" sidebar filter)
+PRACTICE_ASSIGNMENTS = {
+    "Bailey Graham": [
+        "All Care Medical Assocociates, LLC",
+        "D. Conrad Harper, MD LLC",
+        "Dawsonville Family Medicine",
+        "Donald A Selph Jr MD, PC",
+        "Dr. Jason R. Laney, PC",
+        "Heart of Georgia Primary Care, LLC",
+        "Internal Medicine Associates of Middle Georgia, PC",
+        "Margaret M. Nichols MD LLC",
+        "Medical Center, LLP",
+        "Moon River Pediatrics",
+        "Nicholas A. Pietrzak MD, LLC",
+        "Russell G. O'Neal, M.D. LLC",
+    ],
+    "Kiah Jones": [
+        "Cobb Medical Clinic",
+        "Cumberland Womens Health Center",
+        "HP Internal Medicine, LLC",
+        "Lawrenceville Family Practice",
+        "Northeast Family Practice, PC",
+        "Rodriguez MD, LLC",
+        "Rophe Adult and Pediatric Medicine",
+    ],
+    "Makeba Crawford": [
+        "Aylo Health, LLC",
+    ],
+    "Stephanie Nelson": [
+        "Ajay Kumar MD, LLC",
+        "Cornerstone Medical Associates, LLC",
+        "Integrity Health and Wellness LLC",
+        "Internal Medicine Associates of Waycross",
+        "Internal Medicine Associates, PC",
+        "Lawrence Kirk MD, LLC",
+        "MCC Internal Medicine 2, LLC",
+        "MCC Internal Medicine, LLC",
+        "Robert C. Jones, MD, LLC",
+        "Smith-Lambert Clinic, P.C.",
+        "Southeast Georgia Pediatrics",
+    ],
+}
+
 PAGE_TITLE = "Discharge Report Dashboard"
 PAGE_ICON = LOGO_PATH if os.path.exists(LOGO_PATH) else "📄"
 
@@ -399,7 +442,7 @@ def load_discharge_data():
         """
         SELECT
             de.patient_id,
-            (pt.first_name || ' '::text) || pt.last_name AS patient_name,
+            COALESCE(pt.first_name, '') || ' ' || COALESCE(pt.last_name, '') AS patient_name,
             de.admit_date,
             de.discharge_date,
             de.disposition,
@@ -512,7 +555,20 @@ def render_sidebar_filters(df: pd.DataFrame):
             )
         st.markdown("### Filters")
 
-        practices = sorted(df["Practice"].dropna().astype(str).unique())
+        assignee_names = sorted(PRACTICE_ASSIGNMENTS.keys())
+        selected_assignee = st.selectbox(
+            "Assigned To",
+            options=["All"] + assignee_names,
+            help="Filter practices by assigned person.",
+        )
+
+        all_practices = sorted(df["Practice"].dropna().astype(str).unique())
+        if selected_assignee != "All":
+            assignee_practices = PRACTICE_ASSIGNMENTS[selected_assignee]
+            practices = sorted(p for p in all_practices if p in assignee_practices)
+        else:
+            practices = all_practices
+
         selected_practices = st.multiselect(
             "Practice",
             options=practices,
@@ -581,13 +637,15 @@ def render_sidebar_filters(df: pd.DataFrame):
                     st.session_state.pop(key, None)
                 st.rerun()
 
-    return selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max
+    return selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max
 
 
-def apply_filters(df, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max):
+def apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max):
     filtered = df.copy()
     if selected_practices:
         filtered = filtered[filtered["Practice"].astype(str).isin(selected_practices)]
+    elif selected_assignee != "All":
+        filtered = filtered[filtered["Practice"].astype(str).isin(PRACTICE_ASSIGNMENTS[selected_assignee])]
     if selected_payers and "Payer Name" in filtered.columns:
         filtered = filtered[filtered["Payer Name"].astype(str).isin(selected_payers)]
     if selected_lob and "Lob Name" in filtered.columns:
@@ -653,8 +711,8 @@ def main():
         st.warning("No discharge records found.")
         return
 
-    selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max = render_sidebar_filters(df)
-    filtered_df = apply_filters(df, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max)
+    selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max = render_sidebar_filters(df)
+    filtered_df = apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max)
 
     recent_cutoff = datetime.now().date() - timedelta(days=14)
     six_months_cutoff = datetime.now().date() - timedelta(days=182)
