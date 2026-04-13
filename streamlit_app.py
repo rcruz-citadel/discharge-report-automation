@@ -479,7 +479,7 @@ def load_discharge_data():
     query = text(
         """
         SELECT
-            de.patient_id,
+            de.insurance_member_id,
             COALESCE(pt.first_name, '') || ' ' || COALESCE(pt.last_name, '') AS patient_name,
             de.admit_date,
             de.discharge_date,
@@ -720,7 +720,7 @@ def apply_filters(df, selected_assignee, selected_practices, selected_payers, se
 
 def render_stats(view_df: pd.DataFrame) -> None:
     total = len(view_df)
-    unique_patients = view_df["Patient Id"].nunique() if "Patient Id" in view_df.columns else total
+    unique_patients = view_df["Insurance Member Id"].nunique() if "Insurance Member Id" in view_df.columns else total
     unique_practices = view_df["Practice"].nunique() if "Practice" in view_df.columns else "-"
     unique_hospitals = view_df["Discharge Hospital"].nunique() if "Discharge Hospital" in view_df.columns else "-"
 
