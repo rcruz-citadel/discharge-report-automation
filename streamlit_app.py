@@ -244,70 +244,10 @@ def check_auth() -> bool:
 st.markdown(
     """
     <style>
-    /* ── Streamlit header: zero height but overflow:visible so the sidebar
-       toggle button (rendered inside the header) can still overflow and be
-       clicked. display:none would kill the toggle entirely. ── */
+    /* ── Streamlit header: blend with page background so it's not jarring,
+       but leave it fully functional so the native sidebar toggle works. ── */
     header[data-testid="stHeader"] {
-        height: 0 !important;
-        min-height: 0 !important;
-        max-height: 0 !important;
-        overflow: visible !important;
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-    /* Hide the toolbar (deploy/settings icons) but keep the header element alive */
-    [data-testid="stToolbar"] {
-        display: none !important;
-    }
-
-    /* ── Sidebar toggle buttons — broad selectors to survive testid renames
-       across Streamlit versions ── */
-    /* Collapse button (chevron inside the open sidebar) */
-    header[data-testid="stHeader"] button,
-    button[data-testid="stSidebarCollapseButton"],
-    [data-testid="collapsedControl"] button,
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="collapsedControl"],
-    button[data-testid*="sidebar" i],
-    button[data-testid*="Sidebar" i] {
-        background-color: #132e45 !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        width: 38px !important;
-        height: 38px !important;
-        padding: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        cursor: pointer !important;
-        transition: background-color 0.2s ease !important;
-        box-shadow: 0 2px 8px rgba(19,46,69,0.30) !important;
-    }
-    header[data-testid="stHeader"] button:hover,
-    button[data-testid="stSidebarCollapseButton"]:hover,
-    [data-testid="collapsedControl"] button:hover,
-    [data-testid="stSidebarCollapsedControl"]:hover,
-    [data-testid="collapsedControl"]:hover,
-    button[data-testid*="sidebar" i]:hover,
-    button[data-testid*="Sidebar" i]:hover {
-        background-color: #e07b2a !important;
-    }
-    header[data-testid="stHeader"] button svg,
-    button[data-testid="stSidebarCollapseButton"] svg,
-    [data-testid="collapsedControl"] button svg,
-    [data-testid="stSidebarCollapsedControl"] svg,
-    button[data-testid*="sidebar" i] svg,
-    button[data-testid*="Sidebar" i] svg {
-        fill: #ffffff !important;
-        stroke: #ffffff !important;
-        width: 18px !important;
-        height: 18px !important;
+        background-color: #f0f2f5 !important;
     }
 
     /* ── Global background ── */
