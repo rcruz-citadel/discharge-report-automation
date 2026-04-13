@@ -444,7 +444,7 @@ st.markdown(
 
     /* ── Remove default top padding from main content area ── */
     .stMainBlockContainer, .block-container {
-        padding-top: 0.75rem !important;
+        padding-top: 1.75rem !important;
     }
 
     /* ── Remove default top padding from sidebar ── */
