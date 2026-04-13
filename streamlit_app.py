@@ -244,8 +244,15 @@ def check_auth() -> bool:
 st.markdown(
     """
     <style>
-    /* ── Hide default Streamlit toolbar ── */
+    /* ── Hide default Streamlit toolbar but keep sidebar toggle ── */
     header[data-testid="stHeader"] {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        height: 2.5rem !important;
+        min-height: 2.5rem !important;
+    }
+    header[data-testid="stHeader"] [data-testid="stToolbar"] {
         display: none !important;
     }
 
@@ -448,7 +455,10 @@ st.markdown(
 
     /* ── Remove default top padding from sidebar ── */
     section[data-testid="stSidebar"] > div:first-child {
-        padding-top: 0.5rem !important;
+        padding-top: 0.25rem !important;
+    }
+    section[data-testid="stSidebar"] .stMarkdown:first-child {
+        margin-top: 0 !important;
     }
     </style>
     """,
@@ -595,9 +605,6 @@ def render_header() -> None:
                 background: linear-gradient(180deg, #e07b2a 0%, #c96920 100%);
                 border-radius: 0 14px 14px 0;
             "></div>
-            <div style="font-size:0.72rem;color:#a8c4d8;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem;">
-                Citadel Health
-            </div>
             <div style="font-size:1.65rem;font-weight:800;color:#ffffff;line-height:1.15;letter-spacing:-0.5px;">
                 Discharge Report Dashboard
             </div>
