@@ -1,3 +1,4 @@
+import base64
 import os
 from datetime import datetime, timedelta
 
@@ -123,61 +124,64 @@ def _render_login_page() -> None:
         unsafe_allow_html=True,
     )
 
+    logo_uri = _logo_data_uri()
+    logo_html = (
+        f'<img src="{logo_uri}" style="width:160px;height:auto;display:block;margin:0 auto 1.25rem;" alt="Citadel Health" />'
+        if logo_uri
+        else '<div style="color:#ffffff;font-size:1.1rem;font-weight:900;text-align:center;margin-bottom:1rem;">Citadel Health</div>'
+    )
+
+    auth_url = _build_auth_url()
+    domains = _allowed_domains()
+    domain_note = (
+        f"<div style='color:#7e96a6;font-size:0.75rem;text-align:center;margin-top:1rem;'>"
+        f"Access restricted to: {', '.join('@' + d for d in domains)}"
+        f"</div>"
+        if domains
+        else ""
+    )
+
     # Centre the card
     _, col, _ = st.columns([1, 1.4, 1])
     with col:
-        if os.path.exists(LOGO_PATH):
-            st.image(LOGO_PATH, width=220)
-        else:
-            st.markdown(
-                "<h2 style='color:#132e45;font-weight:900;'>Citadel Health</h2>",
-                unsafe_allow_html=True,
-            )
-
         st.markdown(
-            """
+            f"""
             <div style="
                 background: linear-gradient(135deg,#132e45 0%,#1b4459 100%);
-                border-radius:16px; padding:2rem 2rem 1.75rem;
+                border-radius:16px;
+                padding:2rem 2rem 1.75rem;
                 box-shadow:0 6px 28px rgba(19,46,69,0.22);
-                margin-top:1.25rem;
+                margin-top:2rem;
+                position:relative;
+                overflow:hidden;
             ">
-                <div style="color:#ffffff;font-size:1.35rem;font-weight:800;margin-bottom:0.35rem;">
+                <div style="
+                    position:absolute; right:0; top:0; bottom:0; width:5px;
+                    background: linear-gradient(180deg, #e07b2a 0%, #c96920 100%);
+                    border-radius: 0 16px 16px 0;
+                "></div>
+                {logo_html}
+                <div style="color:#ffffff;font-size:1.35rem;font-weight:800;text-align:center;margin-bottom:0.35rem;">
                     Discharge Report Dashboard
                 </div>
-                <div style="color:#a8c4d8;font-size:0.88rem;margin-bottom:1.75rem;">
+                <div style="color:#a8c4d8;font-size:0.88rem;text-align:center;margin-bottom:1.75rem;">
                     Sign in with your Citadel Health Microsoft account to continue.
                 </div>
+                <a href="{auth_url}" target="_self" style="
+                    display:block; text-align:center;
+                    background:#e07b2a; color:#fff;
+                    font-weight:700; font-size:0.95rem;
+                    padding:0.75rem 1.5rem; border-radius:9px;
+                    text-decoration:none;
+                    box-shadow:0 2px 8px rgba(224,123,42,0.35);
+                ">
+                    Sign in with Microsoft
+                </a>
+                {domain_note}
             </div>
             """,
             unsafe_allow_html=True,
         )
-
-        auth_url = _build_auth_url()
-        st.markdown(
-            f"""
-            <a href="{auth_url}" target="_self" style="
-                display:block; text-align:center;
-                background:#e07b2a; color:#fff;
-                font-weight:700; font-size:0.95rem;
-                padding:0.75rem 1.5rem; border-radius:9px;
-                text-decoration:none; margin-top:1rem;
-                box-shadow:0 2px 8px rgba(224,123,42,0.35);
-            ">
-                Sign in with Microsoft
-            </a>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        domains = _allowed_domains()
-        if domains:
-            st.markdown(
-                f"<div style='color:#7e96a6;font-size:0.75rem;text-align:center;margin-top:1rem;'>"
-                f"Access restricted to: {', '.join('@' + d for d in domains)}"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
 
 
 def check_auth() -> bool:
@@ -496,6 +500,15 @@ def load_discharge_data():
 
 # ── UI helpers ───────────────────────────────────────────────────────────────
 
+def _logo_data_uri() -> str | None:
+    """Return the Citadel logo as a base64-encoded PNG data URI, or None if the file is missing."""
+    if not os.path.exists(LOGO_PATH):
+        return None
+    with open(LOGO_PATH, "rb") as fh:
+        encoded = base64.b64encode(fh.read()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
+
+
 def format_count(value: int) -> str:
     return f"{value:,}"
 
@@ -522,32 +535,47 @@ def build_download_button(df: pd.DataFrame, label: str, key: str) -> None:
 
 
 def render_header() -> None:
-    with st.container():
-        st.markdown(
-            """
+    logo_uri = _logo_data_uri()
+    logo_html = (
+        f'<img src="{logo_uri}" style="height:52px;width:auto;flex-shrink:0;" alt="Citadel Health" />'
+        if logo_uri
+        else '<div style="font-size:1rem;font-weight:900;color:#ffffff;flex-shrink:0;">Citadel Health</div>'
+    )
+    st.markdown(
+        f"""
+        <div style="
+            background: linear-gradient(135deg, #132e45 0%, #1b4459 100%);
+            border-radius: 14px;
+            padding: 1.1rem 1.75rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 18px rgba(19,46,69,0.18);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            position: relative;
+            overflow: hidden;
+        ">
             <div style="
-                background: linear-gradient(135deg, #132e45 0%, #1b4459 100%);
-                border-radius: 14px;
-                padding: 1.25rem 1.75rem;
-                margin-bottom: 1.25rem;
-                box-shadow: 0 4px 18px rgba(19,46,69,0.18);
-            ">
-                <div style="font-size:0.8rem; color:#a8c4d8; margin-bottom:0.15rem; letter-spacing:0.04em;">
-                    CITADEL HEALTH
+                position:absolute; right:0; top:0; bottom:0; width:5px;
+                background: linear-gradient(180deg, #e07b2a 0%, #c96920 100%);
+                border-radius: 0 14px 14px 0;
+            "></div>
+            {logo_html}
+            <div>
+                <div style="font-size:0.72rem;color:#a8c4d8;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem;">
+                    Citadel Health
                 </div>
-                <div style="font-size:1.7rem; font-weight:800; color:#ffffff; line-height:1.2; margin-bottom:0.25rem;">
+                <div style="font-size:1.65rem;font-weight:800;color:#ffffff;line-height:1.15;letter-spacing:-0.5px;">
                     Discharge Report Dashboard
                 </div>
-                <div style="color:#a8c4d8; font-size:0.88rem;">
-                    Live report view for discharge activity &mdash; filter, explore, and export.
+                <div style="color:#a8c4d8;font-size:0.82rem;margin-top:0.2rem;">
+                    Live discharge activity &mdash; filter, explore, and export.
                 </div>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    if os.path.exists(LOGO_PATH):
-        pass  # logo rendered in sidebar instead
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_sidebar_filters(df: pd.DataFrame):
