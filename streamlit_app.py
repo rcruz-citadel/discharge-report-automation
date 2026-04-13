@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 from sqlalchemy import create_engine, text
 
-LOGO_PATH = r"c:\Users\rcruz\Documents\discharge_report_automation\citadel-logo-hd-transparent.png"
+LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "citadel-logo-hd-transparent.png")
 
 # Person-to-practice assignments (drives the "Assigned To" sidebar filter)
 PRACTICE_ASSIGNMENTS = {
@@ -237,6 +237,11 @@ def check_auth() -> bool:
 st.markdown(
     """
     <style>
+    /* ── Hide default Streamlit toolbar ── */
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+
     /* ── Global background ── */
     .stApp {
         background-color: #f0f2f5;
