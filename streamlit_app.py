@@ -703,21 +703,19 @@ def render_sidebar_filters(df: pd.DataFrame):
 
 
 def apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max):
-    filtered = df.copy()
+    mask = pd.Series(True, index=df.index)
     if selected_practices:
-        filtered = filtered[filtered["Practice"].astype(str).isin(selected_practices)]
+        mask &= df["Practice"].astype(str).isin(selected_practices)
     elif selected_assignee != "All":
-        filtered = filtered[filtered["Practice"].astype(str).isin(PRACTICE_ASSIGNMENTS[selected_assignee])]
-    if selected_payers and "Payer Name" in filtered.columns:
-        filtered = filtered[filtered["Payer Name"].astype(str).isin(selected_payers)]
-    if selected_lob and "Lob Name" in filtered.columns:
-        filtered = filtered[filtered["Lob Name"].astype(str).isin(selected_lob)]
-    if selected_stay_types and "Stay Type" in filtered.columns:
-        filtered = filtered[filtered["Stay Type"].astype(str).isin(selected_stay_types)]
-    filtered = filtered.loc[
-        (filtered["Discharge Date"] >= date_min) & (filtered["Discharge Date"] <= date_max)
-    ]
-    return filtered
+        mask &= df["Practice"].astype(str).isin(PRACTICE_ASSIGNMENTS[selected_assignee])
+    if selected_payers and "Payer Name" in df.columns:
+        mask &= df["Payer Name"].astype(str).isin(selected_payers)
+    if selected_lob and "Lob Name" in df.columns:
+        mask &= df["Lob Name"].astype(str).isin(selected_lob)
+    if selected_stay_types and "Stay Type" in df.columns:
+        mask &= df["Stay Type"].astype(str).isin(selected_stay_types)
+    mask &= (df["Discharge Date"] >= date_min) & (df["Discharge Date"] <= date_max)
+    return df.loc[mask]
 
 
 def render_stats(view_df: pd.DataFrame) -> None:
@@ -748,10 +746,9 @@ def render_tab(view_df: pd.DataFrame, label: str, tab_key: str) -> None:
 
     render_stats(view_df)
 
-    sorted_df = view_df.sort_values(by="Discharge Date", ascending=False)
-    st.dataframe(sorted_df, use_container_width=True, height=580, hide_index=True)
+    st.dataframe(view_df, use_container_width=True, height=580, hide_index=True)
 
-    build_download_button(sorted_df, "Export to CSV", key=f"dl_{tab_key}")
+    build_download_button(view_df, "Export to CSV", key=f"dl_{tab_key}")
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
