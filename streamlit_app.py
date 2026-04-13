@@ -540,23 +540,14 @@ def build_download_button(df: pd.DataFrame, label: str, key: str) -> None:
 
 
 def render_header() -> None:
-    logo_uri = _logo_data_uri()
-    logo_html = (
-        f'<img src="{logo_uri}" style="height:52px;width:auto;flex-shrink:0;" alt="Citadel Health" />'
-        if logo_uri
-        else '<div style="font-size:1rem;font-weight:900;color:#ffffff;flex-shrink:0;">Citadel Health</div>'
-    )
     st.markdown(
-        f"""
+        """
         <div style="
             background: linear-gradient(135deg, #132e45 0%, #1b4459 100%);
             border-radius: 14px;
             padding: 1.1rem 1.75rem;
             margin-bottom: 1.25rem;
             box-shadow: 0 4px 18px rgba(19,46,69,0.18);
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
             position: relative;
             overflow: hidden;
         ">
@@ -565,17 +556,14 @@ def render_header() -> None:
                 background: linear-gradient(180deg, #e07b2a 0%, #c96920 100%);
                 border-radius: 0 14px 14px 0;
             "></div>
-            {logo_html}
-            <div>
-                <div style="font-size:0.72rem;color:#a8c4d8;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem;">
-                    Citadel Health
-                </div>
-                <div style="font-size:1.65rem;font-weight:800;color:#ffffff;line-height:1.15;letter-spacing:-0.5px;">
-                    Discharge Report Dashboard
-                </div>
-                <div style="color:#a8c4d8;font-size:0.82rem;margin-top:0.2rem;">
-                    Live discharge activity &mdash; filter, explore, and export.
-                </div>
+            <div style="font-size:0.72rem;color:#a8c4d8;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem;">
+                Citadel Health
+            </div>
+            <div style="font-size:1.65rem;font-weight:800;color:#ffffff;line-height:1.15;letter-spacing:-0.5px;">
+                Discharge Report Dashboard
+            </div>
+            <div style="color:#a8c4d8;font-size:0.82rem;margin-top:0.2rem;">
+                Live discharge activity &mdash; filter, explore, and export.
             </div>
         </div>
         """,
@@ -592,6 +580,14 @@ def render_sidebar_filters(df: pd.DataFrame):
                 "<div style='font-size:1.1rem;font-weight:900;color:#fff;margin-bottom:0.5rem;'>Citadel Health</div>",
                 unsafe_allow_html=True,
             )
+        # Tighten the gap between the logo and the Filters heading
+        st.markdown(
+            "<style>"
+            "section[data-testid='stSidebar'] .stImage { margin-bottom: -0.5rem !important; }"
+            "section[data-testid='stSidebar'] h3:first-of-type { margin-top: 0.25rem !important; }"
+            "</style>",
+            unsafe_allow_html=True,
+        )
         st.markdown("### Filters")
 
         assignee_names = sorted(PRACTICE_ASSIGNMENTS.keys())
@@ -735,6 +731,17 @@ def render_tab(view_df: pd.DataFrame, label: str, tab_key: str) -> None:
 
 def main():
     render_header()
+
+    # Personalized welcome greeting (only when auth is enabled and a name is known)
+    if _auth_enabled():
+        user_name = st.session_state.get("user_name", "")
+        if user_name:
+            st.markdown(
+                f"<div style='font-size:0.95rem;color:#556e81;margin:-0.5rem 0 1.1rem 0;'>"
+                f"Welcome, <span style='color:#132e45;font-weight:700;'>{user_name}</span>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
 
     with st.spinner("Loading discharge data..."):
         try:
