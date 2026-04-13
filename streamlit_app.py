@@ -779,6 +779,50 @@ def render_tab(view_df: pd.DataFrame, label: str, tab_key: str) -> None:
 def main():
     render_header()
 
+    # ── Custom sidebar toggle button ──
+    st.markdown(
+        """
+        <style>
+        .sidebar-toggle {
+            position: fixed;
+            top: 0.75rem;
+            left: 0.75rem;
+            z-index: 999999;
+            background-color: #132e45;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            width: 2.2rem;
+            height: 2.2rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(19,46,69,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .sidebar-toggle:hover {
+            background-color: #e07b2a;
+        }
+        </style>
+        <button class="sidebar-toggle" onclick="
+            const sidebar = window.parent.document.querySelector('section[data-testid=stSidebar]');
+            const btn = window.parent.document.querySelector('button[data-testid=stSidebarCollapsedControl]')
+                     || window.parent.document.querySelector('button[data-testid=baseButton-headerNoPadding]');
+            if (sidebar) {
+                const isOpen = sidebar.getAttribute('aria-expanded') === 'true';
+                if (btn) { btn.click(); }
+                else if (isOpen) { sidebar.setAttribute('aria-expanded', 'false'); }
+                else { sidebar.setAttribute('aria-expanded', 'true'); }
+            }
+        " title="Toggle Filters">
+            &#9776;
+        </button>
+        """,
+        unsafe_allow_html=True,
+    )
+
     with st.spinner("Loading discharge data..."):
         try:
             df = load_discharge_data()
