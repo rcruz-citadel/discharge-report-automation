@@ -244,16 +244,32 @@ def check_auth() -> bool:
 st.markdown(
     """
     <style>
-    /* ── Hide default Streamlit toolbar but keep sidebar toggle ── */
+    /* ── Streamlit header: transparent but functional ── */
     header[data-testid="stHeader"] {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        height: 2.5rem !important;
-        min-height: 2.5rem !important;
     }
     header[data-testid="stHeader"] [data-testid="stToolbar"] {
         display: none !important;
+    }
+
+    /* ── Make sidebar collapse/expand toggle visible ── */
+    button[data-testid="stSidebarCollapsedControl"],
+    button[data-testid="baseButton-headerNoPadding"] {
+        background-color: #132e45 !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: 0 2px 6px rgba(19,46,69,0.2) !important;
+        width: 2rem !important;
+        height: 2rem !important;
+        margin: 0.5rem !important;
+    }
+    button[data-testid="stSidebarCollapsedControl"] svg,
+    button[data-testid="baseButton-headerNoPadding"] svg {
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
     }
 
     /* ── Global background ── */
