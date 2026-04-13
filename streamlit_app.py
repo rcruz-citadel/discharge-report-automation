@@ -244,14 +244,82 @@ def check_auth() -> bool:
 st.markdown(
     """
     <style>
-    /* ── Make Streamlit header invisible but keep sidebar toggle functional ── */
+    /* ── Streamlit header: transparent, no white bar, sidebar toggle preserved ── */
     header[data-testid="stHeader"] {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
     }
     [data-testid="stToolbar"] {
         display: none !important;
+    }
+    /* Shrink the header's height so it doesn't leave blank space,
+       but do NOT use display:none — that kills the native sidebar toggle */
+    header[data-testid="stHeader"]::before {
+        content: none !important;
+    }
+
+    /* ── Native sidebar COLLAPSE button (X / chevron inside the open sidebar) ── */
+    button[data-testid="stSidebarCollapseButton"] {
+        background-color: #132e45 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s ease !important;
+        box-shadow: 0 2px 6px rgba(19,46,69,0.30) !important;
+    }
+    button[data-testid="stSidebarCollapseButton"]:hover {
+        background-color: #e07b2a !important;
+    }
+    button[data-testid="stSidebarCollapseButton"] svg {
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    /* ── Native sidebar EXPAND button (arrow that re-opens the collapsed sidebar) ── */
+    button[data-testid="stSidebarCollapsedControl"] {
+        background-color: #132e45 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        width: 40px !important;
+        height: 40px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s ease !important;
+        box-shadow: 0 2px 8px rgba(19,46,69,0.35) !important;
+        position: fixed !important;
+        left: 0.75rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        z-index: 999999 !important;
+    }
+    button[data-testid="stSidebarCollapsedControl"]:hover {
+        background-color: #e07b2a !important;
+    }
+    button[data-testid="stSidebarCollapsedControl"] svg {
+        fill: #ffffff !important;
+        stroke: #ffffff !important;
+        width: 20px !important;
+        height: 20px !important;
     }
 
     /* ── Global background ── */
