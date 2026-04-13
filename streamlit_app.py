@@ -244,6 +244,16 @@ def check_auth() -> bool:
 st.markdown(
     """
     <style>
+    /* ── Make Streamlit header invisible but keep sidebar toggle functional ── */
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    [data-testid="stToolbar"] {
+        display: none !important;
+    }
+
     /* ── Global background ── */
     .stApp {
         background-color: #f0f2f5;
