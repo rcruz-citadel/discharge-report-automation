@@ -248,6 +248,8 @@ st.markdown(
        but leave it fully functional so the native sidebar toggle works. ── */
     header[data-testid="stHeader"] {
         background-color: #f0f2f5 !important;
+        height: 2rem !important;
+        min-height: 2rem !important;
     }
 
     /* ── Global background ── */
