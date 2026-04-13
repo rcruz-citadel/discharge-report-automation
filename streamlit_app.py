@@ -440,6 +440,16 @@ st.markdown(
     .stAlert {
         border-radius: 10px !important;
     }
+
+    /* ── Remove default top padding from main content area ── */
+    .stMainBlockContainer, .block-container {
+        padding-top: 0.75rem !important;
+    }
+
+    /* ── Remove default top padding from sidebar ── */
+    section[data-testid="stSidebar"] > div:first-child {
+        padding-top: 0.5rem !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -551,7 +561,7 @@ def render_header() -> None:
     logo_uri = _logo_data_uri()
     if logo_uri:
         st.markdown(
-            f'<div style="text-align:center;margin-bottom:0.75rem;">'
+            f'<div style="text-align:center;margin-top:0;margin-bottom:0.4rem;">'
             f'<img src="{logo_uri}" style="width:300px;height:auto;" alt="Citadel Health" />'
             f'</div>',
             unsafe_allow_html=True,
@@ -562,7 +572,7 @@ def render_header() -> None:
         user_name = st.session_state.get("user_name", "")
         if user_name:
             st.markdown(
-                f"<div style='text-align:center;font-size:1.3rem;color:#556e81;margin-bottom:0.75rem;'>"
+                f"<div style='text-align:center;font-size:1.3rem;color:#556e81;margin-bottom:0.4rem;'>"
                 f"Welcome, <span style='color:#132e45;font-weight:700;'>{user_name}</span>"
                 f"</div>",
                 unsafe_allow_html=True,
