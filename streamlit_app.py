@@ -552,7 +552,7 @@ def render_header() -> None:
     if logo_uri:
         st.markdown(
             f'<div style="text-align:center;margin-bottom:0.75rem;">'
-            f'<img src="{logo_uri}" style="width:140px;height:auto;" alt="Citadel Health" />'
+            f'<img src="{logo_uri}" style="width:300px;height:auto;" alt="Citadel Health" />'
             f'</div>',
             unsafe_allow_html=True,
         )
@@ -562,7 +562,7 @@ def render_header() -> None:
         user_name = st.session_state.get("user_name", "")
         if user_name:
             st.markdown(
-                f"<div style='text-align:center;font-size:0.95rem;color:#556e81;margin-bottom:0.75rem;'>"
+                f"<div style='text-align:center;font-size:1.3rem;color:#556e81;margin-bottom:0.75rem;'>"
                 f"Welcome, <span style='color:#132e45;font-weight:700;'>{user_name}</span>"
                 f"</div>",
                 unsafe_allow_html=True,
@@ -602,21 +602,6 @@ def render_header() -> None:
 
 def render_sidebar_filters(df: pd.DataFrame):
     with st.sidebar:
-        if os.path.exists(LOGO_PATH):
-            st.image(LOGO_PATH, use_container_width=True)
-        else:
-            st.markdown(
-                "<div style='font-size:1.1rem;font-weight:900;color:#fff;margin-bottom:0.5rem;'>Citadel Health</div>",
-                unsafe_allow_html=True,
-            )
-        # Tighten the gap between the logo and the Filters heading
-        st.markdown(
-            "<style>"
-            "section[data-testid='stSidebar'] .stImage { margin-bottom: -0.5rem !important; }"
-            "section[data-testid='stSidebar'] h3:first-of-type { margin-top: 0.25rem !important; }"
-            "</style>",
-            unsafe_allow_html=True,
-        )
         st.markdown("### Filters")
 
         assignee_names = sorted(PRACTICE_ASSIGNMENTS.keys())
