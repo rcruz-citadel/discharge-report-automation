@@ -491,6 +491,18 @@ st.markdown(
         margin-bottom: 0.75rem;
     }
 
+    /* ── Notes textarea: ensure it's visible against the white detail panel ── */
+    .stTextArea textarea {
+        background-color: #f7f9fb !important;
+        border: 1.5px solid #d0dae3 !important;
+        border-radius: 8px !important;
+        color: #2a3f50 !important;
+    }
+    .stTextArea textarea:focus {
+        border-color: #132e45 !important;
+        box-shadow: 0 0 0 2px rgba(19,46,69,0.15) !important;
+    }
+
     /* ── Status selection buttons override ── */
     .status-btn-none button {
         background-color: #edf2f7 !important;
@@ -716,14 +728,14 @@ def _load_raw_discharge_data() -> pd.DataFrame:
     return df
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def load_discharge_data_with_status() -> tuple[pd.DataFrame, dict]:
     """
     Load discharge data, load outreach statuses, and return the merged DataFrame
     plus the raw outreach dict (needed for detail panel lookups).
 
-    Cached with a 60-second TTL so status updates propagate promptly.
-    Call load_discharge_data_with_status.clear() after any outreach upsert.
+    Cached with a 300-second TTL. Any outreach upsert explicitly calls
+    load_discharge_data_with_status.clear() so updates propagate immediately.
     """
     df = _load_raw_discharge_data()
     outreach = load_outreach_statuses()
@@ -731,12 +743,12 @@ def load_discharge_data_with_status() -> tuple[pd.DataFrame, dict]:
     return merged_df, outreach
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=300)
 def load_outreach_statuses() -> dict:
     """
     Load all outreach_status rows. Returns a dict keyed on (event_id, discharge_date)
     -> {status, updated_by, updated_at, notes}.
-    TTL is 60 seconds (shorter than discharge data) so status updates propagate quickly.
+    TTL is 300 seconds. Explicit .clear() calls after any upsert ensure immediate propagation.
     """
     engine = get_engine()
     try:
@@ -1143,7 +1155,6 @@ def _status_pill_html(status_label: str) -> str:
         )
 
 
-@st.fragment
 def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
     """Render the detail panel for the selected discharge row."""
     event_id = str(row.get("Event Id", ""))
@@ -1244,21 +1255,21 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
         st.markdown(f"<div class='{_btn_css('No Outreach')}'>", unsafe_allow_html=True)
         if st.button("No Outreach", key=f"btn_none_{tab_key}", use_container_width=True):
             st.session_state[sel_key] = "No Outreach"
-            st.rerun(scope="fragment")
+            st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
     with btn_col2:
         st.markdown(f"<div class='{_btn_css('Outreach Made')}'>", unsafe_allow_html=True)
         if st.button("Outreach Made", key=f"btn_made_{tab_key}", use_container_width=True):
             st.session_state[sel_key] = "Outreach Made"
-            st.rerun(scope="fragment")
+            st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
     with btn_col3:
         st.markdown(f"<div class='{_btn_css('Outreach Complete')}'>", unsafe_allow_html=True)
         if st.button("Outreach Complete", key=f"btn_complete_{tab_key}", use_container_width=True):
             st.session_state[sel_key] = "Outreach Complete"
-            st.rerun(scope="fragment")
+            st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='margin-top:0.75rem;'></div>", unsafe_allow_html=True)
@@ -1306,7 +1317,7 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
                 if sel_key in st.session_state:
                     del st.session_state[sel_key]
                 # Full-page rerun so the table reflects the updated status
-                st.rerun(scope="app")
+                st.rerun()
 
     with action_col2:
         if st.button("Cancel", key=f"cancel_{tab_key}"):
@@ -1316,7 +1327,7 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
             if sel_key in st.session_state:
                 del st.session_state[sel_key]
             # Full-page rerun so the panel closes and the table is visible again
-            st.rerun(scope="app")
+            st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
 
