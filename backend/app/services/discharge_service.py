@@ -1,4 +1,4 @@
-"""Discharge data service: query v_discharge_summary joined with outreach_status."""
+"""Discharge data service: inline join across discharge tables + outreach_status."""
 import logging
 from datetime import datetime, timezone
 
@@ -9,33 +9,45 @@ from app.models.schemas import DischargeRecord, DischargesResponse
 
 logger = logging.getLogger(__name__)
 
-# Full merged discharge + outreach query.
-# location_name aliased as practice (view uses location_name, app calls it practice).
+# Full discharge query matching the Streamlit app (streamlit_app.py main branch),
+# plus a LEFT JOIN to outreach_status for outreach tracking.
 _DISCHARGE_QUERY = text("""
 SELECT
-    d.event_id,
-    d.discharge_date,
-    d.patient_name,
-    d.insurance_member_id,
-    d.location_name                 AS practice,
-    d.payer_name,
-    d.lob_name,
-    d.stay_type,
-    d.discharge_hospital,
-    d.length_of_stay,
-    d.disposition,
+    de.event_id,
+    de.insurance_member_id,
+    COALESCE(pt.first_name, '') || ' ' || COALESCE(pt.last_name, '') AS patient_name,
+    de.admit_date,
+    de.discharge_date,
     d.dx_code,
     d.description,
-    d.admit_date,
+    de.disposition,
+    de.stay_type,
+    de.discharge_hospital,
+    de.length_of_stay,
+    py.payer_name,
+    lob.lob_name,
+    p.full_name AS provider_name,
+    l.parent_org AS practice,
+    pt.address AS patient_address,
+    pt.city,
+    pt.zip_code::character varying(5) AS zip_code,
+    pt.state,
     COALESCE(o.status, 'no_outreach') AS outreach_status,
     COALESCE(o.notes, '')             AS outreach_notes,
     o.updated_by                      AS outreach_updated_by,
     o.updated_at                      AS outreach_updated_at
-FROM v_discharge_summary d
-LEFT JOIN discharge_app.outreach_status o
-    ON o.event_id = d.event_id
-    AND o.discharge_date = d.discharge_date
-ORDER BY d.discharge_date DESC
+FROM discharge_event de
+    LEFT JOIN provider p ON p.provider_id = de.provider_id
+    LEFT JOIN payer py ON py.payer_id = de.payer_id
+    LEFT JOIN line_of_business lob ON lob.lob_id = de.lob_id
+    LEFT JOIN patient pt ON pt.patient_id = de.patient_id
+    LEFT JOIN diagnosis_code d ON d.dx_id = de.dx_id
+    LEFT JOIN location l ON l.location_id = p.location_id
+    LEFT JOIN discharge_app.outreach_status o
+        ON o.event_id = de.event_id
+        AND o.discharge_date = de.discharge_date
+WHERE de.discharge_date IS NOT NULL
+ORDER BY de.discharge_date DESC
 """)
 
 
@@ -51,19 +63,24 @@ async def get_all_discharges(db: AsyncSession) -> DischargesResponse:
     records = [
         DischargeRecord(
             event_id=row["event_id"],
-            discharge_date=row["discharge_date"],
-            patient_name=row["patient_name"],
             insurance_member_id=row["insurance_member_id"],
-            practice=row["practice"],
-            payer_name=row["payer_name"],
-            lob_name=row["lob_name"],
+            patient_name=row["patient_name"],
+            admit_date=row["admit_date"],
+            discharge_date=row["discharge_date"],
+            dx_code=row["dx_code"],
+            description=row["description"],
+            disposition=row["disposition"],
             stay_type=row["stay_type"],
             discharge_hospital=row["discharge_hospital"],
             length_of_stay=row["length_of_stay"],
-            disposition=row["disposition"],
-            dx_code=row["dx_code"],
-            description=row["description"],
-            admit_date=row["admit_date"],
+            payer_name=row["payer_name"],
+            lob_name=row["lob_name"],
+            provider_name=row["provider_name"],
+            practice=row["practice"],
+            patient_address=row["patient_address"],
+            city=row["city"],
+            zip_code=row["zip_code"],
+            state=row["state"],
             outreach_status=row["outreach_status"] or "no_outreach",
             outreach_notes=row["outreach_notes"] or "",
             outreach_updated_by=row["outreach_updated_by"],

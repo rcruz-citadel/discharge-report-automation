@@ -14,9 +14,10 @@ SELECT
     COUNT(*) FILTER (WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach') AS no_outreach,
     COUNT(*) FILTER (WHERE o.status = 'outreach_made')                    AS outreach_made,
     COUNT(*) FILTER (WHERE o.status = 'outreach_complete')                AS outreach_complete
-FROM v_discharge_summary d
+FROM discharge_event de
 LEFT JOIN discharge_app.outreach_status o
-    ON o.event_id = d.event_id AND o.discharge_date = d.discharge_date
+    ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
+WHERE de.discharge_date IS NOT NULL
 """)
 
 _STAFF_QUERY = text("""
@@ -24,20 +25,25 @@ SELECT
     u.user_email,
     u.display_name,
     COALESCE(array_length(u.practices, 1), 0)                                 AS practice_count,
-    COUNT(DISTINCT d.event_id)                                                AS total,
-    COUNT(DISTINCT d.event_id) FILTER (
+    COUNT(DISTINCT de.event_id)                                               AS total,
+    COUNT(DISTINCT de.event_id) FILTER (
         WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')              AS no_outreach,
-    COUNT(DISTINCT d.event_id) FILTER (
+    COUNT(DISTINCT de.event_id) FILTER (
         WHERE o.status = 'outreach_made')                                      AS outreach_made,
-    COUNT(DISTINCT d.event_id) FILTER (
+    COUNT(DISTINCT de.event_id) FILTER (
         WHERE o.status = 'outreach_complete')                                  AS outreach_complete,
     MAX(al_login.created_at)::date                                            AS last_login,
     MAX(al_any.created_at)::date                                              AS last_activity
 FROM discharge_app.app_user u
-LEFT JOIN v_discharge_summary d
-    ON u.practices IS NOT NULL AND d.location_name = ANY(u.practices)
+LEFT JOIN provider p ON TRUE
+LEFT JOIN location l ON l.location_id = p.location_id
+LEFT JOIN discharge_event de
+    ON de.provider_id = p.provider_id
+    AND de.discharge_date IS NOT NULL
+    AND u.practices IS NOT NULL
+    AND l.parent_org = ANY(u.practices)
 LEFT JOIN discharge_app.outreach_status o
-    ON o.event_id = d.event_id AND o.discharge_date = d.discharge_date
+    ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 LEFT JOIN discharge_app.user_activity_log al_login
     ON al_login.user_email = u.user_email AND al_login.action = 'login'
 LEFT JOIN discharge_app.user_activity_log al_any
@@ -49,17 +55,19 @@ ORDER BY u.display_name
 
 _PRACTICE_ROLLUP_QUERY = text("""
 SELECT
-    d.location_name                                                                 AS practice,
-    COUNT(DISTINCT d.event_id)                                                     AS total,
-    COUNT(DISTINCT d.event_id) FILTER (
+    l.parent_org                                                                    AS practice,
+    COUNT(DISTINCT de.event_id)                                                    AS total,
+    COUNT(DISTINCT de.event_id) FILTER (
         WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')                   AS no_outreach,
-    COUNT(DISTINCT d.event_id) FILTER (WHERE o.status = 'outreach_made')           AS outreach_made,
-    COUNT(DISTINCT d.event_id) FILTER (WHERE o.status = 'outreach_complete')       AS outreach_complete
-FROM v_discharge_summary d
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_made')          AS outreach_made,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_complete')      AS outreach_complete
+FROM discharge_event de
+LEFT JOIN provider p ON p.provider_id = de.provider_id
+LEFT JOIN location l ON l.location_id = p.location_id
 LEFT JOIN discharge_app.outreach_status o
-    ON o.event_id = d.event_id AND o.discharge_date = d.discharge_date
-WHERE d.location_name IS NOT NULL
-GROUP BY d.location_name
+    ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
+WHERE de.discharge_date IS NOT NULL AND l.parent_org IS NOT NULL
+GROUP BY l.parent_org
 ORDER BY total DESC
 """)
 

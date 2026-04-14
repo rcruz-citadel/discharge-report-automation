@@ -11,17 +11,22 @@ router = APIRouter(prefix="/meta", tags=["meta"])
 
 _FILTER_VALUES_QUERY = text("""
 SELECT
-    array_agg(DISTINCT d.location_name ORDER BY d.location_name)
-        FILTER (WHERE d.location_name IS NOT NULL)  AS practices,
-    array_agg(DISTINCT d.payer_name ORDER BY d.payer_name)
-        FILTER (WHERE d.payer_name IS NOT NULL)     AS payers,
-    array_agg(DISTINCT d.lob_name ORDER BY d.lob_name)
-        FILTER (WHERE d.lob_name IS NOT NULL)       AS lob_names,
-    array_agg(DISTINCT d.stay_type ORDER BY d.stay_type)
-        FILTER (WHERE d.stay_type IS NOT NULL)      AS stay_types,
-    MIN(d.discharge_date)                           AS discharge_date_min,
-    MAX(d.discharge_date)                           AS discharge_date_max
-FROM v_discharge_summary d
+    array_agg(DISTINCT l.parent_org ORDER BY l.parent_org)
+        FILTER (WHERE l.parent_org IS NOT NULL)     AS practices,
+    array_agg(DISTINCT py.payer_name ORDER BY py.payer_name)
+        FILTER (WHERE py.payer_name IS NOT NULL)    AS payers,
+    array_agg(DISTINCT lob.lob_name ORDER BY lob.lob_name)
+        FILTER (WHERE lob.lob_name IS NOT NULL)     AS lob_names,
+    array_agg(DISTINCT de.stay_type ORDER BY de.stay_type)
+        FILTER (WHERE de.stay_type IS NOT NULL)     AS stay_types,
+    MIN(de.discharge_date)                          AS discharge_date_min,
+    MAX(de.discharge_date)                          AS discharge_date_max
+FROM discharge_event de
+    LEFT JOIN provider p ON p.provider_id = de.provider_id
+    LEFT JOIN payer py ON py.payer_id = de.payer_id
+    LEFT JOIN line_of_business lob ON lob.lob_id = de.lob_id
+    LEFT JOIN location l ON l.location_id = p.location_id
+WHERE de.discharge_date IS NOT NULL
 """)
 
 _ASSIGNEES_QUERY = text("""

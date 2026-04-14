@@ -40,19 +40,24 @@ class LogoutResponse(BaseModel):
 
 class DischargeRecord(BaseModel):
     event_id: str
-    discharge_date: date
-    patient_name: Optional[str] = None
     insurance_member_id: Optional[str] = None
-    practice: Optional[str] = None          # location_name aliased as practice
-    payer_name: Optional[str] = None
-    lob_name: Optional[str] = None
+    patient_name: Optional[str] = None
+    admit_date: Optional[date] = None
+    discharge_date: date
+    dx_code: Optional[str] = None
+    description: Optional[str] = None
+    disposition: Optional[str] = None
     stay_type: Optional[str] = None
     discharge_hospital: Optional[str] = None
     length_of_stay: Optional[int] = None
-    disposition: Optional[str] = None
-    dx_code: Optional[str] = None
-    description: Optional[str] = None
-    admit_date: Optional[date] = None
+    payer_name: Optional[str] = None
+    lob_name: Optional[str] = None
+    provider_name: Optional[str] = None
+    practice: Optional[str] = None          # l.parent_org aliased as practice
+    patient_address: Optional[str] = None
+    city: Optional[str] = None
+    zip_code: Optional[str] = None
+    state: Optional[str] = None
     # Joined from outreach_status
     outreach_status: str = "no_outreach"
     outreach_notes: str = ""
