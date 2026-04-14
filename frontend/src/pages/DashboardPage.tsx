@@ -137,9 +137,16 @@ export function DashboardPage() {
         }
       >
         <div className="flex flex-col gap-4">
-          {/* Logo + header */}
-          <div className="flex flex-col items-center gap-2">
-            <AppHeader userName={user?.name} />
+          {/* Header banner */}
+          <AppHeader userName={user?.name} />
+
+          {/* Logo above tabs */}
+          <div className="flex items-center">
+            <img
+              src="/citadel-logo-hd-transparent.png"
+              alt="Citadel Health"
+              className="h-[64px] w-auto object-contain"
+            />
           </div>
 
           {/* Tab strip */}

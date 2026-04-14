@@ -39,13 +39,13 @@ export function ManagerDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Summary stat chips */}
-      <div className="flex gap-3 flex-wrap">
-        <StatChip label="Total Discharges" value={summary.total.toLocaleString()} variant="navy" />
-        <StatChip label="No Outreach" value={summary.no_outreach.toLocaleString()} variant="gray" />
-        <StatChip label="Outreach Made" value={summary.outreach_made.toLocaleString()} variant="orange" />
-        <StatChip label="Complete" value={summary.outreach_complete.toLocaleString()} variant="green" />
-        <StatChip label="% Complete" value={`${summary.pct_complete}%`} variant="green" />
+      {/* Summary stat chips — full width */}
+      <div className="grid grid-cols-5 gap-4">
+        <StatChip label="Total Discharges" value={summary.total.toLocaleString()} variant="navy" className="flex-1" />
+        <StatChip label="No Outreach" value={summary.no_outreach.toLocaleString()} variant="gray" className="flex-1" />
+        <StatChip label="Outreach Made" value={summary.outreach_made.toLocaleString()} variant="orange" className="flex-1" />
+        <StatChip label="Complete" value={summary.outreach_complete.toLocaleString()} variant="green" className="flex-1" />
+        <StatChip label="% Complete" value={`${summary.pct_complete}%`} variant="green" className="flex-1" />
       </div>
 
       {/* Staff breakdown */}
