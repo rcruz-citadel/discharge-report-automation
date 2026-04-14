@@ -16,18 +16,6 @@ export function Sidebar({ filters, onClearFilters, hasActiveFilters }: SidebarPr
 
   return (
     <div className="flex flex-col h-full p-4 gap-4">
-      {/* Logo */}
-      <div className="flex justify-center py-2">
-        <img
-          src="/citadel-logo-hd-transparent.png"
-          alt="Citadel Health"
-          className="w-[180px] object-contain"
-        />
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-[#1b4459]" />
-
       {/* Filters section */}
       <div className="flex-1 overflow-y-auto">
         <h2

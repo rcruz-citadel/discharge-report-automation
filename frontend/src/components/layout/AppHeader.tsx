@@ -16,13 +16,20 @@ export function AppHeader({ userName }: AppHeaderProps) {
       }}
     >
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[26px] font-extrabold text-white leading-tight">
-            Discharge Report Dashboard
-          </h1>
-          <p className="text-[13px] text-[#a8c4d8] mt-0.5">
-            Citadel Health / Aylo Health — Outreach Tracking
-          </p>
+        <div className="flex items-center gap-4">
+          <img
+            src="/citadel-logo-hd-transparent.png"
+            alt="Citadel Health"
+            className="h-[48px] w-auto object-contain"
+          />
+          <div>
+            <h1 className="text-[26px] font-extrabold text-white leading-tight">
+              Discharge Report Dashboard
+            </h1>
+            <p className="text-[13px] text-[#a8c4d8] mt-0.5">
+              Citadel Health — Outreach Tracking
+            </p>
+          </div>
         </div>
         {userName && (
           <p className="text-[13px] text-[#a8c4d8]">
