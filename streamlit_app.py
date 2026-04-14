@@ -671,8 +671,9 @@ def upsert_outreach_status(
                     "notes": notes or "",
                 },
             )
-        # Clear cache so next load reflects the change
+        # Clear both caches so the next load reflects the change
         load_outreach_statuses.clear()
+        load_discharge_data_with_status.clear()
         # Audit log (fire-and-forget)
         user_name = st.session_state.get("user_name", updated_by)
         log_activity(
@@ -695,7 +696,8 @@ def upsert_outreach_status(
 # ── Cached read helpers ───────────────────────────────────────────────────────
 
 @st.cache_data(ttl=300)
-def load_discharge_data():
+def _load_raw_discharge_data() -> pd.DataFrame:
+    """Load and normalize the raw discharge DataFrame. Do not call directly — use load_discharge_data_with_status()."""
     query = text("SELECT * FROM v_discharge_summary ORDER BY discharge_date DESC")
 
     engine = get_engine()
@@ -712,6 +714,21 @@ def load_discharge_data():
         df["Length Of Stay"] = pd.to_numeric(df["Length Of Stay"], errors="coerce").fillna(0).astype(int)
 
     return df
+
+
+@st.cache_data(ttl=60)
+def load_discharge_data_with_status() -> tuple[pd.DataFrame, dict]:
+    """
+    Load discharge data, load outreach statuses, and return the merged DataFrame
+    plus the raw outreach dict (needed for detail panel lookups).
+
+    Cached with a 60-second TTL so status updates propagate promptly.
+    Call load_discharge_data_with_status.clear() after any outreach upsert.
+    """
+    df = _load_raw_discharge_data()
+    outreach = load_outreach_statuses()
+    merged_df = _merge_outreach(df, outreach)
+    return merged_df, outreach
 
 
 @st.cache_data(ttl=60)
@@ -750,7 +767,8 @@ def load_outreach_statuses() -> dict:
 def load_practice_assignments() -> dict:
     """
     Query discharge_app.app_user and return a dict mapping
-    display_name -> list[practice] for all active staff users.
+    display_name -> list[practice] for all active users who have practice assignments.
+    Includes both staff and managers with assigned practices.
     """
     engine = get_engine()
     with engine.connect() as conn:
@@ -759,7 +777,7 @@ def load_practice_assignments() -> dict:
                 """
                 SELECT display_name, practices
                 FROM discharge_app.app_user
-                WHERE is_active = TRUE AND role = 'staff'
+                WHERE is_active = TRUE AND array_length(practices, 1) > 0
                 ORDER BY display_name
                 """
             )
@@ -930,8 +948,7 @@ def render_header() -> None:
     )
 
 
-def render_sidebar_filters(df: pd.DataFrame):
-    practice_assignments = load_practice_assignments()
+def render_sidebar_filters(df: pd.DataFrame, practice_assignments: dict):
 
     with st.sidebar:
         st.markdown("### Filters")
@@ -1021,8 +1038,7 @@ def render_sidebar_filters(df: pd.DataFrame):
     return selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max
 
 
-def apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max):
-    practice_assignments = load_practice_assignments()
+def apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max, practice_assignments: dict):
     mask = pd.Series(True, index=df.index)
     if selected_practices:
         mask &= df["Practice"].astype(str).isin(selected_practices)
@@ -1070,17 +1086,33 @@ def _merge_outreach(df: pd.DataFrame, outreach: dict) -> pd.DataFrame:
     """
     Add a 'Status' column to df by merging outreach_status dict.
     Keyed on (Event Id, Discharge Date).
-    """
-    def _lookup(row):
-        key = (str(row["Event Id"]), row["Discharge Date"])
-        entry = outreach.get(key)
-        if entry:
-            return STATUS_DISPLAY.get(entry["status"], "No Outreach")
-        return "No Outreach"
 
+    Uses a vectorized pandas merge instead of row-level .apply() for 10-50x
+    faster execution on large datasets.
+    """
     df = df.copy()
-    df["Status"] = df.apply(_lookup, axis=1)
-    return df
+
+    if not outreach:
+        df["Status"] = "No Outreach"
+        return df
+
+    # Build a lookup DataFrame from the outreach dict
+    outreach_records = [
+        {
+            "Event Id": str(key[0]),
+            "Discharge Date": key[1],
+            "Status": STATUS_DISPLAY.get(val["status"], "No Outreach"),
+        }
+        for key, val in outreach.items()
+    ]
+    outreach_df = pd.DataFrame(outreach_records)
+
+    # Ensure merge key types match
+    df["Event Id"] = df["Event Id"].astype(str)
+
+    merged = df.merge(outreach_df, on=["Event Id", "Discharge Date"], how="left")
+    merged["Status"] = merged["Status"].fillna("No Outreach")
+    return merged
 
 
 def _status_pill_html(status_label: str) -> str:
@@ -1111,6 +1143,7 @@ def _status_pill_html(status_label: str) -> str:
         )
 
 
+@st.fragment
 def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
     """Render the detail panel for the selected discharge row."""
     event_id = str(row.get("Event Id", ""))
@@ -1211,21 +1244,21 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
         st.markdown(f"<div class='{_btn_css('No Outreach')}'>", unsafe_allow_html=True)
         if st.button("No Outreach", key=f"btn_none_{tab_key}", use_container_width=True):
             st.session_state[sel_key] = "No Outreach"
-            st.rerun()
+            st.rerun(scope="fragment")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with btn_col2:
         st.markdown(f"<div class='{_btn_css('Outreach Made')}'>", unsafe_allow_html=True)
         if st.button("Outreach Made", key=f"btn_made_{tab_key}", use_container_width=True):
             st.session_state[sel_key] = "Outreach Made"
-            st.rerun()
+            st.rerun(scope="fragment")
         st.markdown("</div>", unsafe_allow_html=True)
 
     with btn_col3:
         st.markdown(f"<div class='{_btn_css('Outreach Complete')}'>", unsafe_allow_html=True)
         if st.button("Outreach Complete", key=f"btn_complete_{tab_key}", use_container_width=True):
             st.session_state[sel_key] = "Outreach Complete"
-            st.rerun()
+            st.rerun(scope="fragment")
         st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<div style='margin-top:0.75rem;'></div>", unsafe_allow_html=True)
@@ -1272,7 +1305,8 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
                     del st.session_state[row_key]
                 if sel_key in st.session_state:
                     del st.session_state[sel_key]
-                st.rerun()
+                # Full-page rerun so the table reflects the updated status
+                st.rerun(scope="app")
 
     with action_col2:
         if st.button("Cancel", key=f"cancel_{tab_key}"):
@@ -1281,7 +1315,8 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
                 del st.session_state[row_key]
             if sel_key in st.session_state:
                 del st.session_state[sel_key]
-            st.rerun()
+            # Full-page rerun so the panel closes and the table is visible again
+            st.rerun(scope="app")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1546,7 +1581,7 @@ def main():
 
     with st.spinner("Loading discharge data..."):
         try:
-            df = load_discharge_data()
+            df, outreach = load_discharge_data_with_status()
         except Exception as exc:
             st.error(f"Could not load discharge data: {exc}")
             st.info(
@@ -1558,12 +1593,11 @@ def main():
         st.warning("No discharge records found.")
         return
 
-    # Load outreach statuses and merge into dataframe
-    outreach = load_outreach_statuses()
-    df = _merge_outreach(df, outreach)
+    # Load practice assignments once and pass to both sidebar and filter functions
+    practice_assignments = load_practice_assignments()
 
-    selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max = render_sidebar_filters(df)
-    filtered_df = apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max)
+    selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max = render_sidebar_filters(df, practice_assignments)
+    filtered_df = apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max, practice_assignments)
 
     recent_cutoff = datetime.now().date() - timedelta(days=14)
     six_months_cutoff = datetime.now().date() - timedelta(days=182)

@@ -174,41 +174,45 @@ CREATE TABLE app_user (
 #### Phase 2: App Write Path
 - [x] **Add write engine / session** — `log_activity()` write helper uses `engine.begin()` directly (no cache). `get_engine()` shared for reads and writes.
 - [x] **Login logging** — `log_activity(..., action='login', detail={})` called in `check_auth()` after successful auth. Wrapped in try/except — DB failure cannot block sign-in.
-- [ ] **Outreach status API** — Functions to get current status for an event, update status, and log the change. (Phase 3)
+- [x] **Outreach status API** — `upsert_outreach_status()` with INSERT ON CONFLICT, `load_outreach_statuses()` cached 60s, audit logging with old/new status.
 - [x] **Replace `PRACTICE_ASSIGNMENTS` dict** — `load_practice_assignments()` queries `discharge_app.app_user` (staff, is_active=TRUE). Cached 5 min. Both `render_sidebar_filters()` and `apply_filters()` updated.
-- [x] **User role loading** — `get_user_role(email)` queries `discharge_app.app_user`. Role stored in `st.session_state["user_role"]` on login. Cleared on sign-out. Ready for Phase 3/4 gating.
+- [x] **User role loading** — `get_user_role(email)` queries `discharge_app.app_user`. Role stored in `st.session_state["user_role"]` on login. Cleared on sign-out.
 
 #### Phase 3: Staff Outreach UI
-- [ ] **Outreach status column in dataframe** — Show current outreach status per discharge row.
-- [ ] **Inline status update controls** — Per-row selectbox or `st.data_editor` for status changes with submit.
-- [ ] **Status change confirmation + logging** — On submit: update `outreach_status`, log to `user_activity_log`, refresh view.
-- [ ] **Visual indicators** — Color-code rows by outreach status (untouched, in-progress, complete).
+- [x] **Outreach status column in dataframe** — Status column merged from `outreach_status` table. Displayed with color-coded pill badges.
+- [x] **Detail panel (Option B)** — Click row to open panel below table. Shows patient info grid (practice, payer, hospital, diagnosis, LOS, disposition), 3 status buttons, notes textarea, last updated line, Save/Cancel.
+- [x] **Status change confirmation + logging** — Save upserts `outreach_status`, logs to `user_activity_log`, clears cache, refreshes view.
+- [x] **Visual indicators** — Color-coded status pills (gray/orange/green). Legend above table.
 
 #### Phase 4: Manager View
-- [ ] **Role gate** — Check logged-in user's role from `app_user`. Show/hide manager tab accordingly.
-- [ ] **Outreach summary metrics** — Per-user: total assigned, no outreach count, outreach made, outreach complete, % completion.
-- [ ] **Activity timeline** — When each user last logged in, when they last submitted an update.
-- [ ] **Practice-level roll-ups** — Outreach completion rates by practice.
-- [ ] **Date-range filtering** — Manager can scope metrics to a time window.
+- [x] **Role gate** — 4th "Manager Dashboard" tab visible only when `user_role == "manager"`.
+- [x] **Outreach summary metrics** — Stat chips: Total, No Outreach, Outreach Made, Complete, % Complete.
+- [x] **Per-user breakdown** — Staff table with name, practice count, totals by status, % done, last login, last activity.
+- [x] **Practice-level roll-ups** — Practice table with status counts and % complete.
+- [x] **Date-range filtering** — Manager view respects sidebar date filters.
 
-#### Phase 5: Carry-Forward / Polish
+#### Phase 5: Performance & Polish
+- [ ] **Fix UI lag on filter/action (~3s pause)** — Every interaction triggers a full Streamlit rerun with re-render. Investigate: fragment reruns (`st.fragment`), reducing unnecessary reruns from status button clicks, optimizing `_merge_outreach()` (row-level apply is slow on large DataFrames — switch to vectorized merge), and minimizing HTML re-renders.
 - [ ] **Production TLS certificate** — Replace self-signed cert.
 - [ ] **Second report from discharge query** — Requirements pending.
+- [ ] **Merge feature branch to main** — After testing and stakeholder sign-off.
 
 ### V2 — Summary Scorecard
 
-| Requirement | Ready? | Work Remaining |
+| Requirement | Status | Notes |
 |---|---|---|
-| SSO identity (who is this user?) | **Yes** | Already captured in session state |
-| Discharge data model | **Yes** | `discharge_event` + dimension tables are solid |
-| Outreach status storage | **No** | New table — Phase 1 |
-| Activity logging storage | **No** | New table — Phase 1 |
-| User/role management | **No** | New table — Phase 1 |
-| Write path in app | **No** | New code — Phase 2 |
-| Outreach UI | **No** | New UI components — Phase 3 |
-| Manager analytics view | **No** | New page/tab + queries — Phase 4 |
-| Practice assignments in DB | **No** | Feeds into `app_user` — Phase 1 |
-| Discharge query as PG view | **Partial** | Reconcile `v_discharge_summary` — Phase 1 |
+| SSO identity | **Complete** | Email lowercase-normalized, stored in session state |
+| Discharge data model | **Complete** | `v_discharge_summary` view reconciled and live |
+| Outreach status storage | **Complete** | `discharge_app.outreach_status` keyed on (event_id, discharge_date) |
+| Activity logging | **Complete** | `discharge_app.user_activity_log` — login + outreach_update events |
+| User/role management | **Complete** | `discharge_app.app_user` — 4 staff + 3 managers seeded |
+| Write path in app | **Complete** | `upsert_outreach_status()` + `log_activity()` |
+| Outreach UI (detail panel) | **Complete** | Option B — click row, detail panel with status/notes/save |
+| Manager analytics view | **Complete** | Role-gated tab with summary chips, per-user and per-practice tables |
+| Practice assignments in DB | **Complete** | `load_practice_assignments()` from `app_user` |
+| UI performance optimization | **To Do** | ~3s lag on filter/action — needs `st.fragment`, vectorized merge, rerun reduction |
+| Production TLS cert | **To Do** | Self-signed cert still in use |
+| Merge to main | **To Do** | After testing + stakeholder sign-off |
 
 ---
 
