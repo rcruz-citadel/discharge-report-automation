@@ -1,0 +1,24 @@
+[Unit]
+Description=Discharge Report FastAPI Backend (V3)
+After=network.target
+After=postgresql.service
+
+[Service]
+Type=exec
+User=discharge_svc
+Group=discharge_svc
+WorkingDirectory=/opt/discharge_report_automation/backend
+EnvironmentFile=/opt/discharge_report_automation/backend/.env
+ExecStart=/opt/discharge_report_automation/backend/venv/bin/uvicorn app.main:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 2 \
+    --log-level info
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=discharge-api
+
+[Install]
+WantedBy=multi-user.target
