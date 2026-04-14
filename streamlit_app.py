@@ -860,6 +860,7 @@ def get_user_role(email: str) -> str | None:
 
 # ── UI helpers ───────────────────────────────────────────────────────────────
 
+@st.cache_data
 def _logo_data_uri() -> str | None:
     """Return the Citadel logo as a base64-encoded PNG data URI, or None if the file is missing."""
     if not os.path.exists(LOGO_PATH):
@@ -1275,17 +1276,20 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
                 st.success(f"Status updated to '{selected_status}' for {patient_name}.")
                 row_key = f"selected_row_{tab_key}"
                 st.session_state.pop(row_key, None)
-                st.rerun()
+                # Break out of the fragment to refresh the full page data
+                st.rerun(scope="app")
 
     with action_col2:
         if st.button("Cancel", key=f"cancel_{tab_key}"):
             row_key = f"selected_row_{tab_key}"
             st.session_state.pop(row_key, None)
-            st.rerun()
+            # Stay in the fragment — just close the panel
+            st.rerun(scope="fragment")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
 
+@st.fragment
 def render_tab(view_df: pd.DataFrame, label: str, tab_key: str, outreach: dict) -> None:
     count = len(view_df)
     st.markdown(
@@ -1365,6 +1369,7 @@ def render_tab(view_df: pd.DataFrame, label: str, tab_key: str, outreach: dict) 
 
 # ── Manager dashboard ────────────────────────────────────────────────────────
 
+@st.fragment
 def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
     """Render the manager analytics dashboard tab."""
 
