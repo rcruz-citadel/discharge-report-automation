@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Option B — Click Row to Expand Detail Panel</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; padding: 2rem; }
+  h2 { color: #132e45; margin-bottom: 0.25rem; font-size: 1.3rem; }
+  .subtitle { color: #7e96a6; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .badge { display: inline-block; background: #132e45; color: #fff; font-size: 0.7rem; font-weight: 700; border-radius: 20px; padding: 2px 10px; margin-left: 8px; vertical-align: middle; }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(19,46,69,0.07); font-size: 0.82rem; }
+  th { background: #132e45; color: #fff; padding: 0.6rem 0.75rem; text-align: left; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { padding: 0.55rem 0.75rem; border-bottom: 1px solid #e8ecf0; color: #2a3f50; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover { background: #f7f9fb; cursor: pointer; }
+
+  /* Status pill in the table */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+  }
+  .pill-none { background: #edf2f7; color: #718096; }
+  .pill-made { background: #fef3e2; color: #c05621; }
+  .pill-complete { background: #e6ffed; color: #22753a; }
+
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+  .dot-none { background: #cbd5e0; }
+  .dot-made { background: #e07b2a; }
+  .dot-complete { background: #38a169; }
+
+  /* Selected row highlight */
+  tr.selected { background: #eef4fa; border-left: 3px solid #132e45; }
+  tr.selected td:first-child { padding-left: calc(0.75rem - 3px); }
+
+  /* Row-level color tinting */
+  tr.row-made { background: #fffaf5; }
+  tr.row-complete { background: #f5fcf8; }
+
+  .legend { display: flex; gap: 1.5rem; margin-bottom: 1rem; font-size: 0.78rem; color: #556e81; }
+  .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+
+  /* Detail panel below the table */
+  .detail-panel {
+    margin-top: 1rem; background: #fff; border-radius: 12px;
+    box-shadow: 0 4px 18px rgba(19,46,69,0.1); overflow: hidden;
+    border: 1.5px solid #132e45;
+  }
+  .detail-header {
+    background: linear-gradient(135deg, #132e45 0%, #1b4459 100%);
+    padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center;
+  }
+  .detail-header h3 { color: #fff; font-size: 1rem; font-weight: 700; }
+  .detail-close { color: #a8c4d8; cursor: pointer; font-size: 1.2rem; }
+
+  .detail-body { padding: 1.25rem; }
+
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;
+    margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid #e8ecf0;
+  }
+  .detail-field label { display: block; font-size: 0.7rem; font-weight: 700; color: #7e96a6; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+  .detail-field .value { font-size: 0.9rem; color: #132e45; font-weight: 600; }
+
+  .outreach-section h4 { font-size: 0.85rem; color: #132e45; font-weight: 700; margin-bottom: 0.75rem; }
+
+  .status-options { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
+  .status-option {
+    flex: 1; padding: 0.75rem; border: 2px solid #e8ecf0; border-radius: 10px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .status-option:hover { border-color: #a8c4d8; background: #f7f9fb; }
+  .status-option.active-none { border-color: #cbd5e0; background: #edf2f7; }
+  .status-option.active-made { border-color: #e07b2a; background: #fef3e2; }
+  .status-option.active-complete { border-color: #38a169; background: #e6ffed; }
+  .status-option .opt-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+  .status-option .opt-label { font-size: 0.78rem; font-weight: 700; color: #2a3f50; }
+
+  .notes-area {
+    width: 100%; min-height: 60px; padding: 0.6rem 0.75rem; border: 1.5px solid #d0dae3;
+    border-radius: 8px; font-size: 0.85rem; font-family: inherit; resize: vertical; color: #2a3f50;
+  }
+  .notes-area::placeholder { color: #b0bec5; }
+  .notes-area:focus { outline: none; border-color: #e07b2a; }
+
+  .detail-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; }
+  .btn {
+    padding: 0.6rem 1.5rem; border: none; border-radius: 8px; font-size: 0.85rem;
+    font-weight: 700; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-save { background: #e07b2a; color: #fff; }
+  .btn-save:hover { background: #c96920; }
+  .btn-cancel { background: #e8ecf0; color: #556e81; }
+  .btn-cancel:hover { background: #d0dae3; }
+
+  .last-updated { font-size: 0.75rem; color: #7e96a6; margin-top: 0.5rem; }
+
+  .note { margin-top: 1.5rem; padding: 1rem; background: #fff; border-left: 4px solid #132e45; border-radius: 8px; font-size: 0.82rem; color: #2a3f50; }
+  .note strong { color: #132e45; }
+
+  .hint { text-align: center; color: #7e96a6; font-size: 0.8rem; margin-top: 0.5rem; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h2>Option B: Click Row to Open Detail Panel <span class="badge">6 records</span></h2>
+<p class="subtitle">Click any row to expand a detail panel below the table. Set status, add notes, and save with a confirmation button.</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="status-dot dot-none"></span> No Outreach</div>
+  <div class="legend-item"><span class="status-dot dot-made"></span> Outreach Made</div>
+  <div class="legend-item"><span class="status-dot dot-complete"></span> Outreach Complete</div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Patient Name</th>
+      <th>Discharge Date</th>
+      <th>Practice</th>
+      <th>Payer</th>
+      <th>Hospital</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>John Williams</td>
+      <td>04/12/2026</td>
+      <td>Cornerstone Medical Associates, LLC</td>
+      <td>Humana</td>
+      <td>Piedmont Athens Regional</td>
+      <td><span class="status-pill pill-none"><span class="status-dot dot-none"></span>No Outreach</span></td>
+    </tr>
+    <tr>
+      <td>Maria Garcia</td>
+      <td>04/11/2026</td>
+      <td>Aylo Health, LLC</td>
+      <td>UnitedHealthcare</td>
+      <td>Emory University Hospital</td>
+      <td><span class="status-pill pill-none"><span class="status-dot dot-none"></span>No Outreach</span></td>
+    </tr>
+    <tr class="selected row-made">
+      <td><strong>Robert Davis</strong></td>
+      <td>04/10/2026</td>
+      <td>HP Internal Medicine, LLC</td>
+      <td>Aetna</td>
+      <td>Grady Memorial Hospital</td>
+      <td><span class="status-pill pill-made"><span class="status-dot dot-made"></span>Outreach Made</span></td>
+    </tr>
+    <tr class="row-complete">
+      <td>Patricia Johnson</td>
+      <td>04/09/2026</td>
+      <td>Lawrenceville Family Practice</td>
+      <td>Humana</td>
+      <td>Northside Hospital</td>
+      <td><span class="status-pill pill-complete"><span class="status-dot dot-complete"></span>Complete</span></td>
+    </tr>
+    <tr>
+      <td>James Brown</td>
+      <td>04/08/2026</td>
+      <td>D. Conrad Harper, MD LLC</td>
+      <td>Cigna</td>
+      <td>WellStar Kennestone</td>
+      <td><span class="status-pill pill-none"><span class="status-dot dot-none"></span>No Outreach</span></td>
+    </tr>
+    <tr class="row-made">
+      <td>Linda Martinez</td>
+      <td>04/07/2026</td>
+      <td>Internal Medicine Associates, PC</td>
+      <td>UnitedHealthcare</td>
+      <td>Piedmont Columbus Regional</td>
+      <td><span class="status-pill pill-made"><span class="status-dot dot-made"></span>Outreach Made</span></td>
+    </tr>
+  </tbody>
+</table>
+<p class="hint">Click a row to update outreach status</p>
+
+<!-- Detail panel for the selected row (Robert Davis) -->
+<div class="detail-panel">
+  <div class="detail-header">
+    <h3>Robert Davis &mdash; Discharge 04/10/2026</h3>
+    <span class="detail-close">X</span>
+  </div>
+  <div class="detail-body">
+    <div class="detail-grid">
+      <div class="detail-field">
+        <label>Practice</label>
+        <div class="value">HP Internal Medicine, LLC</div>
+      </div>
+      <div class="detail-field">
+        <label>Payer</label>
+        <div class="value">Aetna</div>
+      </div>
+      <div class="detail-field">
+        <label>Hospital</label>
+        <div class="value">Grady Memorial Hospital</div>
+      </div>
+      <div class="detail-field">
+        <label>Diagnosis</label>
+        <div class="value">I25.10 — Atherosclerotic heart disease</div>
+      </div>
+      <div class="detail-field">
+        <label>Length of Stay</label>
+        <div class="value">4 days</div>
+      </div>
+      <div class="detail-field">
+        <label>Disposition</label>
+        <div class="value">Home or Self Care</div>
+      </div>
+    </div>
+
+    <div class="outreach-section">
+      <h4>Update Outreach Status</h4>
+      <div class="status-options">
+        <div class="status-option">
+          <div class="opt-icon" style="color: #cbd5e0;">&#9711;</div>
+          <div class="opt-label">No Outreach</div>
+        </div>
+        <div class="status-option active-made">
+          <div class="opt-icon" style="color: #e07b2a;">&#9673;</div>
+          <div class="opt-label">Outreach Made</div>
+        </div>
+        <div class="status-option">
+          <div class="opt-icon" style="color: #38a169;">&#10003;</div>
+          <div class="opt-label">Outreach Complete</div>
+        </div>
+      </div>
+
+      <label style="display:block; font-size:0.75rem; font-weight:700; color:#7e96a6; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.35rem;">Notes</label>
+      <textarea class="notes-area" placeholder="Add details about the outreach attempt...">Left voicemail 4/11 — patient was unavailable. Will try again tomorrow.</textarea>
+
+      <div class="last-updated">Last updated by Kiah Jones on 04/11/2026 at 2:34 PM</div>
+
+      <div class="detail-actions">
+        <button class="btn btn-cancel">Cancel</button>
+        <button class="btn btn-save">Save Status</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Option B: Pros & Cons</strong><br><br>
+  <strong>Pros:</strong> Clean table — status is just a pill badge, no clutter. Detail panel gives room for notes, diagnosis info, and a confirmation button (no accidental saves). Easier to build reliably in Streamlit (expander or container below the table). Shows extra context (diagnosis, disposition, LOS) that helps the outreach call.<br><br>
+  <strong>Cons:</strong> Extra click to open the panel. Slightly slower for bulk processing if you need to update 20 rows in a row. Only one row visible at a time in detail view.
+</div>
+
+</body>
+</html>
