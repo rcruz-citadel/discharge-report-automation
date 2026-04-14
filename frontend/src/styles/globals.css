@@ -3,6 +3,50 @@
 
 @import "tailwindcss";
 
+/* ── Tailwind v4 theme: register custom design tokens ── */
+@theme {
+  /* Brand colors */
+  --color-navy: #132e45;
+  --color-navy-light: #1b4459;
+  --color-navy-dark: #0e2233;
+  --color-orange: #e07b2a;
+  --color-orange-hover: #c96920;
+
+  /* Backgrounds */
+  --color-page: #f0f2f5;
+  --color-surface: #ffffff;
+
+  /* Text */
+  --color-text-primary: #132e45;
+  --color-text-secondary: #556e81;
+  --color-text-muted: #7e96a6;
+  --color-text-light: #a8c4d8;
+
+  /* Borders */
+  --color-border: #d0dae3;
+  --color-border-light: #e8ecf0;
+
+  /* Status */
+  --color-status-none: #cbd5e0;
+  --color-status-none-bg: #edf2f7;
+  --color-status-none-text: #718096;
+  --color-status-made: #e07b2a;
+  --color-status-made-bg: #fef3e2;
+  --color-status-made-text: #c05621;
+  --color-status-complete: #38a169;
+  --color-status-complete-bg: #e6ffed;
+  --color-status-complete-text: #22753a;
+
+  /* Shadows */
+  --shadow-chip: 0 2px 6px rgba(19,46,69,0.06);
+  --shadow-card: 0 2px 8px rgba(19,46,69,0.07);
+  --shadow-panel: 0 4px 18px rgba(19,46,69,0.10);
+  --shadow-header: 0 4px 18px rgba(19,46,69,0.18);
+  --shadow-login: 0 6px 28px rgba(19,46,69,0.22);
+  --shadow-btn-cta: 0 2px 8px rgba(224,123,42,0.35);
+  --shadow-input-focus: 0 0 0 2px rgba(19,46,69,0.15);
+}
+
 /* ── Inter font (self-hosted for internal server) ── */
 /* In production, copy Inter woff2 files to /public/fonts/ and uncomment: */
 /*

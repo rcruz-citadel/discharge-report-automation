@@ -57,9 +57,9 @@ export function DischargeTable({ data, isLoading, selectedRowId, onRowClick }: D
     return (
       <div className="bg-surface rounded-lg shadow-card overflow-hidden">
         {/* Header skeleton */}
-        <div className="bg-navy px-3 py-[10px] grid" style={{ gridTemplateColumns: '180px 120px 160px 150px 180px 80px 130px 160px' }}>
+        <div className="px-3 py-[10px] grid" style={{ gridTemplateColumns: '180px 120px 160px 150px 180px 80px 130px 160px', backgroundColor: '#132e45' }}>
           {['Patient Name', 'Discharge Date', 'Practice', 'Payer', 'Hospital', 'LOS', 'Disposition', 'Status'].map(h => (
-            <div key={h} className="text-[11px] font-semibold text-white uppercase">{h}</div>
+            <div key={h} className="text-[11px] font-semibold uppercase" style={{ color: '#ffffff' }}>{h}</div>
           ))}
         </div>
         {/* Skeleton rows */}
@@ -120,17 +120,22 @@ export function DischargeTable({ data, isLoading, selectedRowId, onRowClick }: D
                   <th
                     key={header.id}
                     onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
-                    className="bg-navy text-white text-[11px] font-semibold uppercase px-3 py-[10px] select-none text-left whitespace-nowrap overflow-hidden text-ellipsis"
+                    className="text-[11px] font-semibold uppercase px-3 py-[10px] select-none whitespace-nowrap overflow-hidden text-ellipsis tracking-wider"
                     style={{
+                      backgroundColor: '#132e45',
+                      color: '#ffffff',
                       textAlign: align === 'right' ? 'right' : 'left',
                       cursor: canSort ? 'pointer' : 'default',
+                      borderBottom: '2px solid #1b4459',
+                      letterSpacing: '0.04em',
                     }}
                     aria-sort={isSorted === 'asc' ? 'ascending' : isSorted === 'desc' ? 'descending' : 'none'}
                   >
                     <span className="inline-flex items-center gap-1">
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {isSorted === 'asc' && <span aria-hidden="true"> ▲</span>}
-                      {isSorted === 'desc' && <span aria-hidden="true"> ▼</span>}
+                      {isSorted === 'asc' && <span style={{ color: '#a8c4d8' }}> ↑</span>}
+                      {isSorted === 'desc' && <span style={{ color: '#a8c4d8' }}> ↓</span>}
+                      {!isSorted && canSort && <span className="opacity-30" style={{ color: '#a8c4d8' }}> ↕</span>}
                     </span>
                   </th>
                 )
@@ -150,6 +155,16 @@ export function DischargeTable({ data, isLoading, selectedRowId, onRowClick }: D
             const row = rows[virtualRow.index]
             const isSelected = row.original.event_id === selectedRowId
             const statusColors = OUTREACH_STATUS_COLORS[row.original.outreach_status]
+            const isEven = virtualRow.index % 2 === 0
+
+            // Row background priority: selected > status tint > alternating stripe
+            const rowBg = isSelected
+              ? '#e8f0f7'
+              : statusColors.rowTint !== 'transparent'
+              ? statusColors.rowTint
+              : isEven
+              ? '#ffffff'
+              : '#f8fafb'
 
             return (
               <tr
@@ -166,21 +181,16 @@ export function DischargeTable({ data, isLoading, selectedRowId, onRowClick }: D
                 aria-selected={isSelected}
                 className="cursor-pointer transition-colors duration-100 outline-none focus-visible:ring-2 focus-visible:ring-orange focus-visible:ring-inset"
                 style={{
-                  backgroundColor: isSelected
-                    ? '#e8f0f7'
-                    : statusColors.rowTint !== 'transparent'
-                    ? statusColors.rowTint
-                    : undefined,
+                  backgroundColor: rowBg,
                   borderLeft: isSelected ? '3px solid #132e45' : undefined,
                   height: 40,
                 }}
                 onMouseEnter={e => {
-                  if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f7f9fb'
+                  if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#edf2f7'
                 }}
                 onMouseLeave={e => {
                   if (!isSelected)
-                    (e.currentTarget as HTMLTableRowElement).style.backgroundColor =
-                      statusColors.rowTint !== 'transparent' ? statusColors.rowTint : ''
+                    (e.currentTarget as HTMLTableRowElement).style.backgroundColor = rowBg
                 }}
               >
                 {row.getVisibleCells().map(cell => {
@@ -188,8 +198,12 @@ export function DischargeTable({ data, isLoading, selectedRowId, onRowClick }: D
                   return (
                     <td
                       key={cell.id}
-                      className="text-[13px] text-[#2a3f50] px-3 py-[9px] border-b border-border-light overflow-hidden text-ellipsis whitespace-nowrap"
-                      style={{ textAlign: align === 'right' ? 'right' : 'left' }}
+                      className="text-[13px] px-3 py-[9px] overflow-hidden text-ellipsis whitespace-nowrap"
+                      style={{
+                        textAlign: align === 'right' ? 'right' : 'left',
+                        color: '#2a3f50',
+                        borderBottom: '1px solid #e8ecf0',
+                      }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
