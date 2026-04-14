@@ -427,6 +427,17 @@ st.markdown(
         border-radius: 10px !important;
     }
 
+    /* ── Suppress the white flash/dim overlay during reruns ── */
+    [data-testid="stAppViewBlockContainer"] > div:first-child {
+        opacity: 1 !important;
+    }
+    .stApp [data-testid="stVerticalBlock"] {
+        transition: none !important;
+    }
+    div[data-stale="true"] {
+        opacity: 1 !important;
+    }
+
     /* ── Remove default top padding from main content area ── */
     .stMainBlockContainer, .block-container {
         padding-top: 1.75rem !important;
@@ -503,48 +514,29 @@ st.markdown(
         box-shadow: 0 0 0 2px rgba(19,46,69,0.15) !important;
     }
 
-    /* ── Status selection buttons override ── */
-    .status-btn-none button {
-        background-color: #edf2f7 !important;
-        color: #718096 !important;
-        border: 2px solid #cbd5e0 !important;
+    /* ── Status radio styling ── */
+    .stRadio > div {
+        gap: 0.5rem !important;
     }
-    .status-btn-none button:hover {
-        background-color: #e2e8f0 !important;
+    .stRadio > div > label {
+        background: #f7f9fb !important;
+        border: 1.5px solid #d0dae3 !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1rem !important;
+        font-weight: 600 !important;
+        font-size: 0.82rem !important;
+        text-transform: none !important;
+        letter-spacing: normal !important;
+        cursor: pointer !important;
+        transition: all 0.15s !important;
     }
-    .status-btn-none-active button {
-        background-color: #edf2f7 !important;
-        color: #4a5568 !important;
-        border: 2.5px solid #718096 !important;
-        box-shadow: 0 0 0 2px rgba(113,128,150,0.25) !important;
+    .stRadio > div > label:hover {
+        border-color: #132e45 !important;
     }
-    .status-btn-made button {
-        background-color: #fef3e2 !important;
-        color: #c05621 !important;
-        border: 2px solid #e07b2a !important;
-    }
-    .status-btn-made button:hover {
-        background-color: #fde8c8 !important;
-    }
-    .status-btn-made-active button {
-        background-color: #fef3e2 !important;
-        color: #c05621 !important;
-        border: 2.5px solid #c05621 !important;
-        box-shadow: 0 0 0 2px rgba(192,86,33,0.25) !important;
-    }
-    .status-btn-complete button {
-        background-color: #e6ffed !important;
-        color: #22753a !important;
-        border: 2px solid #38a169 !important;
-    }
-    .status-btn-complete button:hover {
-        background-color: #d4f8e2 !important;
-    }
-    .status-btn-complete-active button {
-        background-color: #e6ffed !important;
-        color: #22753a !important;
-        border: 2.5px solid #22753a !important;
-        box-shadow: 0 0 0 2px rgba(34,117,58,0.25) !important;
+    .stRadio > div > label[data-checked="true"] {
+        background: #132e45 !important;
+        color: #ffffff !important;
+        border-color: #132e45 !important;
     }
 
     /* ── Outreach legend ── */
@@ -1233,46 +1225,18 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
         unsafe_allow_html=True,
     )
 
-    # Session state key for the pending status selection in this panel
-    sel_key = f"pending_status_{tab_key}"
-    if sel_key not in st.session_state:
-        st.session_state[sel_key] = current_status_label
+    # Status selection — radio with no extra rerun needed (radio handles state natively)
+    status_options = ["No Outreach", "Outreach Made", "Outreach Complete"]
+    current_index = status_options.index(current_status_label) if current_status_label in status_options else 0
 
-    # 3 status buttons
-    btn_col1, btn_col2, btn_col3 = st.columns(3)
-
-    def _btn_css(status_val: str) -> str:
-        """Return the CSS class wrapper div for a status button."""
-        is_active = st.session_state[sel_key] == status_val
-        mapping = {
-            "No Outreach": ("none-active" if is_active else "none"),
-            "Outreach Made": ("made-active" if is_active else "made"),
-            "Outreach Complete": ("complete-active" if is_active else "complete"),
-        }
-        return f"status-btn-{mapping[status_val]}"
-
-    with btn_col1:
-        st.markdown(f"<div class='{_btn_css('No Outreach')}'>", unsafe_allow_html=True)
-        if st.button("No Outreach", key=f"btn_none_{tab_key}", use_container_width=True):
-            st.session_state[sel_key] = "No Outreach"
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with btn_col2:
-        st.markdown(f"<div class='{_btn_css('Outreach Made')}'>", unsafe_allow_html=True)
-        if st.button("Outreach Made", key=f"btn_made_{tab_key}", use_container_width=True):
-            st.session_state[sel_key] = "Outreach Made"
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with btn_col3:
-        st.markdown(f"<div class='{_btn_css('Outreach Complete')}'>", unsafe_allow_html=True)
-        if st.button("Outreach Complete", key=f"btn_complete_{tab_key}", use_container_width=True):
-            st.session_state[sel_key] = "Outreach Complete"
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='margin-top:0.75rem;'></div>", unsafe_allow_html=True)
+    selected_status = st.radio(
+        "Status",
+        options=status_options,
+        index=current_index,
+        horizontal=True,
+        key=f"status_radio_{tab_key}",
+        label_visibility="collapsed",
+    )
 
     notes_val = st.text_area(
         "Notes",
@@ -1297,8 +1261,7 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
     action_col1, action_col2, action_col3 = st.columns([1, 1, 4])
     with action_col1:
         if st.button("Save Status", key=f"save_{tab_key}", type="primary"):
-            new_status_label = st.session_state[sel_key]
-            new_status_db = STATUS_DB.get(new_status_label, "no_outreach")
+            new_status_db = STATUS_DB.get(selected_status, "no_outreach")
             user_email = st.session_state.get("user_email", "unknown")
             success = upsert_outreach_status(
                 event_id=event_id,
@@ -1309,24 +1272,15 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
                 old_status=current_status_db,
             )
             if success:
-                st.success(f"Status updated to '{new_status_label}' for {patient_name}.")
-                # Clear the selected row so the panel closes after save
+                st.success(f"Status updated to '{selected_status}' for {patient_name}.")
                 row_key = f"selected_row_{tab_key}"
-                if row_key in st.session_state:
-                    del st.session_state[row_key]
-                if sel_key in st.session_state:
-                    del st.session_state[sel_key]
-                # Full-page rerun so the table reflects the updated status
+                st.session_state.pop(row_key, None)
                 st.rerun()
 
     with action_col2:
         if st.button("Cancel", key=f"cancel_{tab_key}"):
             row_key = f"selected_row_{tab_key}"
-            if row_key in st.session_state:
-                del st.session_state[row_key]
-            if sel_key in st.session_state:
-                del st.session_state[sel_key]
-            # Full-page rerun so the panel closes and the table is visible again
+            st.session_state.pop(row_key, None)
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
