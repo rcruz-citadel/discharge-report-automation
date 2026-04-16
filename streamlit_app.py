@@ -481,6 +481,7 @@ def load_discharge_data():
         SELECT
             de.insurance_member_id,
             COALESCE(pt.first_name, '') || ' ' || COALESCE(pt.last_name, '') AS patient_name,
+            pt.birth_date,
             de.admit_date,
             de.discharge_date,
             d.dx_code,
@@ -493,6 +494,7 @@ def load_discharge_data():
             lob.lob_name,
             p.full_name AS provider_name,
             l.parent_org AS practice,
+            pt.phone,
             pt.address AS patient_address,
             pt.city,
             pt.zip_code::character varying(5) AS zip_code,
