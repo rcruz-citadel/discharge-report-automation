@@ -819,7 +819,7 @@ def render_active_admits_tab(df: pd.DataFrame, selected_assignee: str, selected_
 
     count = len(view)
     st.markdown(
-        f"<div class='tab-heading'>Active Admits <span class='record-badge'>{format_count(count)}</span></div>",
+        f"<div class='tab-heading'>Active Admits (Last 14 Days) <span class='record-badge'>{format_count(count)}</span></div>",
         unsafe_allow_html=True,
     )
 
@@ -879,21 +879,21 @@ def main():
     six_months_cutoff = datetime.now().date() - timedelta(days=182)
 
     admits_count = len(admits_df) if admits_df is not None else 0
-    tabs = st.tabs([f"Active Admits ({admits_count})", "Recent Discharges", "Last 6 Months", "All Discharges"])
+    tabs = st.tabs(["Recent Discharges", "Last 6 Months", "All Discharges", f"Active Admits ({admits_count})"])
 
     with tabs[0]:
-        render_active_admits_tab(admits_df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types)
-
-    with tabs[1]:
         view = filtered_df[filtered_df["Discharge Date"] >= recent_cutoff]
         render_tab(view, "Recent Discharges (Last 14 Days)", "recent")
 
-    with tabs[2]:
+    with tabs[1]:
         view = filtered_df[filtered_df["Discharge Date"] >= six_months_cutoff]
         render_tab(view, "Last 6 Months", "six_months")
 
-    with tabs[3]:
+    with tabs[2]:
         render_tab(filtered_df, "All Discharges", "all")
+
+    with tabs[3]:
+        render_active_admits_tab(admits_df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types)
 
     st.markdown(
         "<div class='citadel-footer'>Citadel Health &mdash; Discharge Report Dashboard &mdash; "
