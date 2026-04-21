@@ -479,7 +479,9 @@ def load_active_admits_data():
     query = text(
         """
         SELECT
+            de.insurance_member_id,
             COALESCE(pt.first_name, '') || ' ' || COALESCE(pt.last_name, '') AS patient_name,
+            pt.birth_date,
             de.admit_date,
             (CURRENT_DATE - de.admit_date)::int                              AS days_since_admit,
             de.discharge_hospital,
@@ -489,7 +491,11 @@ def load_active_admits_data():
             p.full_name  AS provider_name,
             l.parent_org AS practice,
             d.dx_code,
-            d.description
+            d.description,
+            pt.address   AS patient_address,
+            pt.city,
+            pt.zip_code::character varying(5) AS zip_code,
+            pt.state
         FROM discharge_event de
             LEFT JOIN provider p         ON p.provider_id  = de.provider_id
             LEFT JOIN payer py           ON py.payer_id    = de.payer_id
@@ -844,8 +850,10 @@ def render_active_admits_tab(df: pd.DataFrame, selected_assignee: str, selected_
     st.markdown(f"<div class='stat-row'>{chips}</div>", unsafe_allow_html=True)
 
     display_cols = [c for c in [
-        "Patient Name", "Admit Date", "Days Since Admit", "Discharge Hospital",
-        "Stay Type", "Practice", "Payer Name", "Lob Name", "Description",
+        "Insurance Member Id", "Patient Name", "Birth Date", "Admit Date",
+        "Days Since Admit", "Discharge Hospital", "Stay Type", "Practice",
+        "Payer Name", "Lob Name", "Description",
+        "Patient Address", "City", "Zip Code", "State",
     ] if c in view.columns]
 
     st.dataframe(view[display_cols], use_container_width=True, height=580, hide_index=True)
