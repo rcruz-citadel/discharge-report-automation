@@ -499,6 +499,7 @@ def load_active_admits_data():
             LEFT JOIN location l         ON l.location_id  = p.location_id
         WHERE de.discharge_date IS NULL
           AND de.admit_date >= CURRENT_DATE - INTERVAL '14 days'
+          AND de.admit_date <= CURRENT_DATE
         ORDER BY days_since_admit DESC NULLS LAST
         """
     )
