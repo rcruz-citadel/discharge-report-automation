@@ -498,7 +498,7 @@ def load_active_admits_data():
             LEFT JOIN diagnosis_code d   ON d.dx_id        = de.dx_id
             LEFT JOIN location l         ON l.location_id  = p.location_id
         WHERE de.discharge_date IS NULL
-          AND de.created_at >= CURRENT_DATE - INTERVAL '14 days'
+          AND de.admit_date >= CURRENT_DATE - INTERVAL '14 days'
         ORDER BY days_since_admit DESC NULLS LAST
         """
     )
