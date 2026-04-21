@@ -474,6 +474,50 @@ def get_engine():
     return create_engine(db_url, pool_pre_ping=True)
 
 
+@st.cache_data(ttl=120)
+def load_active_admits_data():
+    query = text(
+        """
+        SELECT
+            COALESCE(pt.first_name, '') || ' ' || COALESCE(pt.last_name, '') AS patient_name,
+            de.admit_date,
+            (CURRENT_DATE - de.admit_date)::int                              AS days_since_admit,
+            de.discharge_hospital,
+            de.stay_type,
+            py.payer_name,
+            lob.lob_name,
+            p.full_name  AS provider_name,
+            l.parent_org AS practice,
+            d.dx_code,
+            d.description
+        FROM discharge_event de
+            LEFT JOIN provider p         ON p.provider_id  = de.provider_id
+            LEFT JOIN payer py           ON py.payer_id    = de.payer_id
+            LEFT JOIN line_of_business lob ON lob.lob_id   = de.lob_id
+            LEFT JOIN patient pt         ON pt.patient_id  = de.patient_id
+            LEFT JOIN diagnosis_code d   ON d.dx_id        = de.dx_id
+            LEFT JOIN location l         ON l.location_id  = p.location_id
+        WHERE de.discharge_date IS NULL
+          AND de.created_at >= CURRENT_DATE - INTERVAL '14 days'
+        ORDER BY days_since_admit DESC NULLS LAST
+        """
+    )
+
+    engine = get_engine()
+    with engine.connect() as conn:
+        df = pd.read_sql(query, conn, parse_dates=["admit_date"])
+
+    df.columns = df.columns.str.replace("_", " ").str.title()
+
+    if "Admit Date" in df.columns:
+        df["Admit Date"] = pd.to_datetime(df["Admit Date"]).dt.date
+
+    if "Days Since Admit" in df.columns:
+        df["Days Since Admit"] = pd.to_numeric(df["Days Since Admit"], errors="coerce").fillna(0).astype(int)
+
+    return df
+
+
 @st.cache_data(ttl=300)
 def load_discharge_data():
     query = text(
@@ -752,6 +796,62 @@ def render_tab(view_df: pd.DataFrame, label: str, tab_key: str) -> None:
     build_download_button(view_df, "Export to CSV", key=f"dl_{tab_key}")
 
 
+def render_active_admits_tab(df: pd.DataFrame, selected_assignee: str, selected_practices: list, selected_payers: list, selected_lob: list, selected_stay_types: list) -> None:
+    st.info(
+        "Showing admits reported in the last 14 days with no discharge date on file. "
+        "Data reflects the most recent payer feed — records may lag 24–48 hours behind actual discharge.",
+        icon="ℹ️",
+    )
+
+    # Apply non-date filters only (no discharge date range for active admits)
+    mask = pd.Series(True, index=df.index)
+    if selected_practices:
+        mask &= df["Practice"].astype(str).isin(selected_practices)
+    elif selected_assignee != "All":
+        mask &= df["Practice"].astype(str).isin(PRACTICE_ASSIGNMENTS[selected_assignee])
+    if selected_payers and "Payer Name" in df.columns:
+        mask &= df["Payer Name"].astype(str).isin(selected_payers)
+    if selected_lob and "Lob Name" in df.columns:
+        mask &= df["Lob Name"].astype(str).isin(selected_lob)
+    if selected_stay_types and "Stay Type" in df.columns:
+        mask &= df["Stay Type"].astype(str).isin(selected_stay_types)
+    view = df.loc[mask]
+
+    count = len(view)
+    st.markdown(
+        f"<div class='tab-heading'>Active Admits <span class='record-badge'>{format_count(count)}</span></div>",
+        unsafe_allow_html=True,
+    )
+
+    if view.empty:
+        st.info("No active admits found for the selected filters.")
+        return
+
+    # Stat chips
+    avg_days = int(view["Days Since Admit"].mean()) if "Days Since Admit" in view.columns and not view["Days Since Admit"].isna().all() else 0
+    longest = int(view["Days Since Admit"].max()) if "Days Since Admit" in view.columns else 0
+    unique_practices = view["Practice"].nunique() if "Practice" in view.columns else "-"
+    unique_hospitals = view["Discharge Hospital"].nunique() if "Discharge Hospital" in view.columns else "-"
+
+    chips = (
+        stat_chip("Active Admits", format_count(count))
+        + stat_chip("Avg Days Admitted", str(avg_days), orange=True)
+        + stat_chip("Longest Stay", f"{longest}d", orange=True)
+        + stat_chip("Practices", str(unique_practices))
+        + stat_chip("Hospitals", str(unique_hospitals))
+    )
+    st.markdown(f"<div class='stat-row'>{chips}</div>", unsafe_allow_html=True)
+
+    display_cols = [c for c in [
+        "Patient Name", "Admit Date", "Days Since Admit", "Discharge Hospital",
+        "Stay Type", "Practice", "Payer Name", "Lob Name", "Description",
+    ] if c in view.columns]
+
+    st.dataframe(view[display_cols], use_container_width=True, height=580, hide_index=True)
+
+    build_download_button(view[display_cols], "Export to CSV", key="dl_active_admits")
+
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -760,6 +860,7 @@ def main():
     with st.spinner("Loading discharge data..."):
         try:
             df = load_discharge_data()
+            admits_df = load_active_admits_data()
         except Exception as exc:
             st.error(f"Could not load discharge data: {exc}")
             st.info(
@@ -777,17 +878,21 @@ def main():
     recent_cutoff = datetime.now().date() - timedelta(days=14)
     six_months_cutoff = datetime.now().date() - timedelta(days=182)
 
-    tabs = st.tabs(["Recent Discharges", "Last 6 Months", "All Discharges"])
+    admits_count = len(admits_df) if admits_df is not None else 0
+    tabs = st.tabs([f"Active Admits ({admits_count})", "Recent Discharges", "Last 6 Months", "All Discharges"])
 
     with tabs[0]:
+        render_active_admits_tab(admits_df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types)
+
+    with tabs[1]:
         view = filtered_df[filtered_df["Discharge Date"] >= recent_cutoff]
         render_tab(view, "Recent Discharges (Last 14 Days)", "recent")
 
-    with tabs[1]:
+    with tabs[2]:
         view = filtered_df[filtered_df["Discharge Date"] >= six_months_cutoff]
         render_tab(view, "Last 6 Months", "six_months")
 
-    with tabs[2]:
+    with tabs[3]:
         render_tab(filtered_df, "All Discharges", "all")
 
     st.markdown(
