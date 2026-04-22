@@ -9,47 +9,12 @@ from sqlalchemy import create_engine, text
 
 LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "citadel-logo-hd-transparent.png")
 
-# Person-to-practice assignments (drives the "Assigned To" sidebar filter)
-PRACTICE_ASSIGNMENTS = {
-    "Bailey Graham": [
-        "All Care Medical Assocociates, LLC",
-        "D. Conrad Harper, MD LLC",
-        "Dawsonville Family Medicine",
-        "Donald A Selph Jr MD, PC",
-        "Dr. Jason R. Laney, PC",
-        "Heart of Georgia Primary Care, LLC",
-        "Internal Medicine Associates of Middle Georgia, PC",
-        "Margaret M. Nichols MD LLC",
-        "Medical Center, LLP",
-        "Moon River Pediatrics",
-        "Nicholas A. Pietrzak MD, LLC",
-        "Russell G. O'Neal, M.D. LLC",
-    ],
-    "Kiah Jones": [
-        "Cobb Medical Clinic",
-        "Cumberland Womens Health Center",
-        "HP Internal Medicine, LLC",
-        "Lawrenceville Family Practice",
-        "Northeast Family Practice, PC",
-        "Rodriguez MD, LLC",
-        "Rophe Adult and Pediatric Medicine",
-    ],
-    "Makeba Crawford": [
-        "Aylo Health, LLC",
-    ],
-    "Stephanie Nelson": [
-        "Ajay Kumar MD, LLC",
-        "Cornerstone Medical Associates, LLC",
-        "Integrity Health and Wellness LLC",
-        "Internal Medicine Associates of Waycross",
-        "Internal Medicine Associates, PC",
-        "Lawrence Kirk MD, LLC",
-        "MCC Internal Medicine 2, LLC",
-        "MCC Internal Medicine, LLC",
-        "Robert C. Jones, MD, LLC",
-        "Smith-Lambert Clinic, P.C.",
-        "Southeast Georgia Pediatrics",
-    ],
+# Display names for coordinators — keyed by their login email
+COORDINATOR_NAMES = {
+    "bgraham@citadelhealth.com": "Bailey Graham",
+    "kjones@citadelhealth.com": "Kiah Jones",
+    "mcrawford@citadelhealth.com": "Makeba Crawford",
+    "snelson@citadelhealth.com": "Stephanie Nelson",
 }
 
 PAGE_TITLE = "Discharge Report Dashboard"
@@ -474,6 +439,25 @@ def get_engine():
     return create_engine(db_url, pool_pre_ping=True)
 
 
+@st.cache_data(ttl=300)
+def load_coordinator_map() -> dict:
+    """Returns {display_name: [parent_org, ...]} from the bridge table."""
+    query = text("""
+        SELECT cl.coordinator_email, l.parent_org
+        FROM discharge_app.coordinator_location cl
+        JOIN location l ON l.location_id = cl.location_id
+        ORDER BY cl.coordinator_email, l.parent_org
+    """)
+    engine = get_engine()
+    with engine.connect() as conn:
+        rows = pd.read_sql(query, conn)
+    result = {}
+    for email, group in rows.groupby("coordinator_email"):
+        name = COORDINATOR_NAMES.get(email, email)
+        result[name] = group["parent_org"].dropna().unique().tolist()
+    return result
+
+
 @st.cache_data(ttl=120)
 def load_active_admits_data():
     query = text(
@@ -666,10 +650,11 @@ def render_header() -> None:
 
 
 def render_sidebar_filters(df: pd.DataFrame):
+    coordinator_map = load_coordinator_map()
     with st.sidebar:
         st.markdown("### Filters")
 
-        assignee_names = sorted(PRACTICE_ASSIGNMENTS.keys())
+        assignee_names = sorted(coordinator_map.keys())
         selected_assignee = st.selectbox(
             "Assigned To",
             options=["All"] + assignee_names,
@@ -678,7 +663,7 @@ def render_sidebar_filters(df: pd.DataFrame):
 
         all_practices = sorted(df["Practice"].dropna().astype(str).unique())
         if selected_assignee != "All":
-            assignee_practices = PRACTICE_ASSIGNMENTS[selected_assignee]
+            assignee_practices = coordinator_map[selected_assignee]
             practices = sorted(p for p in all_practices if p in assignee_practices)
         else:
             practices = all_practices
@@ -754,12 +739,12 @@ def render_sidebar_filters(df: pd.DataFrame):
     return selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max
 
 
-def apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max):
+def apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max, coordinator_map=None):
     mask = pd.Series(True, index=df.index)
     if selected_practices:
         mask &= df["Practice"].astype(str).isin(selected_practices)
-    elif selected_assignee != "All":
-        mask &= df["Practice"].astype(str).isin(PRACTICE_ASSIGNMENTS[selected_assignee])
+    elif selected_assignee != "All" and coordinator_map:
+        mask &= df["Practice"].astype(str).isin(coordinator_map.get(selected_assignee, []))
     if selected_payers and "Payer Name" in df.columns:
         mask &= df["Payer Name"].astype(str).isin(selected_payers)
     if selected_lob and "Lob Name" in df.columns:
@@ -815,7 +800,8 @@ def render_active_admits_tab(df: pd.DataFrame, selected_assignee: str, selected_
     if selected_practices:
         mask &= df["Practice"].astype(str).isin(selected_practices)
     elif selected_assignee != "All":
-        mask &= df["Practice"].astype(str).isin(PRACTICE_ASSIGNMENTS[selected_assignee])
+        coordinator_map = load_coordinator_map()
+        mask &= df["Practice"].astype(str).isin(coordinator_map.get(selected_assignee, []))
     if selected_payers and "Payer Name" in df.columns:
         mask &= df["Payer Name"].astype(str).isin(selected_payers)
     if selected_lob and "Lob Name" in df.columns:
@@ -882,7 +868,8 @@ def main():
         return
 
     selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max = render_sidebar_filters(df)
-    filtered_df = apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max)
+    coordinator_map = load_coordinator_map()
+    filtered_df = apply_filters(df, selected_assignee, selected_practices, selected_payers, selected_lob, selected_stay_types, date_min, date_max, coordinator_map)
 
     recent_cutoff = datetime.now().date() - timedelta(days=14)
     six_months_cutoff = datetime.now().date() - timedelta(days=182)
