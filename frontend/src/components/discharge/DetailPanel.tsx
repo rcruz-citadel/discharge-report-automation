@@ -55,7 +55,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
         border: '1.5px solid #132e45',
         boxShadow: '0 4px 18px rgba(19,46,69,0.10)',
         height: 'fit-content',
-        maxHeight: 'calc(100vh - 160px)',
+        maxHeight: 'calc(100vh - 100px)',
         overflowY: 'auto',
       }}
       role="complementary"

@@ -214,7 +214,7 @@ export function DashboardPage() {
                   </div>
 
                   {effectiveSelectedRow && (
-                    <div className="w-96 shrink-0">
+                    <div className="w-[480px] shrink-0">
                       <DetailPanel
                         row={effectiveSelectedRow}
                         onClose={() => setSelectedRow(null)}
