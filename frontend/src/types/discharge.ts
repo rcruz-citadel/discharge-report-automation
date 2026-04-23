@@ -6,6 +6,7 @@ export interface DischargeRecord {
   birth_date: string | null        // ISO date string "YYYY-MM-DD"
   phone: string | null
   practice: string | null
+  provider_name: string | null
   payer_name: string | null
   lob_name: string | null
   stay_type: string | null

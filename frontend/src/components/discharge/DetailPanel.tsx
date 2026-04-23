@@ -88,8 +88,13 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
       <div className="px-5 py-4 border-b border-border-light">
         <div className="grid grid-cols-3 gap-3 mb-3">
           <Field label="Practice" value={row.practice} />
+          <Field label="Provider" value={row.provider_name} />
           <Field label="Payer" value={row.payer_name} />
+        </div>
+        <div className="grid grid-cols-3 gap-3 mb-3">
           <Field label="Hospital" value={row.discharge_hospital} />
+          <Field label="Admit Date" value={row.admit_date ? formatDate(row.admit_date) : null} />
+          <Field label="Discharge Date" value={formatDate(row.discharge_date)} />
         </div>
         <div className="grid grid-cols-3 gap-3">
           <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} />

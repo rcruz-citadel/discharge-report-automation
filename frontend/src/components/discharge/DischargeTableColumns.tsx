@@ -17,6 +17,13 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
     ),
   },
   {
+    accessorKey: 'admit_date',
+    header: 'Admit Date',
+    size: 110,
+    cell: ({ getValue }) => formatDate(getValue<string | null>()),
+    sortingFn: 'alphanumeric',
+  },
+  {
     accessorKey: 'discharge_date',
     header: 'Discharge Date',
     size: 120,
@@ -27,6 +34,12 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
     accessorKey: 'practice',
     header: 'Practice',
     size: 160,
+    cell: ({ getValue }) => orDash(getValue<string | null>()),
+  },
+  {
+    accessorKey: 'provider_name',
+    header: 'Provider',
+    size: 150,
     cell: ({ getValue }) => orDash(getValue<string | null>()),
   },
   {
@@ -44,11 +57,21 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
   {
     accessorKey: 'length_of_stay',
     header: 'LOS',
-    size: 80,
+    size: 70,
     meta: { align: 'right' },
     cell: ({ getValue }) => {
       const val = getValue<number | null>()
       return val != null ? String(val) : '—'
+    },
+  },
+  {
+    accessorKey: 'description',
+    header: 'Diagnosis',
+    size: 180,
+    cell: ({ row }) => {
+      const code = row.original.dx_code
+      const desc = row.original.description
+      return orDash(code && desc ? `${code} — ${desc}` : desc ?? code)
     },
   },
   {
