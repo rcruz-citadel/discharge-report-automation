@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { upsertOutreach } from '../api/outreach'
-import type { OutreachRecord, OutreachUpsertPayload } from '../types/discharge'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { upsertOutreach, fetchAttempts, logAttempt } from '../api/outreach'
+import type { OutreachRecord, OutreachUpsertPayload, OutreachAttempt, LogAttemptResponse } from '../types/discharge'
 import { DISCHARGES_QUERY_KEY } from './useDischarges'
 
 /**
@@ -16,6 +16,24 @@ export function useUpsertOutreach() {
     mutationFn: upsertOutreach,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: DISCHARGES_QUERY_KEY })
+    },
+  })
+}
+
+export function useAttempts(eventId: string, dischargeDate: string) {
+  return useQuery<OutreachAttempt[]>({
+    queryKey: ['attempts', eventId, dischargeDate],
+    queryFn: () => fetchAttempts(eventId, dischargeDate),
+    staleTime: 30_000,
+  })
+}
+
+export function useLogAttempt(eventId: string, dischargeDate: string) {
+  const queryClient = useQueryClient()
+  return useMutation<LogAttemptResponse, Error>({
+    mutationFn: () => logAttempt(eventId, dischargeDate),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['attempts', eventId, dischargeDate] })
     },
   })
 }

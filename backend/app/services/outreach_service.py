@@ -5,7 +5,7 @@ from datetime import date
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.schemas import OutreachRecord, OutreachUpsertRequest
+from app.models.schemas import OutreachAttempt, LogAttemptResponse, OutreachRecord, OutreachUpsertRequest
 
 logger = logging.getLogger(__name__)
 
@@ -106,4 +106,76 @@ async def upsert_outreach(
         notes=row["notes"] or "",
         updated_by=row["updated_by"],
         updated_at=row["updated_at"],
+    )
+
+
+_GET_ATTEMPTS_QUERY = text("""
+SELECT id, event_id, discharge_date, attempt_number, attempted_by, attempted_at
+FROM discharge_app.outreach_attempts
+WHERE event_id = :event_id AND discharge_date = :discharge_date
+ORDER BY attempt_number
+""")
+
+_LOG_ATTEMPT_QUERY = text("""
+INSERT INTO discharge_app.outreach_attempts
+    (event_id, discharge_date, attempt_number, attempted_by)
+SELECT
+    :event_id,
+    :discharge_date,
+    COALESCE(MAX(attempt_number), 0) + 1,
+    :attempted_by
+FROM discharge_app.outreach_attempts
+WHERE event_id = :event_id AND discharge_date = :discharge_date
+HAVING COALESCE(MAX(attempt_number), 0) < 3
+RETURNING id, event_id, discharge_date, attempt_number, attempted_by, attempted_at
+""")
+
+
+async def get_attempts(
+    db: AsyncSession,
+    event_id: str,
+    discharge_date: date,
+) -> list[OutreachAttempt]:
+    result = await db.execute(
+        _GET_ATTEMPTS_QUERY,
+        {"event_id": event_id, "discharge_date": discharge_date},
+    )
+    return [
+        OutreachAttempt(
+            id=row["id"],
+            event_id=row["event_id"],
+            discharge_date=row["discharge_date"],
+            attempt_number=row["attempt_number"],
+            attempted_by=row["attempted_by"],
+            attempted_at=row["attempted_at"],
+        )
+        for row in result.mappings().all()
+    ]
+
+
+async def log_attempt(
+    db: AsyncSession,
+    event_id: str,
+    discharge_date: date,
+    attempted_by: str,
+) -> OutreachAttempt:
+    result = await db.execute(
+        _LOG_ATTEMPT_QUERY,
+        {
+            "event_id": event_id,
+            "discharge_date": discharge_date,
+            "attempted_by": attempted_by,
+        },
+    )
+    row = result.mappings().one_or_none()
+    if row is None:
+        raise ValueError("Maximum of 3 attempts already reached for this discharge event.")
+    await db.commit()
+    return OutreachAttempt(
+        id=row["id"],
+        event_id=row["event_id"],
+        discharge_date=row["discharge_date"],
+        attempt_number=row["attempt_number"],
+        attempted_by=row["attempted_by"],
+        attempted_at=row["attempted_at"],
     )

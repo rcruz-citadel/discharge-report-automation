@@ -1,9 +1,87 @@
 import { useState, type FormEvent } from 'react'
 import type { DischargeRecord, OutreachStatus } from '../../types/discharge'
 import { OUTREACH_STATUS_COLORS, OUTREACH_STATUS_LABELS } from '../../types/discharge'
-import { useUpsertOutreach } from '../../hooks/useOutreach'
+import { useUpsertOutreach, useAttempts, useLogAttempt } from '../../hooks/useOutreach'
 import { Button } from '../ui/Button'
 import { formatDateTime } from '../../lib/utils'
+
+interface AttemptSectionProps {
+  eventId: string
+  dischargeDate: string
+}
+
+function AttemptSection({ eventId, dischargeDate }: AttemptSectionProps) {
+  const { data: attempts = [], isLoading } = useAttempts(eventId, dischargeDate)
+  const mutation = useLogAttempt(eventId, dischargeDate)
+  const atMax = attempts.length >= 3
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider">
+          Outreach Attempts
+        </p>
+        <span
+          className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+          style={{
+            backgroundColor: atMax ? '#fed7d7' : '#edf2f7',
+            color: atMax ? '#c53030' : '#718096',
+          }}
+        >
+          {attempts.length} / 3
+        </span>
+      </div>
+
+      {isLoading ? (
+        <p className="text-[12px] text-text-muted">Loading...</p>
+      ) : attempts.length === 0 ? (
+        <p className="text-[12px] text-text-muted italic">No attempts logged yet.</p>
+      ) : (
+        <ol className="flex flex-col gap-1.5 mb-3">
+          {attempts.map(a => (
+            <li key={a.id} className="flex items-start gap-2 text-[12px]">
+              <span
+                className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white mt-0.5"
+                style={{ backgroundColor: '#132e45' }}
+              >
+                {a.attempt_number}
+              </span>
+              <span className="text-text-primary">
+                <span className="font-semibold">{a.attempted_by}</span>
+                {' · '}
+                <span className="text-text-muted">{formatDateTime(a.attempted_at)}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {atMax ? (
+        <p className="text-[12px] text-text-muted italic">Max attempts reached.</p>
+      ) : (
+        <button
+          type="button"
+          onClick={() => mutation.mutate()}
+          disabled={mutation.isPending}
+          className="text-[12px] font-semibold px-3 py-1.5 rounded-md transition-colors disabled:opacity-60"
+          style={{
+            backgroundColor: '#edf2f7',
+            color: '#132e45',
+            border: '1.5px solid #d0dae3',
+          }}
+        >
+          {mutation.isPending ? 'Logging...' : '+ Log Attempt'}
+        </button>
+      )}
+
+      {mutation.isError && (
+        <p className="text-[12px] mt-1" style={{ color: '#c53030' }}>
+          Failed to log attempt. Try again.
+        </p>
+      )}
+    </div>
+  )
+}
 
 interface OutreachStatusFormProps {
   row: DischargeRecord
@@ -33,7 +111,7 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
     onSuccess(row.patient_name ?? 'Patient')
   }
 
-  const statuses: OutreachStatus[] = ['no_outreach', 'outreach_made', 'outreach_complete']
+  const statuses: OutreachStatus[] = ['no_outreach', 'outreach_made', 'outreach_complete', 'failed']
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -109,6 +187,9 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
           }}
         />
       </div>
+
+      {/* Attempt tracking */}
+      <AttemptSection eventId={row.event_id} dischargeDate={row.discharge_date} />
 
       {/* Last updated */}
       {row.outreach_updated_by && (

@@ -13,7 +13,8 @@ SELECT
     COUNT(*)                                                              AS total,
     COUNT(*) FILTER (WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach') AS no_outreach,
     COUNT(*) FILTER (WHERE o.status = 'outreach_made')                    AS outreach_made,
-    COUNT(*) FILTER (WHERE o.status = 'outreach_complete')                AS outreach_complete
+    COUNT(*) FILTER (WHERE o.status = 'outreach_complete')                AS outreach_complete,
+    COUNT(*) FILTER (WHERE o.status = 'failed')                           AS failed
 FROM discharge_event de
 LEFT JOIN discharge_app.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
@@ -32,6 +33,8 @@ SELECT
         WHERE o.status = 'outreach_made')                                      AS outreach_made,
     COUNT(DISTINCT de.event_id) FILTER (
         WHERE o.status = 'outreach_complete')                                  AS outreach_complete,
+    COUNT(DISTINCT de.event_id) FILTER (
+        WHERE o.status = 'failed')                                             AS failed,
     MAX(al_login.created_at)::date                                            AS last_login,
     MAX(al_any.created_at)::date                                              AS last_activity
 FROM discharge_app.app_user u
@@ -60,7 +63,8 @@ SELECT
     COUNT(DISTINCT de.event_id) FILTER (
         WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')                   AS no_outreach,
     COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_made')          AS outreach_made,
-    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_complete')      AS outreach_complete
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_complete')      AS outreach_complete,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'failed')                AS failed
 FROM discharge_event de
 LEFT JOIN provider p ON p.provider_id = de.provider_id
 LEFT JOIN location l ON l.location_id = p.location_id
@@ -91,12 +95,14 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
     no_outreach = int(s["no_outreach"])
     outreach_made = int(s["outreach_made"])
     outreach_complete = int(s["outreach_complete"])
+    failed = int(s["failed"])
 
     summary = OutreachSummary(
         total=total,
         no_outreach=no_outreach,
         outreach_made=outreach_made,
         outreach_complete=outreach_complete,
+        failed=failed,
         pct_complete=_pct(outreach_complete, total),
     )
 
@@ -111,6 +117,7 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
             no_outreach=int(row["no_outreach"] or 0),
             outreach_made=int(row["outreach_made"] or 0),
             outreach_complete=int(row["outreach_complete"] or 0),
+            failed=int(row["failed"] or 0),
             pct_complete=_pct(int(row["outreach_complete"] or 0), int(row["total"] or 0)),
             last_login=row["last_login"],
             last_activity=row["last_activity"],
@@ -127,6 +134,7 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
             no_outreach=int(row["no_outreach"] or 0),
             outreach_made=int(row["outreach_made"] or 0),
             outreach_complete=int(row["outreach_complete"] or 0),
+            failed=int(row["failed"] or 0),
             pct_complete=_pct(int(row["outreach_complete"] or 0), int(row["total"] or 0)),
         )
         for row in practice_result.mappings().all()

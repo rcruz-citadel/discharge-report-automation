@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { OutreachRecord, OutreachUpsertPayload } from '../types/discharge'
+import type { OutreachRecord, OutreachUpsertPayload, OutreachAttempt, LogAttemptResponse } from '../types/discharge'
 
 export async function fetchOutreach(eventId: string, dischargeDate: string): Promise<OutreachRecord | null> {
   try {
@@ -27,3 +27,17 @@ export async function upsertOutreach(payload: OutreachUpsertPayload): Promise<Ou
 
 // Need axios import for isAxiosError
 import axios from 'axios'
+
+export async function fetchAttempts(eventId: string, dischargeDate: string): Promise<OutreachAttempt[]> {
+  const response = await api.get<OutreachAttempt[]>(`/outreach/${eventId}/attempts`, {
+    params: { discharge_date: dischargeDate },
+  })
+  return response.data
+}
+
+export async function logAttempt(eventId: string, dischargeDate: string): Promise<LogAttemptResponse> {
+  const response = await api.post<LogAttemptResponse>(`/outreach/${eventId}/attempts`, null, {
+    params: { discharge_date: dischargeDate },
+  })
+  return response.data
+}

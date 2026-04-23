@@ -74,7 +74,7 @@ class DischargesResponse(BaseModel):
 # ── Outreach ──────────────────────────────────────────────────────────────────
 
 
-VALID_STATUSES = {"no_outreach", "outreach_made", "outreach_complete"}
+VALID_STATUSES = {"no_outreach", "outreach_made", "outreach_complete", "failed"}
 
 
 class OutreachUpsertRequest(BaseModel):
@@ -97,6 +97,21 @@ class OutreachRecord(BaseModel):
     notes: str = ""
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
+
+
+class OutreachAttempt(BaseModel):
+    id: int
+    event_id: str
+    discharge_date: date
+    attempt_number: int
+    attempted_by: str
+    attempted_at: datetime
+
+
+class LogAttemptResponse(BaseModel):
+    attempt: OutreachAttempt
+    attempt_number: int
+    attempts_remaining: int
 
 
 # ── Meta / Filters ────────────────────────────────────────────────────────────
@@ -125,6 +140,7 @@ class OutreachSummary(BaseModel):
     no_outreach: int
     outreach_made: int
     outreach_complete: int
+    failed: int
     pct_complete: float
 
 
@@ -136,6 +152,7 @@ class StaffBreakdownRow(BaseModel):
     no_outreach: int
     outreach_made: int
     outreach_complete: int
+    failed: int
     pct_complete: float
     last_login: Optional[date] = None
     last_activity: Optional[date] = None
@@ -147,6 +164,7 @@ class PracticeRollupRow(BaseModel):
     no_outreach: int
     outreach_made: int
     outreach_complete: int
+    failed: int
     pct_complete: float
 
 

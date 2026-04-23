@@ -19,7 +19,7 @@ export interface DischargeRecord {
   outreach_updated_at: string | null  // ISO datetime string
 }
 
-export type OutreachStatus = 'no_outreach' | 'outreach_made' | 'outreach_complete'
+export type OutreachStatus = 'no_outreach' | 'outreach_made' | 'outreach_complete' | 'failed'
 
 export interface DischargesResponse {
   records: DischargeRecord[]
@@ -43,10 +43,26 @@ export interface OutreachUpsertPayload {
   notes: string
 }
 
+export interface OutreachAttempt {
+  id: number
+  event_id: string
+  discharge_date: string
+  attempt_number: number
+  attempted_by: string
+  attempted_at: string  // ISO datetime string
+}
+
+export interface LogAttemptResponse {
+  attempt: OutreachAttempt
+  attempt_number: number
+  attempts_remaining: number
+}
+
 export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
   no_outreach: 'No Outreach',
   outreach_made: 'Outreach Made',
   outreach_complete: 'Outreach Complete',
+  failed: 'Failed',
 }
 
 export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
@@ -84,5 +100,14 @@ export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
     btnBg: '#e6ffed',
     btnBorder: '#38a169',
     btnText: '#22753a',
+  },
+  failed: {
+    dot: '#e53e3e',
+    pillBg: '#fed7d7',
+    pillText: '#c53030',
+    rowTint: 'rgba(229,62,62,0.04)',
+    btnBg: '#fed7d7',
+    btnBorder: '#e53e3e',
+    btnText: '#c53030',
   },
 }
