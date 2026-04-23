@@ -96,11 +96,11 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
           <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
           <Field label="Disposition" value={row.disposition} />
         </div>
-        {row.insurance_member_id && (
-          <div className="mt-3">
-            <Field label="Member ID" value={row.insurance_member_id} />
-          </div>
-        )}
+        <div className="grid grid-cols-3 gap-3 mt-3">
+          {row.insurance_member_id && <Field label="Member ID" value={row.insurance_member_id} />}
+          {row.birth_date && <Field label="Date of Birth" value={row.birth_date} />}
+          {row.phone && <Field label="Phone" value={row.phone} />}
+        </div>
       </div>
 
       {/* Outreach status form */}

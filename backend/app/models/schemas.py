@@ -42,6 +42,8 @@ class DischargeRecord(BaseModel):
     event_id: str
     insurance_member_id: Optional[str] = None
     patient_name: Optional[str] = None
+    birth_date: Optional[date] = None
+    phone: Optional[str] = None
     admit_date: Optional[date] = None
     discharge_date: date
     dx_code: Optional[str] = None

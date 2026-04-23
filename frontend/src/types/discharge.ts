@@ -3,6 +3,8 @@ export interface DischargeRecord {
   discharge_date: string          // ISO date string "YYYY-MM-DD"
   patient_name: string | null
   insurance_member_id: string | null
+  birth_date: string | null        // ISO date string "YYYY-MM-DD"
+  phone: string | null
   practice: string | null
   payer_name: string | null
   lob_name: string | null

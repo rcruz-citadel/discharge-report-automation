@@ -20,9 +20,11 @@ import { exportToCsv, fileTimestamp } from '../lib/utils'
 type TabId = 'recent' | 'sixMonths' | 'all' | 'manager'
 
 const CSV_COLUMNS = [
-  'patient_name', 'discharge_date', 'practice', 'payer_name',
+  'patient_name', 'birth_date', 'insurance_member_id', 'phone',
+  'discharge_date', 'admit_date', 'practice', 'payer_name',
   'lob_name', 'stay_type', 'discharge_hospital', 'length_of_stay',
-  'disposition', 'dx_code', 'description', 'admit_date',
+  'disposition', 'dx_code', 'description',
+  'patient_address', 'city', 'zip_code', 'state',
   'outreach_status', 'outreach_notes', 'outreach_updated_by',
 ]
 
