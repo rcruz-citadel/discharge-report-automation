@@ -84,21 +84,43 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
         </button>
       </div>
 
-      {/* Patient info grid */}
+      {/* Section 1 — Patient demographics, provider & contact */}
       <div className="px-5 py-4 border-b border-border-light">
+        <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
+          Patient &amp; Provider
+        </p>
         <div className="grid grid-cols-3 gap-3 mb-3">
-          <Field label="Practice" value={row.practice} />
-          <Field label="Provider" value={row.provider_name} />
-          <Field label="Payer" value={row.payer_name} />
-        </div>
-        <div className="grid grid-cols-3 gap-3">
           <Field label="Member ID" value={row.insurance_member_id} />
           <Field label="Date of Birth" value={row.birth_date} />
           <Field label="Phone" value={row.phone} />
         </div>
-        <div className="grid grid-cols-1 gap-3 mt-3">
-          <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Practice" value={row.practice} />
+          <Field label="Provider" value={row.provider_name} />
+          <Field label="Payer" value={row.payer_name} />
         </div>
+      </div>
+
+      {/* Section 2 — Hospital & diagnosis */}
+      <div className="px-5 py-4 border-b border-border-light">
+        <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
+          Hospitalization &amp; Diagnosis
+        </p>
+        <div className="grid grid-cols-3 gap-3 mb-3">
+          <Field label="Hospital" value={row.discharge_hospital} />
+          <Field label="Admit Date" value={row.admit_date ? formatDate(row.admit_date) : null} />
+          <Field label="Discharge Date" value={formatDate(row.discharge_date)} />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Stay Type" value={row.stay_type} />
+          <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
+          <Field label="Disposition" value={row.disposition} />
+        </div>
+        {(row.dx_code || row.description) && (
+          <div className="mt-3">
+            <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} />
+          </div>
+        )}
       </div>
 
       {/* Outreach status form */}
