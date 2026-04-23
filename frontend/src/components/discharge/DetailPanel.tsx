@@ -91,20 +91,13 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
           <Field label="Provider" value={row.provider_name} />
           <Field label="Payer" value={row.payer_name} />
         </div>
-        <div className="grid grid-cols-3 gap-3 mb-3">
-          <Field label="Hospital" value={row.discharge_hospital} />
-          <Field label="Admit Date" value={row.admit_date ? formatDate(row.admit_date) : null} />
-          <Field label="Discharge Date" value={formatDate(row.discharge_date)} />
-        </div>
         <div className="grid grid-cols-3 gap-3">
-          <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} />
-          <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
-          <Field label="Disposition" value={row.disposition} />
+          <Field label="Member ID" value={row.insurance_member_id} />
+          <Field label="Date of Birth" value={row.birth_date} />
+          <Field label="Phone" value={row.phone} />
         </div>
-        <div className="grid grid-cols-3 gap-3 mt-3">
-          {row.insurance_member_id && <Field label="Member ID" value={row.insurance_member_id} />}
-          {row.birth_date && <Field label="Date of Birth" value={row.birth_date} />}
-          {row.phone && <Field label="Phone" value={row.phone} />}
+        <div className="grid grid-cols-1 gap-3 mt-3">
+          <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
         </div>
       </div>
 
