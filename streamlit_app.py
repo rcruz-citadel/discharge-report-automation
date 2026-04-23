@@ -339,6 +339,12 @@ st.markdown(
     .stat-chip.gray .chip-value {
         color: #718096;
     }
+    .stat-chip.red {
+        border-left-color: #e53e3e;
+    }
+    .stat-chip.red .chip-value {
+        color: #c53030;
+    }
 
     /* ── Tab strip ── */
     .stTabs [data-baseweb="tab-list"] {
@@ -562,6 +568,7 @@ st.markdown(
     .dot-none { background: #cbd5e0; }
     .dot-made { background: #e07b2a; }
     .dot-complete { background: #38a169; }
+    .dot-failed { background: #e53e3e; }
 
     /* ── Manager dashboard tables ── */
     .manager-table {
@@ -768,6 +775,70 @@ def load_outreach_statuses() -> dict:
 
 
 @st.cache_data(ttl=300)
+def load_outreach_attempts(event_id: str, discharge_date) -> list[dict]:
+    """
+    Load all logged attempts for a given discharge event.
+    Returns a list of dicts: {attempt_number, attempted_by, attempted_at}.
+    Cached with 300-second TTL; call load_outreach_attempts.clear() after logging a new attempt.
+    """
+    engine = get_engine()
+    try:
+        with engine.connect() as conn:
+            rows = conn.execute(
+                text(
+                    """
+                    SELECT attempt_number, attempted_by, attempted_at
+                    FROM discharge_app.outreach_attempts
+                    WHERE event_id = :event_id AND discharge_date = :discharge_date
+                    ORDER BY attempt_number
+                    """
+                ),
+                {"event_id": event_id, "discharge_date": discharge_date},
+            ).fetchall()
+        return [{"attempt_number": r[0], "attempted_by": r[1], "attempted_at": r[2]} for r in rows]
+    except Exception:
+        return []
+
+
+def log_outreach_attempt(event_id: str, discharge_date, attempted_by: str) -> int:
+    """
+    Insert the next attempt for this discharge event (max 3).
+    Returns the attempt number inserted.
+    Raises ValueError if already at 3 attempts.
+    Raises RuntimeError on DB error.
+    """
+    engine = get_engine()
+    try:
+        with engine.begin() as conn:
+            result = conn.execute(
+                text(
+                    """
+                    INSERT INTO discharge_app.outreach_attempts
+                        (event_id, discharge_date, attempt_number, attempted_by)
+                    SELECT
+                        :event_id,
+                        :discharge_date,
+                        COALESCE(MAX(attempt_number), 0) + 1,
+                        :attempted_by
+                    FROM discharge_app.outreach_attempts
+                    WHERE event_id = :event_id AND discharge_date = :discharge_date
+                    HAVING COALESCE(MAX(attempt_number), 0) < 3
+                    RETURNING attempt_number
+                    """
+                ),
+                {"event_id": event_id, "discharge_date": discharge_date, "attempted_by": attempted_by},
+            ).fetchone()
+        if result is None:
+            raise ValueError("Maximum of 3 outreach attempts already reached.")
+        load_outreach_attempts.clear()
+        return result[0]
+    except ValueError:
+        raise
+    except Exception as exc:
+        raise RuntimeError(f"Failed to log outreach attempt: {exc}") from exc
+
+
+@st.cache_data(ttl=300)
 def load_practice_assignments() -> dict:
     """
     Query discharge_app.app_user and return a dict mapping
@@ -874,13 +945,15 @@ def format_count(value: int) -> str:
     return f"{value:,}"
 
 
-def stat_chip(label: str, value: str, orange: bool = False, green: bool = False, gray: bool = False) -> str:
+def stat_chip(label: str, value: str, orange: bool = False, green: bool = False, gray: bool = False, red: bool = False) -> str:
     if orange:
         cls = "stat-chip orange"
     elif green:
         cls = "stat-chip green"
     elif gray:
         cls = "stat-chip gray"
+    elif red:
+        cls = "stat-chip red"
     else:
         cls = "stat-chip"
     return (
@@ -1081,6 +1154,7 @@ STATUS_DISPLAY = {
     "no_outreach": "No Outreach",
     "outreach_made": "Outreach Made",
     "outreach_complete": "Outreach Complete",
+    "failed": "Failed",
 }
 
 # Display label -> internal DB value
@@ -1137,6 +1211,14 @@ def _status_pill_html(status_label: str) -> str:
             'background:#e6ffed;color:#22753a;">'
             '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#38a169;"></span>'
             'Complete</span>'
+        )
+    elif status_label == "Failed":
+        return (
+            '<span style="display:inline-flex;align-items:center;gap:5px;'
+            'padding:0.2rem 0.6rem;border-radius:20px;font-size:0.74rem;font-weight:600;'
+            'background:#fed7d7;color:#c53030;">'
+            '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#e53e3e;"></span>'
+            'Failed</span>'
         )
     else:
         return (
@@ -1227,7 +1309,7 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
     )
 
     # Status selection — radio with no extra rerun needed (radio handles state natively)
-    status_options = ["No Outreach", "Outreach Made", "Outreach Complete"]
+    status_options = ["No Outreach", "Outreach Made", "Outreach Complete", "Failed"]
     current_index = status_options.index(current_status_label) if current_status_label in status_options else 0
 
     selected_status = st.radio(
@@ -1246,6 +1328,58 @@ def render_detail_panel(row: pd.Series, outreach: dict, tab_key: str) -> None:
         key=f"notes_{tab_key}",
         height=80,
     )
+
+    # ── Outreach Attempts section ──
+    st.markdown(
+        "<div style='font-size:0.85rem;font-weight:700;color:#132e45;margin-top:1rem;margin-bottom:0.5rem;'>Outreach Attempts</div>",
+        unsafe_allow_html=True,
+    )
+    attempts = load_outreach_attempts(event_id, discharge_date)
+    attempt_count = len(attempts)
+
+    # Attempt count chip
+    chip_color = "#c53030" if attempt_count >= 3 else "#132e45"
+    st.markdown(
+        f"<span style='display:inline-block;background:#edf2f7;color:{chip_color};font-size:0.75rem;"
+        f"font-weight:700;border-radius:20px;padding:2px 10px;margin-bottom:0.6rem;'>"
+        f"{attempt_count} / 3 attempts</span>",
+        unsafe_allow_html=True,
+    )
+
+    if attempts:
+        timeline_html = ""
+        for a in attempts:
+            ts = a["attempted_at"]
+            ts_str = ts.strftime("%m/%d/%Y at %I:%M %p") if hasattr(ts, "strftime") else str(ts)
+            timeline_html += (
+                f"<div style='display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.4rem;'>"
+                f"<span style='display:inline-block;min-width:22px;height:22px;border-radius:50%;"
+                f"background:#132e45;color:#fff;font-size:0.7rem;font-weight:700;text-align:center;"
+                f"line-height:22px;flex-shrink:0;'>{a['attempt_number']}</span>"
+                f"<span style='font-size:0.8rem;color:#2a3f50;'>"
+                f"<strong>{a['attempted_by']}</strong> &mdash; {ts_str}</span>"
+                f"</div>"
+            )
+        st.markdown(
+            f"<div style='margin-bottom:0.5rem;'>{timeline_html}</div>",
+            unsafe_allow_html=True,
+        )
+
+    attempt_col, _ = st.columns([1, 3])
+    with attempt_col:
+        if attempt_count >= 3:
+            st.caption("Max attempts reached")
+        else:
+            if st.button("Log Attempt", key=f"log_attempt_{tab_key}"):
+                user_email = st.session_state.get("user_email", "unknown")
+                try:
+                    num = log_outreach_attempt(event_id, discharge_date, user_email)
+                    st.success(f"Attempt #{num} logged.")
+                    st.rerun(scope="fragment")
+                except ValueError as ve:
+                    st.warning(str(ve))
+                except RuntimeError as re:
+                    st.error(str(re))
 
     # Last updated line
     if updated_by and updated_at:
@@ -1310,6 +1444,7 @@ def render_tab(view_df: pd.DataFrame, label: str, tab_key: str, outreach: dict) 
             <div class="legend-item"><span class="status-dot dot-none"></span> No Outreach</div>
             <div class="legend-item"><span class="status-dot dot-made"></span> Outreach Made</div>
             <div class="legend-item"><span class="status-dot dot-complete"></span> Outreach Complete</div>
+            <div class="legend-item"><span class="status-dot dot-failed"></span> Failed</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1388,6 +1523,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
     n_no_outreach = int(status_counts.get("No Outreach", 0))
     n_made = int(status_counts.get("Outreach Made", 0))
     n_complete = int(status_counts.get("Outreach Complete", 0))
+    n_failed = int(status_counts.get("Failed", 0))
     pct_complete = f"{(n_complete / total * 100):.1f}%" if total > 0 else "0%"
 
     # ── Summary stat chips ──
@@ -1396,6 +1532,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
         + stat_chip("No Outreach", format_count(n_no_outreach), gray=True)
         + stat_chip("Outreach Made", format_count(n_made), orange=True)
         + stat_chip("Complete", format_count(n_complete), green=True)
+        + stat_chip("Failed", format_count(n_failed), red=True)
         + stat_chip("% Complete", pct_complete, green=True)
     )
     st.markdown(f"<div class='stat-row'>{chips}</div>", unsafe_allow_html=True)
@@ -1431,6 +1568,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
             u_none = int(user_counts.get("No Outreach", 0))
             u_made = int(user_counts.get("Outreach Made", 0))
             u_complete = int(user_counts.get("Outreach Complete", 0))
+            u_failed = int(user_counts.get("Failed", 0))
             u_pct = f"{(u_complete / user_total * 100):.0f}%" if user_total > 0 else "—"
 
             act = activity.get(email, {})
@@ -1447,6 +1585,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
                 f"<td>{u_none:,}</td>"
                 f"<td>{u_made:,}</td>"
                 f"<td>{u_complete:,}</td>"
+                f"<td>{u_failed:,}</td>"
                 f"<td><strong>{u_pct}</strong></td>"
                 f"<td>{last_login_str}</td>"
                 f"<td>{last_act_str}</td>"
@@ -1464,6 +1603,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
                         <th>No Outreach</th>
                         <th>Made</th>
                         <th>Complete</th>
+                        <th>Failed</th>
                         <th>% Done</th>
                         <th>Last Login</th>
                         <th>Last Activity</th>
@@ -1494,7 +1634,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
         )
 
         # Ensure all status columns exist
-        for col in ["No Outreach", "Outreach Made", "Outreach Complete"]:
+        for col in ["No Outreach", "Outreach Made", "Outreach Complete", "Failed"]:
             if col not in practice_group.columns:
                 practice_group[col] = 0
 
@@ -1502,6 +1642,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
             practice_group["No Outreach"]
             + practice_group["Outreach Made"]
             + practice_group["Outreach Complete"]
+            + practice_group["Failed"]
         )
         practice_group["% Complete"] = practice_group.apply(
             lambda r: f"{(r['Outreach Complete'] / r['Total'] * 100):.0f}%" if r["Total"] > 0 else "—",
@@ -1518,6 +1659,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
                 f"<td>{int(r['No Outreach']):,}</td>"
                 f"<td>{int(r['Outreach Made']):,}</td>"
                 f"<td>{int(r['Outreach Complete']):,}</td>"
+                f"<td>{int(r['Failed']):,}</td>"
                 f"<td><strong>{r['% Complete']}</strong></td>"
                 f"</tr>"
             )
@@ -1532,6 +1674,7 @@ def render_manager_dashboard(filtered_df: pd.DataFrame, outreach: dict) -> None:
                         <th>No Outreach</th>
                         <th>Made</th>
                         <th>Complete</th>
+                        <th>Failed</th>
                         <th>% Done</th>
                     </tr>
                 </thead>
