@@ -16,11 +16,11 @@ export function StatChipRow({ records }: StatChipRowProps) {
   const uniqueHospitals = new Set(records.map(r => r.discharge_hospital).filter(Boolean)).size
 
   return (
-    <div className="flex gap-3 flex-wrap">
-      <StatChip label="Total Records" value={total.toLocaleString()} variant="navy" />
-      <StatChip label="Unique Patients" value={uniquePatients.toLocaleString()} variant="navy" />
-      <StatChip label="Practices" value={uniquePractices.toLocaleString()} variant="orange" />
-      <StatChip label="Hospitals" value={uniqueHospitals.toLocaleString()} variant="navy" />
+    <div className="grid grid-cols-4 gap-4">
+      <StatChip label="Total Records" value={total.toLocaleString()} variant="navy" className="flex-1" />
+      <StatChip label="Unique Patients" value={uniquePatients.toLocaleString()} variant="navy" className="flex-1" />
+      <StatChip label="Practices" value={uniquePractices.toLocaleString()} variant="orange" className="flex-1" />
+      <StatChip label="Hospitals" value={uniqueHospitals.toLocaleString()} variant="navy" className="flex-1" />
     </div>
   )
 }
