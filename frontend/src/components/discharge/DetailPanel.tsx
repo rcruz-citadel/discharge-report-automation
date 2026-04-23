@@ -16,9 +16,9 @@ interface FieldProps {
 
 function Field({ label, value }: FieldProps) {
   return (
-    <div>
+    <div className="min-w-0">
       <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-[14.4px] font-semibold text-text-primary">{orDash(value as string)}</p>
+      <p className="text-[14.4px] font-semibold text-text-primary truncate" title={orDash(value as string)}>{orDash(value as string)}</p>
     </div>
   )
 }
