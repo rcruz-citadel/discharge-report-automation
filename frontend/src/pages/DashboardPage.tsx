@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import type { DischargeRecord } from '../types/discharge'
+import type { DischargeRecord, OutreachStatus } from '../types/discharge'
 import { useDischarges } from '../hooks/useDischarges'
 import { useFilters } from '../hooks/useFilters'
 import { useAuth } from '../auth/useAuth'
@@ -84,6 +84,9 @@ export function DashboardPage() {
         if (!assigneePractices.includes(row.practice ?? '')) return false
       }
 
+      // Outreach status filter (OR logic — any selected status matches)
+      if (filters.outreachStatuses.length > 0 && !filters.outreachStatuses.includes(row.outreach_status)) return false
+
       return true
     })
   }, [dischargData, activeTab, filters, meta, recentCutoff, sixMonthCutoff])
@@ -105,6 +108,14 @@ export function DashboardPage() {
 
   const handleSaveSuccess = (patientName: string) => {
     showToast(`Status updated for ${patientName}`, 'success')
+  }
+
+  const handleStatusToggle = (status: OutreachStatus) => {
+    const current = filters.outreachStatuses
+    const next = current.includes(status)
+      ? current.filter(s => s !== status)
+      : [...current, status]
+    setFilter('outreachStatuses', next)
   }
 
   const tabLabels: Record<TabId, string> = {
@@ -192,8 +203,11 @@ export function DashboardPage() {
                   </span>
                 </div>
 
-                {/* Legend */}
-                <OutreachLegend />
+                {/* Legend / filter */}
+                <OutreachLegend
+                  activeStatuses={filters.outreachStatuses}
+                  onToggle={handleStatusToggle}
+                />
 
                 {/* Table + detail panel split layout */}
                 <div className="flex gap-4 mt-2">

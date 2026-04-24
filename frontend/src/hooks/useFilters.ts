@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { FilterState } from '../types/api'
+import type { OutreachStatus } from '../types/discharge'
 
 const DEFAULT_FILTERS: FilterState = {
   assignee: 'All',
@@ -10,6 +11,7 @@ const DEFAULT_FILTERS: FilterState = {
   stayTypes: [],
   dateFrom: null,
   dateTo: null,
+  outreachStatuses: [],
 }
 
 /**
@@ -29,6 +31,7 @@ export function useFilters() {
     stayTypes: searchParams.getAll('stayType'),
     dateFrom: searchParams.get('dateFrom') ?? null,
     dateTo: searchParams.get('dateTo') ?? null,
+    outreachStatuses: searchParams.getAll('outreachStatus') as OutreachStatus[],
   }
 
   const setFilter = useCallback(
@@ -75,6 +78,11 @@ export function useFilters() {
               if (!value) next.delete('dateTo')
               else next.set('dateTo', value as string)
               break
+
+            case 'outreachStatuses':
+              next.delete('outreachStatus')
+              ;(value as string[]).forEach(v => next.append('outreachStatus', v))
+              break
           }
 
           return next
@@ -96,7 +104,8 @@ export function useFilters() {
     filters.lobNames.length > 0 ||
     filters.stayTypes.length > 0 ||
     filters.dateFrom !== null ||
-    filters.dateTo !== null
+    filters.dateTo !== null ||
+    filters.outreachStatuses.length > 0
 
   return { filters, setFilter, clearAll, hasActiveFilters }
 }

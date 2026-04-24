@@ -1,3 +1,5 @@
+import type { OutreachStatus } from '../types/discharge'
+
 export interface AssigneeInfo {
   name: string
   practices: string[]
@@ -57,4 +59,5 @@ export interface FilterState {
   stayTypes: string[]
   dateFrom: string | null
   dateTo: string | null
+  outreachStatuses: OutreachStatus[]
 }
