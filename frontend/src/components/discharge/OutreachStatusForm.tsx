@@ -218,7 +218,7 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
           type="submit"
           variant="primary"
           isLoading={mutation.isPending}
-          disabled={!isDirty}
+          disabled={mutation.isPending}
           className="flex-1 py-2 text-[14px]"
         >
           Save

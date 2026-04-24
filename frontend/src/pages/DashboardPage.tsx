@@ -88,17 +88,11 @@ export function DashboardPage() {
     })
   }, [dischargData, activeTab, filters, meta, recentCutoff, sixMonthCutoff])
 
-  // If the selected row is no longer in filtered results, close the panel
+  // Always pull the latest version of the selected row from fresh data
   const effectiveSelectedRow = useMemo(() => {
     if (!selectedRow) return null
-    const stillVisible = filteredRows.some(r => r.event_id === selectedRow.event_id)
-    return stillVisible ? selectedRow : null
+    return filteredRows.find(r => r.event_id === selectedRow.event_id) ?? null
   }, [selectedRow, filteredRows])
-
-  // Sync effectiveSelectedRow back to state
-  if (effectiveSelectedRow !== selectedRow && selectedRow !== null) {
-    setSelectedRow(effectiveSelectedRow)
-  }
 
   const handleTabChange = (tab: TabId) => {
     setActiveTab(tab)
@@ -111,7 +105,6 @@ export function DashboardPage() {
 
   const handleSaveSuccess = (patientName: string) => {
     showToast(`Status updated for ${patientName}`, 'success')
-    setSelectedRow(null)
   }
 
   const tabLabels: Record<TabId, string> = {
