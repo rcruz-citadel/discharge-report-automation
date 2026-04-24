@@ -14,7 +14,19 @@ export function useUpsertOutreach() {
 
   return useMutation<OutreachRecord, Error, OutreachUpsertPayload>({
     mutationFn: upsertOutreach,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Immediately patch the cached row so the table updates without waiting for a refetch
+      queryClient.setQueryData(DISCHARGES_QUERY_KEY, (old: { records: OutreachUpsertPayload[] } | undefined) => {
+        if (!old) return old
+        return {
+          ...old,
+          records: old.records.map((r: { event_id: string; discharge_date: string; outreach_status?: string; outreach_notes?: string }) =>
+            r.event_id === variables.event_id && r.discharge_date === variables.discharge_date
+              ? { ...r, outreach_status: variables.status, outreach_notes: variables.notes }
+              : r
+          ),
+        }
+      })
       queryClient.invalidateQueries({ queryKey: DISCHARGES_QUERY_KEY })
     },
   })
