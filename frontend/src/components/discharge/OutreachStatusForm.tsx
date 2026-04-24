@@ -98,7 +98,6 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
   const [notes, setNotes] = useState(row.outreach_notes)
   const mutation = useUpsertOutreach()
 
-  const isDirty = status !== row.outreach_status || notes !== row.outreach_notes
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
