@@ -208,17 +208,19 @@ export function DashboardPage() {
 
                   {effectiveSelectedRow && (
                     <div className="w-[480px] shrink-0">
-                      <DetailPanel
-                        row={effectiveSelectedRow}
-                        onClose={() => setSelectedRow(null)}
-                        onSaveSuccess={handleSaveSuccess}
-                      />
+                      <div className="sticky top-4">
+                        <DetailPanel
+                          row={effectiveSelectedRow}
+                          onClose={() => setSelectedRow(null)}
+                          onSaveSuccess={handleSaveSuccess}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
 
                 {/* Export button */}
-                <div className="flex justify-end mt-2">
+                <div className="flex justify-start mt-2">
                   <button
                     onClick={() => exportToCsv(
                       filteredRows as unknown as Record<string, unknown>[],

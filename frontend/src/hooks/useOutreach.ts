@@ -27,7 +27,6 @@ export function useUpsertOutreach() {
           ),
         }
       })
-      queryClient.invalidateQueries({ queryKey: DISCHARGES_QUERY_KEY })
     },
   })
 }
