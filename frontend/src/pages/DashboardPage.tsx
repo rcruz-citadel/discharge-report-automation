@@ -44,10 +44,12 @@ export function DashboardPage() {
   const { show: showToast, ToastContainer } = useToast()
 
   const { data: dischargData, isLoading: dischargesLoading } = useDischarges()
-  const { data: meta } = useQuery({
+  const { data: meta, isError: metaError } = useQuery({
     queryKey: ['meta-filters'],
     queryFn: fetchMetaFilters,
     staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
   })
 
   const tabs: Array<{ id: TabId; label: string; count?: number }> = [
@@ -153,6 +155,7 @@ export function DashboardPage() {
             filters={
               <FilterSidebar
                 meta={meta}
+                metaError={metaError}
                 filters={filters}
                 onFilterChange={setFilter}
               />
@@ -262,14 +265,12 @@ export function DashboardPage() {
                   </div>
 
                   {effectiveSelectedRow && (
-                    <div className="w-[480px] shrink-0">
-                      <div className="sticky top-4">
-                        <DetailPanel
-                          row={effectiveSelectedRow}
-                          onClose={() => setSelectedRow(null)}
-                          onSaveSuccess={handleSaveSuccess}
-                        />
-                      </div>
+                    <div className="w-[480px] shrink-0" style={{ position: 'sticky', top: '16px', alignSelf: 'start' }}>
+                      <DetailPanel
+                        row={effectiveSelectedRow}
+                        onClose={() => setSelectedRow(null)}
+                        onSaveSuccess={handleSaveSuccess}
+                      />
                     </div>
                   )}
                 </div>

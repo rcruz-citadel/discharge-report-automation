@@ -9,6 +9,7 @@ import { DateRangePicker } from './DateRangePicker'
 
 interface FilterSidebarProps {
   meta: MetaFiltersResponse | undefined
+  metaError?: boolean
   filters: FilterState
   onFilterChange: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void
 }
@@ -18,7 +19,23 @@ interface FilterSidebarProps {
  * Assignee selection scopes the Practice options to that person's practices.
  * Spec: 5.5 Sidebar filter logic
  */
-export function FilterSidebar({ meta, filters, onFilterChange }: FilterSidebarProps) {
+export function FilterSidebar({ meta, metaError, filters, onFilterChange }: FilterSidebarProps) {
+  if (metaError) {
+    return (
+      <div
+        className="flex flex-col gap-2 px-1 py-2 rounded-md"
+        style={{ backgroundColor: 'rgba(229,62,62,0.12)', border: '1px solid rgba(229,62,62,0.3)' }}
+      >
+        <p className="text-[11px] font-semibold" style={{ color: '#fc8181' }}>
+          Filter options unavailable
+        </p>
+        <p className="text-[10px]" style={{ color: '#feb2b2' }}>
+          Could not load filter data. Reload the page to try again.
+        </p>
+      </div>
+    )
+  }
+
   if (!meta) {
     return (
       <div className="flex flex-col gap-4 px-1">

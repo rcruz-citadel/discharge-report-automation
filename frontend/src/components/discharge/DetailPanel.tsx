@@ -48,23 +48,25 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
   }
 
   return (
+    /*
+     * Outer shell: holds shape, border, shadow, and border-radius.
+     * Does NOT scroll — this keeps the header permanently visible.
+     * max-height + overflow live on the inner scroll container below.
+     */
     <div
       ref={panelRef}
       className="panel-enter flex flex-col bg-surface rounded-xl overflow-hidden"
       style={{
         border: '1.5px solid #132e45',
-        boxShadow: '0 4px 18px rgba(19,46,69,0.10)',
-        height: 'fit-content',
-        maxHeight: 'calc(100vh - 100px)',
-        overflowY: 'auto',
+        boxShadow: '0 6px 24px rgba(19,46,69,0.14)',
       }}
       role="complementary"
       aria-label="Patient detail"
       onKeyDown={handleKeyDown}
     >
-      {/* Header */}
+      {/* ── Sticky header — always visible, never scrolls away ── */}
       <div
-        className="px-5 py-4 flex items-center justify-between"
+        className="shrink-0 px-5 py-4 flex items-center justify-between"
         style={{ background: 'linear-gradient(135deg, #132e45 0%, #1b4459 100%)' }}
       >
         <div>
@@ -84,48 +86,58 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
         </button>
       </div>
 
-      {/* Section 1 — Patient demographics, provider & contact */}
-      <div className="px-5 py-4 border-b border-border-light">
-        <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
-          Patient &amp; Provider
-        </p>
-        <div className="grid grid-cols-3 gap-3 mb-3">
-          <Field label="Member ID" value={row.insurance_member_id} />
-          <Field label="Date of Birth" value={row.birth_date} />
-          <Field label="Phone" value={row.phone} />
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Practice" value={row.practice} />
-          <Field label="Provider" value={row.provider_name} />
-          <Field label="Payer" value={row.payer_name} />
-        </div>
-      </div>
-
-      {/* Section 2 — Hospital & diagnosis */}
-      <div className="px-5 py-4 border-b border-border-light">
-        <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
-          Hospitalization &amp; Diagnosis
-        </p>
-        <div className="grid grid-cols-3 gap-3 mb-3">
-          <Field label="Hospital" value={row.discharge_hospital} />
-          <Field label="Admit Date" value={row.admit_date ? formatDate(row.admit_date) : null} />
-          <Field label="Discharge Date" value={formatDate(row.discharge_date)} />
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Stay Type" value={row.stay_type} />
-          <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
-          <Field label="Disposition" value={row.disposition} />
-        </div>
-        {(row.dx_code || row.description) && (
-          <div className="mt-3">
-            <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} />
+      {/*
+       * ── Scrollable body ──
+       * max-height accounts for sticky top-4 (16px) offset used by the column
+       * wrapper in DashboardPage, giving a snug fit without clipping.
+       */}
+      <div
+        className="flex flex-col overflow-y-auto"
+        style={{ maxHeight: 'calc(100vh - 32px)' }}
+      >
+        {/* Section 1 — Patient demographics, provider & contact */}
+        <div className="px-5 py-4 border-b border-border-light">
+          <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
+            Patient &amp; Provider
+          </p>
+          <div className="grid grid-cols-3 gap-3 mb-3">
+            <Field label="Member ID" value={row.insurance_member_id} />
+            <Field label="Date of Birth" value={row.birth_date} />
+            <Field label="Phone" value={row.phone} />
           </div>
-        )}
-      </div>
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Practice" value={row.practice} />
+            <Field label="Provider" value={row.provider_name} />
+            <Field label="Payer" value={row.payer_name} />
+          </div>
+        </div>
 
-      {/* Outreach status form */}
-      <div className="px-5 py-4">
-        <OutreachStatusForm row={row} onSuccess={onSaveSuccess} onCancel={onClose} />
+        {/* Section 2 — Hospital & diagnosis */}
+        <div className="px-5 py-4 border-b border-border-light">
+          <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
+            Hospitalization &amp; Diagnosis
+          </p>
+          <div className="grid grid-cols-3 gap-3 mb-3">
+            <Field label="Hospital" value={row.discharge_hospital} />
+            <Field label="Admit Date" value={row.admit_date ? formatDate(row.admit_date) : null} />
+            <Field label="Discharge Date" value={formatDate(row.discharge_date)} />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Stay Type" value={row.stay_type} />
+            <Field label="LOS" value={row.length_of_stay != null ? `${row.length_of_stay} day${row.length_of_stay !== 1 ? 's' : ''}` : null} />
+            <Field label="Disposition" value={row.disposition} />
+          </div>
+          {(row.dx_code || row.description) && (
+            <div className="mt-3">
+              <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} />
+            </div>
+          )}
+        </div>
+
+        {/* Outreach status form — pb-6 ensures content never kisses the card edge */}
+        <div className="px-5 py-4 pb-6">
+          <OutreachStatusForm row={row} onSuccess={onSaveSuccess} onCancel={onClose} />
+        </div>
       </div>
     </div>
   )
