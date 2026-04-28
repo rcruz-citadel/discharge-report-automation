@@ -55,7 +55,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
      */
     <div
       ref={panelRef}
-      className="panel-enter flex flex-col bg-surface rounded-xl overflow-hidden"
+      className="panel-enter flex flex-col bg-surface rounded-xl overflow-hidden h-full"
       style={{
         border: '1.5px solid #132e45',
         boxShadow: '0 6px 24px rgba(19,46,69,0.14)',
@@ -91,10 +91,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
        * max-height accounts for sticky top-4 (16px) offset used by the column
        * wrapper in DashboardPage, giving a snug fit without clipping.
        */}
-      <div
-        className="flex flex-col overflow-y-auto"
-        style={{ maxHeight: 'calc(100vh - 32px)' }}
-      >
+      <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
         {/* Section 1 — Patient demographics, provider & contact */}
         <div className="px-5 py-4 border-b border-border-light">
           <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
