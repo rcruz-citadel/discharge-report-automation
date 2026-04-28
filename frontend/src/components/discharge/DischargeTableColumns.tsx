@@ -1,13 +1,56 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import type { DischargeRecord } from '../../types/discharge'
+import { getDaysRemaining, getQueueBucket } from '../../types/discharge'
 import { StatusPill } from '../ui/StatusPill'
 import { formatDate, orDash } from '../../lib/utils'
 
-/**
- * TanStack Table column definitions for the discharge table.
- * Spec: 5.5 Discharge Table columns
- */
+function DaysLeftBadge({ row }: { row: DischargeRecord }) {
+  const bucket = getQueueBucket(row)
+  if (bucket === 'low_priority') {
+    return (
+      <span
+        className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold"
+        style={{ backgroundColor: '#edf2f7', color: '#718096' }}
+      >
+        —
+      </span>
+    )
+  }
+
+  const days = getDaysRemaining(row)
+
+  let bg: string
+  let color: string
+  let label: string
+
+  if (days <= 0) {
+    bg = '#fed7d7'; color = '#c53030'; label = 'Overdue'
+  } else if (days === 1) {
+    bg = '#fed7d7'; color = '#c53030'; label = '1d left'
+  } else if (days <= 3) {
+    bg = '#fefcbf'; color = '#975a16'; label = `${days}d left`
+  } else {
+    bg = '#e6ffed'; color = '#22753a'; label = `${days}d left`
+  }
+
+  return (
+    <span
+      className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap"
+      style={{ backgroundColor: bg, color }}
+    >
+      {label}
+    </span>
+  )
+}
+
 export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
+  {
+    id: 'days_left',
+    header: 'Window',
+    size: 90,
+    cell: ({ row }) => <DaysLeftBadge row={row.original} />,
+    sortingFn: (a, b) => getDaysRemaining(b.original) - getDaysRemaining(a.original),
+  },
   {
     accessorKey: 'patient_name',
     header: 'Patient Name',

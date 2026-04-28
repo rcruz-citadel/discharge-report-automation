@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { DischargeRecord, OutreachStatus } from '../types/discharge'
+import { getDaysRemaining, getQueueBucket } from '../types/discharge'
 import { useDischarges } from '../hooks/useDischarges'
 import { useFilters } from '../hooks/useFilters'
 import { useAuth } from '../auth/useAuth'
@@ -17,7 +18,7 @@ import { useToast } from '../components/ui/Toast'
 import { fetchMetaFilters } from '../api/meta'
 import { exportToCsv, fileTimestamp } from '../lib/utils'
 
-type TabId = 'recent' | 'sixMonths' | 'all' | 'manager'
+type TabId = 'immediate' | 'active' | 'low_priority' | 'manager'
 
 const CSV_COLUMNS = [
   'patient_name', 'birth_date', 'insurance_member_id', 'phone',
@@ -25,17 +26,20 @@ const CSV_COLUMNS = [
   'lob_name', 'stay_type', 'discharge_hospital', 'length_of_stay',
   'disposition', 'dx_code', 'description',
   'patient_address', 'city', 'zip_code', 'state',
-  'outreach_status', 'outreach_notes', 'outreach_updated_by',
+  'outreach_status', 'outreach_notes', 'outreach_updated_by', 'discharge_summary_dropped',
 ]
 
-/**
- * Main dashboard page. Orchestrates tabs, filters, table, detail panel.
- * Spec: 4 Agent 3 Frontend, 4.3 State Management, 4.12 Interaction Patterns
- */
+const TAB_DESCRIPTIONS: Record<TabId, string> = {
+  immediate: 'Discharged within the last 48 hours — outreach needed now',
+  active: 'Past 48-hour window but still within the 7/30-day TCM deadline',
+  low_priority: 'Past TCM deadline — drop discharge summary in EMR when possible',
+  manager: 'Manager Dashboard',
+}
+
 export function DashboardPage() {
   const { user, isManager } = useAuth()
   const { filters, setFilter, clearAll, hasActiveFilters } = useFilters()
-  const [activeTab, setActiveTab] = useState<TabId>('recent')
+  const [activeTab, setActiveTab] = useState<TabId>('immediate')
   const [selectedRow, setSelectedRow] = useState<DischargeRecord | null>(null)
   const { show: showToast, ToastContainer } = useToast()
 
@@ -46,31 +50,18 @@ export function DashboardPage() {
     staleTime: 5 * 60 * 1000,
   })
 
-  const tabs: Array<{ id: TabId; label: string }> = [
-    { id: 'recent', label: 'Recent' },
-    { id: 'sixMonths', label: 'Last 6 Months' },
-    { id: 'all', label: 'All Discharges' },
+  const tabs: Array<{ id: TabId; label: string; count?: number }> = [
+    { id: 'immediate', label: 'Immediate' },
+    { id: 'active', label: 'Active' },
+    { id: 'low_priority', label: 'Low Priority' },
     ...(isManager ? [{ id: 'manager' as TabId, label: 'Manager' }] : []),
   ]
 
-  // Date cutoffs for tabs
-  const now = new Date()
-  const recentCutoff = new Date(now)
-  recentCutoff.setDate(recentCutoff.getDate() - 30)
-  const sixMonthCutoff = new Date(now)
-  sixMonthCutoff.setMonth(sixMonthCutoff.getMonth() - 6)
-
-  // Apply tab date filter + sidebar filters
-  const filteredRows = useMemo(() => {
+  // Apply sidebar filters (no date tab cutoff — tabs handle that now)
+  const sidebarFiltered = useMemo(() => {
     if (!dischargData?.records) return []
 
     return dischargData.records.filter(row => {
-      // Tab date filter
-      const dischargeDate = new Date(row.discharge_date)
-      if (activeTab === 'recent' && dischargeDate < recentCutoff) return false
-      if (activeTab === 'sixMonths' && dischargeDate < sixMonthCutoff) return false
-
-      // Sidebar filters
       if (filters.practices.length > 0 && !filters.practices.includes(row.practice ?? '')) return false
       if (filters.payers.length > 0 && !filters.payers.includes(row.payer_name ?? '')) return false
       if (filters.lobNames.length > 0 && !filters.lobNames.includes(row.lob_name ?? '')) return false
@@ -78,18 +69,50 @@ export function DashboardPage() {
       if (filters.dateFrom && row.discharge_date < filters.dateFrom) return false
       if (filters.dateTo && row.discharge_date > filters.dateTo) return false
 
-      // Assignee filter: scope to that person's practices
       if (filters.assignee !== 'All') {
         const assigneePractices = meta?.assignees.find(a => a.name === filters.assignee)?.practices ?? []
         if (!assigneePractices.includes(row.practice ?? '')) return false
       }
 
-      // Outreach status filter (OR logic — any selected status matches)
       if (filters.outreachStatuses.length > 0 && !filters.outreachStatuses.includes(row.outreach_status)) return false
 
       return true
     })
-  }, [dischargData, activeTab, filters, meta, recentCutoff, sixMonthCutoff])
+  }, [dischargData, filters, meta])
+
+  // Partition into queues, sorted by urgency (fewest days left first within Immediate/Active)
+  const queues = useMemo(() => {
+    const immediate: DischargeRecord[] = []
+    const active: DischargeRecord[] = []
+    const low_priority: DischargeRecord[] = []
+
+    for (const row of sidebarFiltered) {
+      const bucket = getQueueBucket(row)
+      if (bucket === 'immediate') immediate.push(row)
+      else if (bucket === 'active') active.push(row)
+      else low_priority.push(row)
+    }
+
+    const byUrgency = (a: DischargeRecord, b: DischargeRecord) =>
+      getDaysRemaining(a) - getDaysRemaining(b)
+
+    immediate.sort(byUrgency)
+    active.sort(byUrgency)
+
+    return { immediate, active, low_priority }
+  }, [sidebarFiltered])
+
+  const tabCounts = {
+    immediate: queues.immediate.length,
+    active: queues.active.length,
+    low_priority: queues.low_priority.length,
+  }
+
+  const filteredRows: DischargeRecord[] =
+    activeTab === 'manager' ? [] :
+    activeTab === 'immediate' ? queues.immediate :
+    activeTab === 'active' ? queues.active :
+    queues.low_priority
 
   // Always pull the latest version of the selected row from fresh data
   const effectiveSelectedRow = useMemo(() => {
@@ -118,13 +141,6 @@ export function DashboardPage() {
     setFilter('outreachStatuses', next)
   }
 
-  const tabLabels: Record<TabId, string> = {
-    recent: 'Recent (30 Days)',
-    sixMonths: 'Last 6 Months',
-    all: 'All Discharges',
-    manager: 'Manager Dashboard',
-  }
-
   return (
     <>
       <AppShell
@@ -143,7 +159,6 @@ export function DashboardPage() {
         }
       >
         <div className="flex flex-col gap-4">
-          {/* Header: logo row + banner */}
           <AppHeader userName={user?.name} />
 
           {/* Tab strip */}
@@ -153,48 +168,70 @@ export function DashboardPage() {
             role="tablist"
             aria-label="Dashboard tabs"
           >
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                aria-controls={`tabpanel-${tab.id}`}
-                onClick={() => handleTabChange(tab.id)}
-                className="px-[18px] py-[6px] rounded-[7px] text-[13.5px] font-semibold transition-colors duration-100"
-                style={{
-                  backgroundColor: activeTab === tab.id ? '#132e45' : 'transparent',
-                  color: activeTab === tab.id ? '#ffffff' : '#1b4459',
-                }}
-                onMouseEnter={e => {
-                  if (activeTab !== tab.id)
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(19,46,69,0.08)'
-                }}
-                onMouseLeave={e => {
-                  if (activeTab !== tab.id)
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+            {tabs.map(tab => {
+              const isActive = activeTab === tab.id
+              const count = tab.id !== 'manager' ? tabCounts[tab.id as keyof typeof tabCounts] : undefined
+              return (
+                <button
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-controls={`tabpanel-${tab.id}`}
+                  onClick={() => handleTabChange(tab.id)}
+                  className="inline-flex items-center gap-2 px-[18px] py-[6px] rounded-[7px] text-[13.5px] font-semibold transition-colors duration-100"
+                  style={{
+                    backgroundColor: isActive ? '#132e45' : 'transparent',
+                    color: isActive ? '#ffffff' : '#1b4459',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(19,46,69,0.08)'
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive)
+                      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
+                  }}
+                >
+                  {tab.label}
+                  {count !== undefined && (
+                    <span
+                      className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
+                      style={{
+                        backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : 'rgba(19,46,69,0.12)',
+                        color: isActive ? '#fff' : '#1b4459',
+                      }}
+                    >
+                      {count.toLocaleString()}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
 
           {/* Tab panel */}
           <div
             id={`tabpanel-${activeTab}`}
             role="tabpanel"
-            aria-label={tabLabels[activeTab]}
+            aria-label={TAB_DESCRIPTIONS[activeTab]}
           >
             {activeTab === 'manager' ? (
               <ManagerDashboard />
             ) : (
               <>
+                {/* Queue description */}
+                <p className="text-[12px] text-text-muted mb-3">
+                  {TAB_DESCRIPTIONS[activeTab]}
+                </p>
+
                 {/* Stat chips */}
                 <StatChipRow records={filteredRows} />
 
-                {/* Record count badge */}
+                {/* Record count + title */}
                 <div className="flex items-center gap-2 mt-3">
-                  <h2 className="text-[16px] font-bold text-text-primary">{tabLabels[activeTab]}</h2>
+                  <h2 className="text-[16px] font-bold text-text-primary capitalize">
+                    {activeTab.replace('_', ' ')}
+                  </h2>
                   <span
                     className="px-2 py-0.5 rounded-full text-[12px] font-semibold text-white"
                     style={{ backgroundColor: '#132e45' }}

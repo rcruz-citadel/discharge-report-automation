@@ -1,7 +1,14 @@
 import { OUTREACH_STATUS_COLORS, OUTREACH_STATUS_LABELS } from '../../types/discharge'
 import type { OutreachStatus } from '../../types/discharge'
 
-const ALL_STATUSES: OutreachStatus[] = ['no_outreach', 'outreach_made', 'outreach_complete', 'failed']
+const ALL_STATUSES: OutreachStatus[] = [
+  'no_outreach',
+  'outreach_made',
+  'outreach_complete',
+  'failed',
+  'late_delivery',
+  'no_outreach_required',
+]
 
 interface OutreachLegendProps {
   activeStatuses: OutreachStatus[]

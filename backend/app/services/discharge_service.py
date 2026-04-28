@@ -9,8 +9,8 @@ from app.models.schemas import DischargeRecord, DischargesResponse
 
 logger = logging.getLogger(__name__)
 
-# Full discharge query matching the Streamlit app (streamlit_app.py main branch),
-# plus a LEFT JOIN to outreach_status for outreach tracking.
+# Excludes home health and hospice discharges — no TCM action required.
+# Deceased patients are intentionally kept so coordinators can update EMR status.
 _DISCHARGE_QUERY = text("""
 SELECT
     de.event_id,
@@ -34,10 +34,11 @@ SELECT
     pt.city,
     pt.zip_code::character varying(5) AS zip_code,
     pt.state,
-    COALESCE(o.status, 'no_outreach') AS outreach_status,
-    COALESCE(o.notes, '')             AS outreach_notes,
-    o.updated_by                      AS outreach_updated_by,
-    o.updated_at                      AS outreach_updated_at
+    COALESCE(o.status, 'no_outreach')             AS outreach_status,
+    COALESCE(o.notes, '')                          AS outreach_notes,
+    o.updated_by                                   AS outreach_updated_by,
+    o.updated_at                                   AS outreach_updated_at,
+    COALESCE(o.discharge_summary_dropped, FALSE)   AS discharge_summary_dropped
 FROM discharge_event de
     LEFT JOIN provider p ON p.provider_id = de.provider_id
     LEFT JOIN payer py ON py.payer_id = de.payer_id
@@ -49,6 +50,13 @@ FROM discharge_event de
         ON o.event_id = de.event_id
         AND o.discharge_date = de.discharge_date
 WHERE de.discharge_date IS NOT NULL
+  AND (
+    de.discharge_hospital IS NULL
+    OR (
+      LOWER(de.discharge_hospital) NOT LIKE '%home health%'
+      AND LOWER(de.discharge_hospital) NOT LIKE '%hospice%'
+    )
+  )
 ORDER BY de.discharge_date DESC
 """)
 
@@ -56,6 +64,8 @@ ORDER BY de.discharge_date DESC
 async def get_all_discharges(db: AsyncSession) -> DischargesResponse:
     """Return all discharge records merged with outreach status.
 
+    Home health and hospice records are excluded at the query level.
+    Deceased patients are included so coordinators can update EMR status.
     Returns ~17k rows (~1.5 MB gzipped). Nginx gzip compresses the JSON payload.
     Client caches for 5 minutes via TanStack Query (staleTime: 5 * 60 * 1000).
     """
@@ -89,6 +99,7 @@ async def get_all_discharges(db: AsyncSession) -> DischargesResponse:
             outreach_notes=row["outreach_notes"] or "",
             outreach_updated_by=row["outreach_updated_by"],
             outreach_updated_at=row["outreach_updated_at"],
+            discharge_summary_dropped=bool(row["discharge_summary_dropped"]),
         )
         for row in rows
     ]

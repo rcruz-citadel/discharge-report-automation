@@ -20,9 +20,16 @@ export interface DischargeRecord {
   outreach_notes: string
   outreach_updated_by: string | null
   outreach_updated_at: string | null  // ISO datetime string
+  discharge_summary_dropped: boolean
 }
 
-export type OutreachStatus = 'no_outreach' | 'outreach_made' | 'outreach_complete' | 'failed'
+export type OutreachStatus =
+  | 'no_outreach'
+  | 'outreach_made'
+  | 'outreach_complete'
+  | 'failed'
+  | 'late_delivery'
+  | 'no_outreach_required'
 
 export interface DischargesResponse {
   records: DischargeRecord[]
@@ -37,6 +44,7 @@ export interface OutreachRecord {
   notes: string
   updated_by: string | null
   updated_at: string | null
+  discharge_summary_dropped: boolean
 }
 
 export interface OutreachUpsertPayload {
@@ -44,6 +52,7 @@ export interface OutreachUpsertPayload {
   discharge_date: string
   status: OutreachStatus
   notes: string
+  discharge_summary_dropped: boolean
 }
 
 export interface OutreachAttempt {
@@ -59,6 +68,7 @@ export interface LogAttemptResponse {
   attempt: OutreachAttempt
   attempt_number: number
   attempts_remaining: number
+  auto_completed: boolean
 }
 
 export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
@@ -66,6 +76,8 @@ export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
   outreach_made: 'Outreach Made',
   outreach_complete: 'Outreach Complete',
   failed: 'Failed',
+  late_delivery: 'Late Delivery',
+  no_outreach_required: 'Not Required',
 }
 
 export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
@@ -113,4 +125,46 @@ export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
     btnBorder: '#e53e3e',
     btnText: '#c53030',
   },
+  late_delivery: {
+    dot: '#d69e2e',
+    pillBg: '#fefcbf',
+    pillText: '#975a16',
+    rowTint: 'rgba(214,158,46,0.04)',
+    btnBg: '#fefcbf',
+    btnBorder: '#d69e2e',
+    btnText: '#975a16',
+  },
+  no_outreach_required: {
+    dot: '#a0aec0',
+    pillBg: '#f7fafc',
+    pillText: '#4a5568',
+    rowTint: 'transparent',
+    btnBg: '#f7fafc',
+    btnBorder: '#a0aec0',
+    btnText: '#4a5568',
+  },
+}
+
+/** Days remaining in TCM window. ER = 7d, all others = 30d. Negative = past deadline. */
+export function getDaysRemaining(row: DischargeRecord): number {
+  const discharge = new Date(row.discharge_date + 'T00:00:00')
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const ageDays = Math.floor((today.getTime() - discharge.getTime()) / (1000 * 60 * 60 * 24))
+  const deadline = row.stay_type?.toLowerCase().includes('emergency') ? 7 : 30
+  return deadline - ageDays
+}
+
+/** Queue bucket a record belongs to based on its discharge age vs TCM window. */
+export type QueueBucket = 'immediate' | 'active' | 'low_priority'
+
+export function getQueueBucket(row: DischargeRecord): QueueBucket {
+  const discharge = new Date(row.discharge_date + 'T00:00:00')
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const ageDays = Math.floor((today.getTime() - discharge.getTime()) / (1000 * 60 * 60 * 24))
+  if (ageDays <= 2) return 'immediate'
+  const deadline = row.stay_type?.toLowerCase().includes('emergency') ? 7 : 30
+  if (ageDays <= deadline) return 'active'
+  return 'low_priority'
 }

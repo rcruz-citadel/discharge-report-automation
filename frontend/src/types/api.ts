@@ -20,6 +20,9 @@ export interface OutreachSummary {
   no_outreach: number
   outreach_made: number
   outreach_complete: number
+  failed: number
+  late_delivery: number
+  no_outreach_required: number
   pct_complete: number
 }
 
@@ -31,6 +34,9 @@ export interface StaffBreakdownRow {
   no_outreach: number
   outreach_made: number
   outreach_complete: number
+  failed: number
+  late_delivery: number
+  no_outreach_required: number
   pct_complete: number
   last_login: string | null
   last_activity: string | null
@@ -42,6 +48,9 @@ export interface PracticeRollupRow {
   no_outreach: number
   outreach_made: number
   outreach_complete: number
+  failed: number
+  late_delivery: number
+  no_outreach_required: number
   pct_complete: number
 }
 

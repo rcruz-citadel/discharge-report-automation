@@ -65,6 +65,7 @@ class DischargeRecord(BaseModel):
     outreach_notes: str = ""
     outreach_updated_by: Optional[str] = None
     outreach_updated_at: Optional[datetime] = None
+    discharge_summary_dropped: bool = False
 
 
 class DischargesResponse(BaseModel):
@@ -76,13 +77,21 @@ class DischargesResponse(BaseModel):
 # ── Outreach ──────────────────────────────────────────────────────────────────
 
 
-VALID_STATUSES = {"no_outreach", "outreach_made", "outreach_complete", "failed"}
+VALID_STATUSES = {
+    "no_outreach",
+    "outreach_made",
+    "outreach_complete",
+    "failed",
+    "late_delivery",
+    "no_outreach_required",
+}
 
 
 class OutreachUpsertRequest(BaseModel):
     discharge_date: date
     status: str
     notes: str = ""
+    discharge_summary_dropped: bool = False
 
     @field_validator("status")
     @classmethod
@@ -99,6 +108,7 @@ class OutreachRecord(BaseModel):
     notes: str = ""
     updated_by: Optional[str] = None
     updated_at: Optional[datetime] = None
+    discharge_summary_dropped: bool = False
 
 
 class OutreachAttempt(BaseModel):
@@ -114,6 +124,7 @@ class LogAttemptResponse(BaseModel):
     attempt: OutreachAttempt
     attempt_number: int
     attempts_remaining: int
+    auto_completed: bool = False
 
 
 # ── Meta / Filters ────────────────────────────────────────────────────────────
@@ -143,6 +154,8 @@ class OutreachSummary(BaseModel):
     outreach_made: int
     outreach_complete: int
     failed: int
+    late_delivery: int
+    no_outreach_required: int
     pct_complete: float
 
 
@@ -155,6 +168,8 @@ class StaffBreakdownRow(BaseModel):
     outreach_made: int
     outreach_complete: int
     failed: int
+    late_delivery: int
+    no_outreach_required: int
     pct_complete: float
     last_login: Optional[date] = None
     last_activity: Optional[date] = None
@@ -167,6 +182,8 @@ class PracticeRollupRow(BaseModel):
     outreach_made: int
     outreach_complete: int
     failed: int
+    late_delivery: int
+    no_outreach_required: int
     pct_complete: float
 
 

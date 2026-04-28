@@ -10,33 +10,46 @@ logger = logging.getLogger(__name__)
 
 _SUMMARY_QUERY = text("""
 SELECT
-    COUNT(*)                                                              AS total,
-    COUNT(*) FILTER (WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach') AS no_outreach,
-    COUNT(*) FILTER (WHERE o.status = 'outreach_made')                    AS outreach_made,
-    COUNT(*) FILTER (WHERE o.status = 'outreach_complete')                AS outreach_complete,
-    COUNT(*) FILTER (WHERE o.status = 'failed')                           AS failed
+    COUNT(*)                                                                        AS total,
+    COUNT(*) FILTER (WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')      AS no_outreach,
+    COUNT(*) FILTER (WHERE o.status = 'outreach_made')                             AS outreach_made,
+    COUNT(*) FILTER (WHERE o.status = 'outreach_complete')                         AS outreach_complete,
+    COUNT(*) FILTER (WHERE o.status = 'failed')                                    AS failed,
+    COUNT(*) FILTER (WHERE o.status = 'late_delivery')                             AS late_delivery,
+    COUNT(*) FILTER (WHERE o.status = 'no_outreach_required')                      AS no_outreach_required
 FROM discharge_event de
 LEFT JOIN discharge_app.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 WHERE de.discharge_date IS NOT NULL
+  AND (
+    de.discharge_hospital IS NULL
+    OR (
+      LOWER(de.discharge_hospital) NOT LIKE '%home health%'
+      AND LOWER(de.discharge_hospital) NOT LIKE '%hospice%'
+    )
+  )
 """)
 
 _STAFF_QUERY = text("""
 SELECT
     u.user_email,
     u.display_name,
-    COALESCE(array_length(u.practices, 1), 0)                                 AS practice_count,
-    COUNT(DISTINCT de.event_id)                                               AS total,
+    COALESCE(array_length(u.practices, 1), 0)                                       AS practice_count,
+    COUNT(DISTINCT de.event_id)                                                     AS total,
     COUNT(DISTINCT de.event_id) FILTER (
-        WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')              AS no_outreach,
+        WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')                    AS no_outreach,
     COUNT(DISTINCT de.event_id) FILTER (
-        WHERE o.status = 'outreach_made')                                      AS outreach_made,
+        WHERE o.status = 'outreach_made')                                            AS outreach_made,
     COUNT(DISTINCT de.event_id) FILTER (
-        WHERE o.status = 'outreach_complete')                                  AS outreach_complete,
+        WHERE o.status = 'outreach_complete')                                        AS outreach_complete,
     COUNT(DISTINCT de.event_id) FILTER (
-        WHERE o.status = 'failed')                                             AS failed,
-    MAX(al_login.created_at)::date                                            AS last_login,
-    MAX(al_any.created_at)::date                                              AS last_activity
+        WHERE o.status = 'failed')                                                   AS failed,
+    COUNT(DISTINCT de.event_id) FILTER (
+        WHERE o.status = 'late_delivery')                                            AS late_delivery,
+    COUNT(DISTINCT de.event_id) FILTER (
+        WHERE o.status = 'no_outreach_required')                                     AS no_outreach_required,
+    MAX(al_login.created_at)::date                                                  AS last_login,
+    MAX(al_any.created_at)::date                                                    AS last_activity
 FROM discharge_app.app_user u
 LEFT JOIN provider p ON TRUE
 LEFT JOIN location l ON l.location_id = p.location_id
@@ -45,6 +58,13 @@ LEFT JOIN discharge_event de
     AND de.discharge_date IS NOT NULL
     AND u.practices IS NOT NULL
     AND l.parent_org = ANY(u.practices)
+    AND (
+        de.discharge_hospital IS NULL
+        OR (
+            LOWER(de.discharge_hospital) NOT LIKE '%home health%'
+            AND LOWER(de.discharge_hospital) NOT LIKE '%hospice%'
+        )
+    )
 LEFT JOIN discharge_app.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 LEFT JOIN discharge_app.user_activity_log al_login
@@ -58,19 +78,29 @@ ORDER BY u.display_name
 
 _PRACTICE_ROLLUP_QUERY = text("""
 SELECT
-    l.parent_org                                                                    AS practice,
-    COUNT(DISTINCT de.event_id)                                                    AS total,
+    l.parent_org                                                                        AS practice,
+    COUNT(DISTINCT de.event_id)                                                        AS total,
     COUNT(DISTINCT de.event_id) FILTER (
-        WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')                   AS no_outreach,
-    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_made')          AS outreach_made,
-    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_complete')      AS outreach_complete,
-    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'failed')                AS failed
+        WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')                       AS no_outreach,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_made')              AS outreach_made,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'outreach_complete')          AS outreach_complete,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'failed')                     AS failed,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'late_delivery')              AS late_delivery,
+    COUNT(DISTINCT de.event_id) FILTER (WHERE o.status = 'no_outreach_required')       AS no_outreach_required
 FROM discharge_event de
 LEFT JOIN provider p ON p.provider_id = de.provider_id
 LEFT JOIN location l ON l.location_id = p.location_id
 LEFT JOIN discharge_app.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
-WHERE de.discharge_date IS NOT NULL AND l.parent_org IS NOT NULL
+WHERE de.discharge_date IS NOT NULL
+  AND l.parent_org IS NOT NULL
+  AND (
+    de.discharge_hospital IS NULL
+    OR (
+      LOWER(de.discharge_hospital) NOT LIKE '%home health%'
+      AND LOWER(de.discharge_hospital) NOT LIKE '%hospice%'
+    )
+  )
 GROUP BY l.parent_org
 ORDER BY total DESC
 """)
@@ -86,9 +116,8 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
     """Return aggregated manager dashboard metrics.
 
     All aggregation is done in SQL (no pandas). Three queries: summary, staff
-    breakdown, and practice roll-up.
+    breakdown, and practice roll-up. Home health and hospice records are excluded.
     """
-    # Summary totals
     summary_result = await db.execute(_SUMMARY_QUERY)
     s = summary_result.mappings().one()
     total = int(s["total"])
@@ -96,6 +125,8 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
     outreach_made = int(s["outreach_made"])
     outreach_complete = int(s["outreach_complete"])
     failed = int(s["failed"])
+    late_delivery = int(s["late_delivery"])
+    no_outreach_required = int(s["no_outreach_required"])
 
     summary = OutreachSummary(
         total=total,
@@ -103,10 +134,11 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
         outreach_made=outreach_made,
         outreach_complete=outreach_complete,
         failed=failed,
+        late_delivery=late_delivery,
+        no_outreach_required=no_outreach_required,
         pct_complete=_pct(outreach_complete, total),
     )
 
-    # Staff breakdown
     staff_result = await db.execute(_STAFF_QUERY)
     staff_rows = [
         StaffBreakdownRow(
@@ -118,6 +150,8 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
             outreach_made=int(row["outreach_made"] or 0),
             outreach_complete=int(row["outreach_complete"] or 0),
             failed=int(row["failed"] or 0),
+            late_delivery=int(row["late_delivery"] or 0),
+            no_outreach_required=int(row["no_outreach_required"] or 0),
             pct_complete=_pct(int(row["outreach_complete"] or 0), int(row["total"] or 0)),
             last_login=row["last_login"],
             last_activity=row["last_activity"],
@@ -125,7 +159,6 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
         for row in staff_result.mappings().all()
     ]
 
-    # Practice roll-up
     practice_result = await db.execute(_PRACTICE_ROLLUP_QUERY)
     practice_rows = [
         PracticeRollupRow(
@@ -135,6 +168,8 @@ async def get_manager_metrics(db: AsyncSession) -> ManagerMetricsResponse:
             outreach_made=int(row["outreach_made"] or 0),
             outreach_complete=int(row["outreach_complete"] or 0),
             failed=int(row["failed"] or 0),
+            late_delivery=int(row["late_delivery"] or 0),
+            no_outreach_required=int(row["no_outreach_required"] or 0),
             pct_complete=_pct(int(row["outreach_complete"] or 0), int(row["total"] or 0)),
         )
         for row in practice_result.mappings().all()

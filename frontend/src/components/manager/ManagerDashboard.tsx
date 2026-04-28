@@ -5,12 +5,6 @@ import { LoadingSpinner } from '../ui/LoadingSpinner'
 import { useManagerMetrics } from '../../hooks/useManagerMetrics'
 import { Button } from '../ui/Button'
 
-/**
- * Manager dashboard tab content.
- * Shows 5 summary chips, staff breakdown table, and practice roll-up table.
- * Role-gated: only rendered for managers (enforced in DashboardPage).
- * Spec: 5.5 Manager Dashboard
- */
 export function ManagerDashboard() {
   const { data, isLoading, isError, refetch } = useManagerMetrics()
 
@@ -39,12 +33,17 @@ export function ManagerDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Summary stat chips — full width */}
-      <div className="grid grid-cols-5 gap-4">
+      {/* Summary stat chips */}
+      <div className="grid grid-cols-4 gap-4">
         <StatChip label="Total Discharges" value={summary.total.toLocaleString()} variant="navy" className="flex-1" />
         <StatChip label="No Outreach" value={summary.no_outreach.toLocaleString()} variant="gray" className="flex-1" />
         <StatChip label="Outreach Made" value={summary.outreach_made.toLocaleString()} variant="orange" className="flex-1" />
         <StatChip label="Complete" value={summary.outreach_complete.toLocaleString()} variant="green" className="flex-1" />
+      </div>
+      <div className="grid grid-cols-4 gap-4">
+        <StatChip label="Failed" value={summary.failed.toLocaleString()} variant="gray" className="flex-1" />
+        <StatChip label="Late Delivery" value={summary.late_delivery.toLocaleString()} variant="orange" className="flex-1" />
+        <StatChip label="Not Required" value={summary.no_outreach_required.toLocaleString()} variant="gray" className="flex-1" />
         <StatChip label="% Complete" value={`${summary.pct_complete}%`} variant="green" className="flex-1" />
       </div>
 

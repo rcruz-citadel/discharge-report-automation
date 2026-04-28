@@ -69,7 +69,7 @@ async def create_attempt(
 ) -> LogAttemptResponse:
     """Log a new outreach attempt. Returns 409 if already at 3 attempts."""
     try:
-        attempt = await log_attempt(db, event_id, discharge_date, attempted_by=user.email)
+        attempt, auto_completed = await log_attempt(db, event_id, discharge_date, attempted_by=user.email)
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
 
@@ -78,4 +78,5 @@ async def create_attempt(
         attempt=attempt,
         attempt_number=attempt.attempt_number,
         attempts_remaining=3 - len(all_attempts),
+        auto_completed=auto_completed,
     )

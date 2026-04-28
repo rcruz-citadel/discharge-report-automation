@@ -21,6 +21,7 @@ export async function upsertOutreach(payload: OutreachUpsertPayload): Promise<Ou
     discharge_date: payload.discharge_date,
     status: payload.status,
     notes: payload.notes,
+    discharge_summary_dropped: payload.discharge_summary_dropped,
   })
   return response.data
 }

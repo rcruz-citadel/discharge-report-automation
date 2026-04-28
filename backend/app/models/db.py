@@ -57,6 +57,7 @@ class OutreachStatus(Base):
     updated_by: Mapped[str | None] = mapped_column(Text, nullable=True)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    discharge_summary_dropped: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
 
 
 class UserActivityLog(Base):
