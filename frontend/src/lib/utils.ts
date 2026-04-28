@@ -34,7 +34,7 @@ export function truncate(str: string | null | undefined, maxLen: number): string
 
 /** Render a value or em dash for null/undefined/empty. */
 export function orDash(val: string | number | null | undefined): string {
-  if (val === null || val === undefined || val === '') return '—'
+  if (val === null || val === undefined || val === '' || val === 0) return '—'
   return String(val)
 }
 

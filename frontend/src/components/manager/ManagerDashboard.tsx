@@ -42,8 +42,8 @@ export function ManagerDashboard() {
       </div>
       <div className="grid grid-cols-4 gap-4">
         <StatChip label="Failed" value={summary.failed.toLocaleString()} variant="gray" className="flex-1" />
-        <StatChip label="Late Delivery" value={summary.late_delivery.toLocaleString()} variant="orange" className="flex-1" />
-        <StatChip label="Not Required" value={summary.no_outreach_required.toLocaleString()} variant="gray" className="flex-1" />
+        <StatChip label="Late Delivery" value={(summary.late_delivery ?? 0).toLocaleString()} variant="orange" className="flex-1" />
+        <StatChip label="Not Required" value={(summary.no_outreach_required ?? 0).toLocaleString()} variant="gray" className="flex-1" />
         <StatChip label="% Complete" value={`${summary.pct_complete}%`} variant="green" className="flex-1" />
       </div>
 

@@ -48,8 +48,8 @@ export function StaffBreakdownTable({ rows }: StaffBreakdownTableProps) {
               <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.outreach_made.toLocaleString()}</td>
               <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.outreach_complete.toLocaleString()}</td>
               <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.failed.toLocaleString()}</td>
-              <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.late_delivery.toLocaleString()}</td>
-              <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.no_outreach_required.toLocaleString()}</td>
+              <td className="px-3 py-[9px] text-[13px] text-text-primary">{(row.late_delivery ?? 0).toLocaleString()}</td>
+              <td className="px-3 py-[9px] text-[13px] text-text-primary">{(row.no_outreach_required ?? 0).toLocaleString()}</td>
               <td className="px-3 py-[9px] text-[13px] font-bold text-text-primary">{row.pct_complete}%</td>
               <td className="px-3 py-[9px] text-[13px] text-text-secondary">{formatDate(row.last_login)}</td>
               <td className="px-3 py-[9px] text-[13px] text-text-secondary">{formatDate(row.last_activity)}</td>
