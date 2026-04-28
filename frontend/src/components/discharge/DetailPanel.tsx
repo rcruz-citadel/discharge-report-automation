@@ -86,11 +86,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
         </button>
       </div>
 
-      {/*
-       * ── Scrollable body ──
-       * max-height accounts for sticky top-4 (16px) offset used by the column
-       * wrapper in DashboardPage, giving a snug fit without clipping.
-       */}
+      {/* Scrollable body — fills remaining height in the fixed-height column wrapper */}
       <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
         {/* Section 1 — Patient demographics, provider & contact */}
         <div className="px-5 py-4 border-b border-border-light">

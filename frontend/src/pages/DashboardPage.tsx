@@ -254,7 +254,7 @@ export function DashboardPage() {
                 />
 
                 {/* Table + detail panel split layout */}
-                <div className="flex gap-4 mt-2">
+                <div className="flex gap-4 mt-2 overflow-x-hidden">
                   <div className={effectiveSelectedRow ? 'flex-1 min-w-0' : 'w-full'}>
                     <DischargeTable
                       data={filteredRows}
