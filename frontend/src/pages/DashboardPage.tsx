@@ -266,8 +266,8 @@ export function DashboardPage() {
 
                   {effectiveSelectedRow && (
                     <div
-                      className="w-[480px] shrink-0"
-                      style={{ position: 'sticky', top: '16px', alignSelf: 'start' }}
+                      className="w-[480px] shrink-0 flex flex-col"
+                      style={{ height: 'calc(100vh - 380px)', minHeight: '300px' }}
                     >
                       <DetailPanel
                         row={effectiveSelectedRow}

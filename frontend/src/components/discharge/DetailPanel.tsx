@@ -55,11 +55,10 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
      */
     <div
       ref={panelRef}
-      className="panel-enter flex flex-col bg-surface rounded-xl overflow-hidden"
+      className="panel-enter flex flex-col bg-surface rounded-xl overflow-hidden h-full"
       style={{
         border: '1.5px solid #132e45',
         boxShadow: '0 6px 24px rgba(19,46,69,0.14)',
-        maxHeight: 'calc(100vh - 48px)',
       }}
       role="complementary"
       aria-label="Patient detail"
