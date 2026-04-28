@@ -51,13 +51,16 @@ SELECT
     MAX(al_login.created_at)::date                                                  AS last_login,
     MAX(al_any.created_at)::date                                                    AS last_activity
 FROM discharge_app.app_user u
-LEFT JOIN provider p ON TRUE
-LEFT JOIN location l ON l.location_id = p.location_id
 LEFT JOIN discharge_event de
-    ON de.provider_id = p.provider_id
+    ON u.practices IS NOT NULL
     AND de.discharge_date IS NOT NULL
-    AND u.practices IS NOT NULL
-    AND l.parent_org = ANY(u.practices)
+    AND EXISTS (
+        SELECT 1
+        FROM provider p
+        JOIN location l ON l.location_id = p.location_id
+        WHERE p.provider_id = de.provider_id
+          AND l.parent_org = ANY(u.practices)
+    )
     AND (
         de.discharge_hospital IS NULL
         OR (
@@ -67,10 +70,16 @@ LEFT JOIN discharge_event de
     )
 LEFT JOIN discharge_app.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
-LEFT JOIN discharge_app.user_activity_log al_login
-    ON al_login.user_email = u.user_email AND al_login.action = 'login'
-LEFT JOIN discharge_app.user_activity_log al_any
-    ON al_any.user_email = u.user_email
+LEFT JOIN LATERAL (
+    SELECT MAX(created_at) AS created_at
+    FROM discharge_app.user_activity_log
+    WHERE user_email = u.user_email AND action = 'login'
+) al_login ON TRUE
+LEFT JOIN LATERAL (
+    SELECT MAX(created_at) AS created_at
+    FROM discharge_app.user_activity_log
+    WHERE user_email = u.user_email
+) al_any ON TRUE
 WHERE u.is_active = TRUE AND u.role = 'staff'
 GROUP BY u.user_email, u.display_name, u.practices
 ORDER BY u.display_name
