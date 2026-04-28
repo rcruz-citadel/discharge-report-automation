@@ -16,6 +16,7 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "postgresql+asyncpg://discharge_app_role:PASSWORD@localhost:5432/your_db"
+    app_schema: str = "discharge_app"
 
     # Entra ID (Azure AD) OAuth
     auth_client_id: str = ""

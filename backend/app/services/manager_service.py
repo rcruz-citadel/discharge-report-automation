@@ -4,11 +4,13 @@ import logging
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.models.schemas import ManagerMetricsResponse, OutreachSummary, PracticeRollupRow, StaffBreakdownRow
 
 logger = logging.getLogger(__name__)
+_SCHEMA = get_settings().app_schema
 
-_SUMMARY_QUERY = text("""
+_SUMMARY_QUERY = text(f"""
 SELECT
     COUNT(*)                                                                        AS total,
     COUNT(*) FILTER (WHERE COALESCE(o.status, 'no_outreach') = 'no_outreach')      AS no_outreach,
@@ -18,7 +20,7 @@ SELECT
     COUNT(*) FILTER (WHERE o.status = 'late_delivery')                             AS late_delivery,
     COUNT(*) FILTER (WHERE o.status = 'no_outreach_required')                      AS no_outreach_required
 FROM discharge_event de
-LEFT JOIN discharge_app.outreach_status o
+LEFT JOIN {_SCHEMA}.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 WHERE de.discharge_date IS NOT NULL
   AND (
@@ -30,7 +32,7 @@ WHERE de.discharge_date IS NOT NULL
   )
 """)
 
-_STAFF_QUERY = text("""
+_STAFF_QUERY = text(f"""
 SELECT
     u.user_email,
     u.display_name,
@@ -50,7 +52,7 @@ SELECT
         WHERE o.status = 'no_outreach_required')                                     AS no_outreach_required,
     MAX(al_login.created_at)::date                                                  AS last_login,
     MAX(al_any.created_at)::date                                                    AS last_activity
-FROM discharge_app.app_user u
+FROM {_SCHEMA}.app_user u
 LEFT JOIN discharge_event de
     ON u.practices IS NOT NULL
     AND de.discharge_date IS NOT NULL
@@ -68,16 +70,16 @@ LEFT JOIN discharge_event de
             AND LOWER(de.discharge_hospital) NOT LIKE '%hospice%'
         )
     )
-LEFT JOIN discharge_app.outreach_status o
+LEFT JOIN {_SCHEMA}.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 LEFT JOIN LATERAL (
     SELECT MAX(created_at) AS created_at
-    FROM discharge_app.user_activity_log
+    FROM {_SCHEMA}.user_activity_log
     WHERE user_email = u.user_email AND action = 'login'
 ) al_login ON TRUE
 LEFT JOIN LATERAL (
     SELECT MAX(created_at) AS created_at
-    FROM discharge_app.user_activity_log
+    FROM {_SCHEMA}.user_activity_log
     WHERE user_email = u.user_email
 ) al_any ON TRUE
 WHERE u.is_active = TRUE AND u.role = 'staff'
@@ -85,7 +87,7 @@ GROUP BY u.user_email, u.display_name, u.practices
 ORDER BY u.display_name
 """)
 
-_PRACTICE_ROLLUP_QUERY = text("""
+_PRACTICE_ROLLUP_QUERY = text(f"""
 SELECT
     l.parent_org                                                                        AS practice,
     COUNT(DISTINCT de.event_id)                                                        AS total,
@@ -99,7 +101,7 @@ SELECT
 FROM discharge_event de
 LEFT JOIN provider p ON p.provider_id = de.provider_id
 LEFT JOIN location l ON l.location_id = p.location_id
-LEFT JOIN discharge_app.outreach_status o
+LEFT JOIN {_SCHEMA}.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 WHERE de.discharge_date IS NOT NULL
   AND l.parent_org IS NOT NULL

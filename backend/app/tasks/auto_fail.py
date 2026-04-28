@@ -12,11 +12,14 @@ import logging
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
+
 logger = logging.getLogger(__name__)
+_SCHEMA = get_settings().app_schema
 
 # Update existing outreach_status rows that are past their window
-_UPDATE_QUERY = text("""
-UPDATE discharge_app.outreach_status o
+_UPDATE_QUERY = text(f"""
+UPDATE {_SCHEMA}.outreach_status o
 SET status     = 'failed',
     updated_by = 'system',
     updated_at  = now()
@@ -35,8 +38,8 @@ WHERE o.event_id       = de.event_id
 """)
 
 # Insert failed rows for records with no outreach row yet but past their window
-_INSERT_QUERY = text("""
-INSERT INTO discharge_app.outreach_status
+_INSERT_QUERY = text(f"""
+INSERT INTO {_SCHEMA}.outreach_status
     (event_id, discharge_date, status, updated_by, updated_at, discharge_summary_dropped)
 SELECT
     de.event_id,
@@ -46,7 +49,7 @@ SELECT
     now(),
     FALSE
 FROM discharge_event de
-LEFT JOIN discharge_app.outreach_status o
+LEFT JOIN {_SCHEMA}.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 WHERE o.event_id IS NULL
   AND de.discharge_date IS NOT NULL

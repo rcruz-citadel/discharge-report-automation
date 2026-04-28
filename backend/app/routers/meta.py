@@ -4,10 +4,12 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.session import get_current_user
+from app.config import get_settings
 from app.database import get_db
 from app.models.schemas import AssigneeInfo, MeResponse, MetaFiltersResponse
 
 router = APIRouter(prefix="/meta", tags=["meta"])
+_SCHEMA = get_settings().app_schema
 
 _FILTER_VALUES_QUERY = text("""
 SELECT
@@ -29,9 +31,9 @@ FROM discharge_event de
 WHERE de.discharge_date IS NOT NULL
 """)
 
-_ASSIGNEES_QUERY = text("""
+_ASSIGNEES_QUERY = text(f"""
 SELECT display_name, practices
-FROM discharge_app.app_user
+FROM {_SCHEMA}.app_user
 WHERE is_active = TRUE
   AND array_length(practices, 1) > 0
 ORDER BY display_name

@@ -72,7 +72,7 @@ def create_app() -> FastAPI:
         try:
             async with AsyncSessionLocal() as db:
                 result = await db.execute(
-                    text("DELETE FROM discharge_app.app_session WHERE expires_at < now()")
+                    text(f"DELETE FROM {settings.app_schema}.app_session WHERE expires_at < now()")
                 )
                 await db.commit()
                 logger.info("Cleaned up %d expired sessions.", result.rowcount)

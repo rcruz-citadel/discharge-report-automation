@@ -5,13 +5,15 @@ from datetime import datetime, timezone
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.models.schemas import DischargeRecord, DischargesResponse
 
 logger = logging.getLogger(__name__)
+_SCHEMA = get_settings().app_schema
 
 # Excludes home health and hospice discharges — no TCM action required.
 # Deceased patients are intentionally kept so coordinators can update EMR status.
-_DISCHARGE_QUERY = text("""
+_DISCHARGE_QUERY = text(f"""
 SELECT
     de.event_id,
     de.insurance_member_id,
@@ -46,7 +48,7 @@ FROM discharge_event de
     LEFT JOIN patient pt ON pt.patient_id = de.patient_id
     LEFT JOIN diagnosis_code d ON d.dx_id = de.dx_id
     LEFT JOIN location l ON l.location_id = p.location_id
-    LEFT JOIN discharge_app.outreach_status o
+    LEFT JOIN {_SCHEMA}.outreach_status o
         ON o.event_id = de.event_id
         AND o.discharge_date = de.discharge_date
 WHERE de.discharge_date IS NOT NULL

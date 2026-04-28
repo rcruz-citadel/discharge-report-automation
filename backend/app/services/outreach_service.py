@@ -5,19 +5,21 @@ from datetime import date
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.models.schemas import OutreachAttempt, LogAttemptResponse, OutreachRecord, OutreachUpsertRequest
 
 logger = logging.getLogger(__name__)
+_SCHEMA = get_settings().app_schema
 
-_GET_OUTREACH_QUERY = text("""
+_GET_OUTREACH_QUERY = text(f"""
 SELECT event_id, discharge_date, status, notes, updated_by, updated_at, discharge_summary_dropped
-FROM discharge_app.outreach_status
+FROM {_SCHEMA}.outreach_status
 WHERE event_id = :event_id
   AND discharge_date = :discharge_date
 """)
 
-_UPSERT_OUTREACH_QUERY = text("""
-INSERT INTO discharge_app.outreach_status
+_UPSERT_OUTREACH_QUERY = text(f"""
+INSERT INTO {_SCHEMA}.outreach_status
     (event_id, discharge_date, status, updated_by, updated_at, notes, discharge_summary_dropped)
 VALUES
     (:event_id, :discharge_date, :status, :updated_by, now(), :notes, :discharge_summary_dropped)
@@ -30,8 +32,8 @@ ON CONFLICT (event_id, discharge_date) DO UPDATE
 RETURNING event_id, discharge_date, status, notes, updated_by, updated_at, discharge_summary_dropped
 """)
 
-_LOG_ACTIVITY_QUERY = text("""
-INSERT INTO discharge_app.user_activity_log (user_email, action, metadata_json)
+_LOG_ACTIVITY_QUERY = text(f"""
+INSERT INTO {_SCHEMA}.user_activity_log (user_email, action, metadata_json)
 VALUES (:user_email, 'outreach_update', :metadata_json)
 """)
 
@@ -113,29 +115,29 @@ async def upsert_outreach(
     )
 
 
-_GET_ATTEMPTS_QUERY = text("""
+_GET_ATTEMPTS_QUERY = text(f"""
 SELECT id, event_id, discharge_date, attempt_number, attempted_by, attempted_at
-FROM discharge_app.outreach_attempts
+FROM {_SCHEMA}.outreach_attempts
 WHERE event_id = :event_id AND discharge_date = :discharge_date
 ORDER BY attempt_number
 """)
 
-_LOG_ATTEMPT_QUERY = text("""
-INSERT INTO discharge_app.outreach_attempts
+_LOG_ATTEMPT_QUERY = text(f"""
+INSERT INTO {_SCHEMA}.outreach_attempts
     (event_id, discharge_date, attempt_number, attempted_by)
 SELECT
     :event_id,
     :discharge_date,
     COALESCE(MAX(attempt_number), 0) + 1,
     :attempted_by
-FROM discharge_app.outreach_attempts
+FROM {_SCHEMA}.outreach_attempts
 WHERE event_id = :event_id AND discharge_date = :discharge_date
 HAVING COALESCE(MAX(attempt_number), 0) < 3
 RETURNING id, event_id, discharge_date, attempt_number, attempted_by, attempted_at
 """)
 
-_AUTO_COMPLETE_QUERY = text("""
-INSERT INTO discharge_app.outreach_status
+_AUTO_COMPLETE_QUERY = text(f"""
+INSERT INTO {_SCHEMA}.outreach_status
     (event_id, discharge_date, status, updated_by, updated_at, notes, discharge_summary_dropped)
 VALUES
     (:event_id, :discharge_date, 'outreach_complete', 'system (3 attempts)', now(), '', FALSE)
