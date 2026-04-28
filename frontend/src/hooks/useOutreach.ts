@@ -56,7 +56,7 @@ export function useLogAttempt(eventId: string, dischargeDate: string) {
           return {
             ...old,
             records: old.records.map(r =>
-              r.event_id === eventId
+              r.event_id === eventId && r.discharge_date === dischargeDate
                 ? { ...r, outreach_status: 'outreach_complete' }
                 : r
             ),

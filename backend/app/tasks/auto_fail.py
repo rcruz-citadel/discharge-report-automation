@@ -51,6 +51,13 @@ LEFT JOIN discharge_app.outreach_status o
 WHERE o.event_id IS NULL
   AND de.discharge_date IS NOT NULL
   AND (
+    de.discharge_hospital IS NULL
+    OR (
+      LOWER(de.discharge_hospital) NOT LIKE '%home health%'
+      AND LOWER(de.discharge_hospital) NOT LIKE '%hospice%'
+    )
+  )
+  AND (
       (LOWER(COALESCE(de.stay_type, '')) LIKE '%emergency%'
        AND (CURRENT_DATE - de.discharge_date::date) > 7)
       OR

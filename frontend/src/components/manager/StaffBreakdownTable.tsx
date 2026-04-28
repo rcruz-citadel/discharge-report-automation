@@ -5,13 +5,9 @@ interface StaffBreakdownTableProps {
   rows: StaffBreakdownRow[]
 }
 
-/**
- * Staff breakdown table for manager dashboard.
- * Spec: 5.5 Manager Dashboard, Staff Breakdown columns
- */
 export function StaffBreakdownTable({ rows }: StaffBreakdownTableProps) {
   return (
-    <div className="bg-surface rounded-lg shadow-card overflow-hidden">
+    <div className="bg-surface rounded-lg shadow-card overflow-hidden overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
           <tr>
@@ -21,10 +17,13 @@ export function StaffBreakdownTable({ rows }: StaffBreakdownTableProps) {
               ['Total', '80px'],
               ['No Outreach', '100px'],
               ['Made', '80px'],
-              ['Complete', '80px'],
+              ['Complete', '90px'],
+              ['Failed', '80px'],
+              ['Late Del.', '80px'],
+              ['Not Req.', '80px'],
               ['% Done', '80px'],
               ['Last Login', '100px'],
-              ['Last Activity', '100px'],
+              ['Last Activity', '110px'],
             ].map(([label, width]) => (
               <th
                 key={label}
@@ -48,6 +47,9 @@ export function StaffBreakdownTable({ rows }: StaffBreakdownTableProps) {
               <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.no_outreach.toLocaleString()}</td>
               <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.outreach_made.toLocaleString()}</td>
               <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.outreach_complete.toLocaleString()}</td>
+              <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.failed.toLocaleString()}</td>
+              <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.late_delivery.toLocaleString()}</td>
+              <td className="px-3 py-[9px] text-[13px] text-text-primary">{row.no_outreach_required.toLocaleString()}</td>
               <td className="px-3 py-[9px] text-[13px] font-bold text-text-primary">{row.pct_complete}%</td>
               <td className="px-3 py-[9px] text-[13px] text-text-secondary">{formatDate(row.last_login)}</td>
               <td className="px-3 py-[9px] text-[13px] text-text-secondary">{formatDate(row.last_activity)}</td>
@@ -55,7 +57,7 @@ export function StaffBreakdownTable({ rows }: StaffBreakdownTableProps) {
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={9} className="px-3 py-8 text-center text-[13px] text-text-muted">
+              <td colSpan={12} className="px-3 py-8 text-center text-[13px] text-text-muted">
                 No staff data available.
               </td>
             </tr>

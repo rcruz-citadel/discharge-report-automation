@@ -137,15 +137,12 @@ RETURNING id, event_id, discharge_date, attempt_number, attempted_by, attempted_
 _AUTO_COMPLETE_QUERY = text("""
 INSERT INTO discharge_app.outreach_status
     (event_id, discharge_date, status, updated_by, updated_at, notes, discharge_summary_dropped)
-SELECT
-    :event_id, :discharge_date, 'outreach_complete', 'system (3 attempts)', now(),
-    COALESCE(notes, ''), COALESCE(discharge_summary_dropped, FALSE)
-FROM discharge_app.outreach_status
-WHERE event_id = :event_id AND discharge_date = :discharge_date
+VALUES
+    (:event_id, :discharge_date, 'outreach_complete', 'system (3 attempts)', now(), '', FALSE)
 ON CONFLICT (event_id, discharge_date) DO UPDATE
     SET status     = 'outreach_complete',
         updated_by = 'system (3 attempts)',
-        updated_at = now()
+        updated_at  = now()
 """)
 
 

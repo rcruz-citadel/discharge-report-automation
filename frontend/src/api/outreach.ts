@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { api } from './client'
 import type { OutreachRecord, OutreachUpsertPayload, OutreachAttempt, LogAttemptResponse } from '../types/discharge'
 
@@ -25,9 +26,6 @@ export async function upsertOutreach(payload: OutreachUpsertPayload): Promise<Ou
   })
   return response.data
 }
-
-// Need axios import for isAxiosError
-import axios from 'axios'
 
 export async function fetchAttempts(eventId: string, dischargeDate: string): Promise<OutreachAttempt[]> {
   const response = await api.get<OutreachAttempt[]>(`/outreach/${eventId}/attempts`, {

@@ -49,7 +49,7 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
     header: 'Window',
     size: 90,
     cell: ({ row }) => <DaysLeftBadge row={row.original} />,
-    sortingFn: (a, b) => getDaysRemaining(b.original) - getDaysRemaining(a.original),
+    sortingFn: (a, b) => getDaysRemaining(a.original) - getDaysRemaining(b.original),
   },
   {
     accessorKey: 'patient_name',

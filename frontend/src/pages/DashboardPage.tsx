@@ -114,11 +114,15 @@ export function DashboardPage() {
     activeTab === 'active' ? queues.active :
     queues.low_priority
 
-  // Always pull the latest version of the selected row from fresh data
+  // Pull latest version of selected row — search all records, not just current tab,
+  // so the panel stays open even if a status save moves the record to a different queue.
   const effectiveSelectedRow = useMemo(() => {
     if (!selectedRow) return null
-    return filteredRows.find(r => r.event_id === selectedRow.event_id) ?? null
-  }, [selectedRow, filteredRows])
+    const allRecords = dischargData?.records ?? []
+    return allRecords.find(r =>
+      r.event_id === selectedRow.event_id && r.discharge_date === selectedRow.discharge_date
+    ) ?? null
+  }, [selectedRow, dischargData])
 
   const handleTabChange = (tab: TabId) => {
     setActiveTab(tab)

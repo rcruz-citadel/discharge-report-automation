@@ -221,7 +221,9 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
   const mutation = useUpsertOutreach()
 
   const bucket = getQueueBucket(row)
-  const isLowPriority = bucket === 'low_priority'
+  // Show checkbox when status is failed OR record is in low-priority queue —
+  // coordinators may manually mark failed before the deadline expires.
+  const showSummaryDropped = status === 'failed' || bucket === 'low_priority'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -323,8 +325,8 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
         />
       </div>
 
-      {/* Discharge summary dropped checkbox — only shown for low priority records */}
-      {isLowPriority && (
+      {/* Discharge summary dropped checkbox — shown for failed status or low priority records */}
+      {showSummaryDropped && (
         <label className="flex items-center gap-2 cursor-pointer group">
           <input
             type="checkbox"

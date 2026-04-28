@@ -1,0 +1,1572 @@
+AI-generated content may be incorrect
+
+Ronnie Cruz started transcription
+SO
+
+Shaun O'heron
+0 minutes 3 seconds0:03
+Shaun O'heron 0 minutes 3 seconds
+In to the conversation and to be able to have a dialogue and talk about current design and then how we can build this to support not just today's needs but also.
+
+Ronnie Cruz
+0 minutes 5 seconds0:05
+Ronnie Cruz 0 minutes 5 seconds
+Right.
+SO
+
+Shaun O'heron
+0 minutes 23 seconds0:23
+Shaun O'heron 0 minutes 23 seconds
+as we evaluate creating TCM as its own digital care management service that could go to the rest of Citadel. So there's, initially we started with three statuses and we identified that there were some nuances that we needed to capture in order to effectively build
+Shaun O'heron 0 minutes 43 seconds
+KPIs for a larger program.
+Shaun O'heron 0 minutes 47 seconds
+So let's go ahead and we can walk through the current State and then identify last we discussed we had six statuses that we were discussing and the ones that were added were late delivery.
+
+Ronnie Cruz
+0 minutes 48 seconds0:48
+Ronnie Cruz 0 minutes 48 seconds
+Right.
+SO
+
+Shaun O'heron
+1 minute 6 seconds1:06
+Shaun O'heron 1 minute 6 seconds
+A.
+Shaun O'heron 1 minute 10 seconds
+crap or if you've got that on hand.
+
+Ronnie Cruz
+1 minute 13 seconds1:13
+Ronnie Cruz 1 minute 13 seconds
+Let me take a look. Yeah, I have it right here.
+Ronnie Cruz 1 minute 18 seconds
+Let's see.
+SO
+Shaun O'heron
+1 minute 21 seconds1:21
+Shaun O'heron 1 minute 21 seconds
+As we're building out a larger team and potentially a program that would interact with non-Halo practices, we want to make sure that we're able to capture KPIs about how many we are successful in engaging, as well as
+Shaun O'heron 1 minute 40 seconds
+those that are delivered beyond the 48 hour mark. So we're not going to be able to make intervention around that specific, or we're not going to be able to be successful if they're not delivering it to us within the first 48.
+
+Ronnie Cruz
+1 minute 55 seconds1:55
+Ronnie Cruz 1 minute 55 seconds
+Gotcha. Yeah, so we have, let's see, we had outreach complete, outreach made, no outreach failed and late delivery. Those were the six.
+Ronnie Cruz 2 minutes 6 seconds
+Thank you, that's five, yeah.
+SO
+Shaun O'heron
+2 minutes 9 seconds2:09
+Shaun O'heron 2 minutes 9 seconds
+I think that one of them was no outreach required. I think that was our six. Yeah. Just go ahead.
+
+Ronnie Cruz
+2 minutes 11 seconds2:11
+Ronnie Cruz 2 minutes 11 seconds
+No outreach needed. Yep, yep, that was our sixth.
+
+Makeba Crawford
+2 minutes 15 seconds2:15
+Makeba Crawford 2 minutes 15 seconds
+Shaun. Okay, so what I'm, maybe correct me if I'm wrong. So you said the outreach and within 48 hours, we can still be successful on getting that engagement. So I didn't really understand why.
+Makeba Crawford 2 minutes 32 seconds
+you were saying in that comment? Were you saying like, we won't be successful as far as clearing the measure or just doing that 48 hour outreach component?
+SO
+Shaun O'heron
+2 minutes 41 seconds2:41
+Shaun O'heron 2 minutes 41 seconds
+All right, that initial 48 hour outreach. So this is why, and this is a, it's more complex than just a binary. So that's why I wanted to get everybody together so we could talk through what the best logic was to program into the system. And one of the things that Ronnie has offered up, if there are,
+
+Makeba Crawford
+2 minutes 44 seconds2:44
+Makeba Crawford 2 minutes 44 seconds
+OKOLI.
+Makeba Crawford 2 minutes 50 seconds
+Kiah.
+SO
+Shaun O'heron
+3 minutes 1 second3:01
+Shaun O'heron 3 minutes 1 second
+things that we can automate in the system. He said that he can do, he can automate certain elements. So for example, if we wind up with two discharge notifications, one of them being that they went to the ER and then that they were
+Shaun O'heron 3 minutes 23 seconds
+admitted, I think was the question, Ronnie, that you had asked, and we're not going to be engaging them on the ER because they went inpatient. So we could eliminate the entry, basically filter out the ones that we don't have to make an intervention on so that the
+
+Ronnie Cruz
+3 minutes 33 seconds3:33
+Ronnie Cruz 3 minutes 33 seconds
+Right.
+SO
+Shaun O'heron
+3 minutes 42 seconds3:42
+Shaun O'heron 3 minutes 42 seconds
+Q is only populating with those things that.
+Shaun O'heron 3 minutes 49 seconds
+we can actually, we actually need to intervene on, clean it up, and then potentially make it so that once we have a status where it's been successfully addressed, that it would, once we click into that status, it would disappear. So that the stuff that we're looking at.
+Shaun O'heron 4 minutes 9 seconds
+as a default are only those things that we need to make an active intervention on, such as, you know, we made our initial call, but we weren't successful. So that stays in the queue until we were successful in connecting with the patient.
+
+Ronnie Cruz
+4 minutes 28 seconds4:28
+Ronnie Cruz 4 minutes 28 seconds
+Right, right. And now is there some kind of limit, like as far as the queue goes, that we just want discharges for seven days, two weeks? How long should a record stay in this table?
+SR
+Stephanie Resendez
+4 minutes 43 seconds4:43
+Stephanie Resendez 4 minutes 43 seconds
+For ER, the patient needs to be seen within seven days. So if it's been past seven days, let's say for some reason, we don't get the notification at that point, then they've already failed the measures. So I think the differences with inpatient, I know we say it's two weeks, but some payers actually go up to 30 days.
+
+Ronnie Cruz
+5 minutes 3 seconds5:03
+
+SR
+Stephanie Resendez
+5 minutes 27 seconds5:27
+Stephanie Resendez 5 minutes 27 seconds
+But, yeah.
+SO
+Shaun O'heron
+5 minutes 30 seconds5:30
+Shaun O'heron 5 minutes 30 seconds
+Yeah, the the.
+
+Makeba Crawford
+5 minutes 30 seconds5:30
+Makeba Crawford 5 minutes 30 seconds
+But we still get a part of that component by getting the discharge summary dropped in the chart. So I don't know if it should come off until we drop that discharge summary.
+Makeba Crawford 5 minutes 44 seconds
+Even if we missed the patient engagement day.
+Makeba Crawford 5 minutes 47 seconds
+We still get part of that component by dropping the discharge and admission server.
+Makeba Crawford 5 minutes 53 seconds
+So how would that work? Because if we're not, if they're falling off before we get them, how would we be able to drop that into the chart?
+SO
+Shaun O'heron
+6 minutes 2 seconds6:02
+Shaun O'heron 6 minutes 2 seconds
+When?
+Shaun O'heron 6 minutes 5 seconds
+Would establishing a...
+Shaun O'heron 6 minutes 10 seconds
+Okay, so this is why I wanted to get everybody together here, because if I'm trying to take the information from the team and deliver it to Ronnie, there's likely going to be a lot of things missed versus the three of us, four of us coming together and then talking through how best to build the logic here. So if...
+
+Ronnie Cruz
+6 minutes 13 seconds6:13
+Ronnie Cruz 6 minutes 13 seconds
+Okay.
+SO
+Shaun O'heron
+6 minutes 29 seconds6:29
+Shaun O'heron 6 minutes 29 seconds
+The information is delivered late.
+Shaun O'heron 6 minutes 33 seconds
+We can still get credit, not for the initial outreach, but for collecting the information. The discharge.
+Shaun O'heron 6 minutes 47 seconds
+information and dropping it into the chart.
+
+Ronnie Cruz
+6 minutes 55 seconds6:55
+Ronnie Cruz 6 minutes 55 seconds
+Okay.
+
+Makeba Crawford
+6 minutes 56 seconds6:56
+Makeba Crawford 6 minutes 56 seconds
+Correct.
+SR
+Stephanie Resendez
+6 minutes 57 seconds6:57
+Stephanie Resendez 6 minutes 57 seconds
+Yes.
+
+Makeba Crawford
+6 minutes 57 seconds6:57
+Makeba Crawford 6 minutes 57 seconds
+So may just to be safe, collect the ER for two weeks, just if we miss the date, so that way we can at least make sure that discharge summary is in there and then we can Mark it whatever.
+SO
+Shaun O'heron
+6 minutes 58 seconds6:58
+Shaun O'heron 6 minutes 58 seconds
+And...
+
+Makeba Crawford
+7 minutes 11 seconds7:11
+Makeba Crawford 7 minutes 11 seconds
+Whatever, I don't know what to market. What do you think, Stephanie?
+SR
+Stephanie Resendez
+7 minutes 16 seconds7:16
+Stephanie Resendez 7 minutes 16 seconds
+Yeah, I do.
+
+Makeba Crawford
+7 minutes 16 seconds7:16
+Makeba Crawford 7 minutes 16 seconds
+that we missed it, but we got that discharge. I don't know.
+SR
+Stephanie Resendez
+7 minutes 18 seconds7:18
+Stephanie Resendez 7 minutes 18 seconds
+We just add a note, I don't think that one we need a whole button for, because most of the time we'll catch it and stuff, but in under verification we know we can, I think we can just put a note saying notes uploaded at least.
+
+Ronnie Cruz
+7 minutes 33 seconds7:33
+Ronnie Cruz 7 minutes 33 seconds
+Gotcha. Okay, so I'm just trying to come up with a scenario here, if you don't mind. Let's say, you know, we're transitioning over now, we're starting to get some good relations with the payers and they're giving us daily files now. Before it was just, we had a full report and everything, but now they're feeding it to us directly, so.
+
+Makeba Crawford
+7 minutes 34 seconds7:34
+Makeba Crawford 7 minutes 34 seconds
+Yeah, maybe.
+
+Ronnie Cruz
+7 minutes 54 seconds7:54
+Ronnie Cruz 7 minutes 54 seconds
+I'm getting more information now.
+Ronnie Cruz 7 minutes 57 seconds
+But I do notice that sometimes it'll populate with a discharge. For example, if I pulled a report yesterday or get a report yesterday, 423, right? We'll get a discharge out of nowhere from like 419, which was four days ago. This is passed in 72 hours or three days, correct? So we won't get credit for it.
+Ronnie Cruz 8 minutes 16 seconds
+But you're saying that if even if we still work that queue, we could still get partial credit for dropping that information. Am I correct on that?
+
+Makeba Crawford
+8 minutes 25 seconds8:25
+Makeba Crawford 8 minutes 25 seconds
+You're correct. There's 4 components to it. So if we get the patient discharge admission summary to the provider, that's one component. The 48 hour outreach is 1, the actual engagement is 1, and then the med reconciliation, which is totally different from what you're doing.
+SR
+Stephanie Resendez
+8 minutes 25 seconds8:25
+Stephanie Resendez 8 minutes 25 seconds
+We.
+
+Ronnie Cruz
+8 minutes 44 seconds8:44
+Ronnie Cruz 8 minutes 44 seconds
+Gotcha. Okay. And then, so would it help to have like a separate table for those discharges that have came in late and that are not within the three days or so?
+
+Makeba Crawford
+8 minutes 55 seconds8:55
+Makeba Crawford 8 minutes 55 seconds
+Buddy.
+Makeba Crawford 8 minutes 59 seconds
+No, we can still, we still have seven days to get them in the office. So even though we missed that 48 hour window, we're still going to try to reach out to them. If we get it on the third day, we're still going to do our due diligence and do the outreach and try to get the patient in within the seven days and then we'll close it out.
+
+Ronnie Cruz
+9 minutes 15 seconds9:15
+Ronnie Cruz 9 minutes 15 seconds
+Okay, gotcha.
+
+Makeba Crawford
+9 minutes 15 seconds9:15
+Makeba Crawford 9 minutes 15 seconds
+So if it's ER and it's past seven days, we just missed every component but that discharge summary, if that makes sense.
+
+Ronnie Cruz
+9 minutes 22 seconds9:22
+Ronnie Cruz 9 minutes 22 seconds
+And is there a cap for that? Like, if you pass seven days, okay, you know, is there like a hard, hard stop of where you can get credit as far as days?
+
+Makeba Crawford
+9 minutes 36 seconds9:36
+Makeba Crawford 9 minutes 36 seconds
+Good.
+Makeba Crawford 9 minutes 38 seconds
+Yeah, the hard stop is the seven days.
+SR
+Stephanie Resendez
+9 minutes 38 seconds9:38
+Stephanie Resendez 9 minutes 38 seconds
+Just.
+SO
+Shaun O'heron
+9 minutes 41 seconds9:41
+Shaun O'heron 9 minutes 41 seconds
+Is that all is that also for the discharge um summary or can we get?
+SR
+Stephanie Resendez
+9 minutes 46 seconds9:46
+Stephanie Resendez 9 minutes 46 seconds
+No.
+Stephanie Resendez 9 minutes 48 seconds
+That's just in case, like, put it in case the payers come back, we'll do like audits and stuff like that, then they'll see that it's in there. That's what we put it into the chart. So at least they'll be like, oh, it's in there. It's like, we don't have like a set date. We've actually pulled some and put some in there from.
+
+Shaun O'heron
+9 minutes 48 seconds9:48
+Shaun O'heron 9 minutes 48 seconds
+Kiah.
+
+Makeba Crawford
+9 minutes 49 seconds9:49
+Makeba Crawford 9 minutes 49 seconds
+Oh.
+Makeba Crawford 10 minutes 1 second
+Yeah.
+SR
+Stephanie Resendez
+10 minutes 8 seconds10:08
+Stephanie Resendez 10 minutes 8 seconds
+last year that when they were doing the heated audits this beginning of the year. But for the heart stop, it would be the seven days because now we're just not outreaching. So we can't get them in anymore.
+
+Makeba Crawford
+10 minutes 18 seconds10:18
+Makeba Crawford 10 minutes 18 seconds
+Yeah.
+Makeba Crawford 10 minutes 20 seconds
+So that.
+
+Ronnie Cruz
+10 minutes 21 seconds10:21
+Ronnie Cruz 10 minutes 21 seconds
+So it could help to have like a secondary table of like, they came in late, but we won't get credit, but this is like a queue that we can work off of, right? There's no, there's not like an urgency to it, correct? I mean, there's a seven day, the seven day, I think that would be the main table, right, of everything that's coming in, but then you would have a secondary table of it.
+
+Makeba Crawford
+10 minutes 23 seconds10:23
+Makeba Crawford 10 minutes 23 seconds
+Right.
+SO
+Shaun O'heron
+10 minutes 37 seconds10:37
+Shaun O'heron 10 minutes 37 seconds
+Right.
+
+Ronnie Cruz
+10 minutes 40 seconds10:40
+Ronnie Cruz 10 minutes 40 seconds
+of it being something, you know, non-urgent, we just need to drop this in the EMR and then we can have like a check off where you're like, okay, this was done.
+SO
+Shaun O'heron
+10 minutes 48 seconds10:48
+Shaun O'heron 10 minutes 48 seconds
+Right, like, yeah, a secondary queue is kind of what I was thinking, where it's lower priority because it's not time sensitive. It doesn't populate the primary queue and it's something where once the team has accomplished all of the outreach for patients that can still be captured when their spare time, which I know don't really rise too hard, Stephanie.
+
+Ronnie Cruz
+11 minutes 4 seconds11:04
+Ronnie Cruz 11 minutes 4 seconds
+Good.
+Ronnie Cruz 11 minutes 12 seconds
+Yeah.
+SO
+Shaun O'heron
+11 minutes 12 seconds11:12
+Shaun O'heron 11 minutes 12 seconds
+on the spare time bit. Then the team can go in, they can grab the discharge summaries and move those into the patient record.
+
+Ronnie Cruz
+11 minutes 14 seconds11:14
+Ronnie Cruz 11 minutes 14 seconds
+Okay.
+Ronnie Cruz 11 minutes 17 seconds
+The.
+SO
+Shaun O'heron
+11 minutes 22 seconds11:22
+Shaun O'heron 11 minutes 22 seconds
+Does that make sense as far as having a second queue for low priority, low impact to the measure?
+
+Ronnie Cruz
+11 minutes 30 seconds11:30
+Ronnie Cruz 11 minutes 30 seconds
+Yeah, no, that does completely make sense and we can definitely do something on that on that end. And what I can do as well, now that now I'm thinking about this time sensitivity thing, is just like being able to then move everything that's, you know, we got to get this done to the top of the list of your list as well, now that I'm thinking about it. So if you have like a day left or.
+Ronnie Cruz 11 minutes 52 seconds
+you know, whichever we can move that through the top of the queue. So yeah, no, this is making sense.
+SO
+Shaun O'heron
+11 minutes 57 seconds11:57
+Shaun O'heron 11 minutes 57 seconds
+Yeah, and.
+Shaun O'heron 11 minutes 59 seconds
+I'll provide my input here, but Stephanie and Makeba are the ones that have the experience and are working in a day-to-day, so their feedback is going to be primary here.
+
+Ronnie Cruz
+12 minutes 10 seconds12:10
+Ronnie Cruz 12 minutes 10 seconds
+Right, right, and and you know this is going to evolve from a dashboard into what you know it started off as like a report that you would get emailed to. Now that I have some more bandwidth and I moved off a project, my priority is helping you guys with this and some other other projects that I'm working on, but...
+SO
+Shaun O'heron
+12 minutes 17 seconds12:17
+Shaun O'heron 12 minutes 17 seconds
+Thank you.
+
+Makeba Crawford
+12 minutes 28 seconds12:28
+Makeba Crawford 12 minutes 28 seconds
+Yeah.
+
+Ronnie Cruz
+12 minutes 30 seconds12:30
+Ronnie Cruz 12 minutes 30 seconds
+It frees me up and this is where this is where it's important to get feedback from you guys and we want to flesh this out. So right now we're starting off with the dashboard that you go in and then get the information, but we do want to create some kind of app where you can go in and then make these changes. Do you have any?
+SO
+Shaun O'heron
+12 minutes 45 seconds12:45
+Shaun O'heron 12 minutes 45 seconds
+Yes.
+
+Ronnie Cruz
+12 minutes 49 seconds12:49
+Ronnie Cruz 12 minutes 49 seconds
+Other questions or concerns or anything like that?
+
+Makeba Crawford
+12 minutes 53 seconds12:53
+Makeba Crawford 12 minutes 53 seconds
+I have two questions for you, Ronnie. So the second Q that you're thinking about putting together will be ER and slash inpatient visits that we probably will miss the measurement Mark, correct? But we can go ahead, hey, go ahead and drop these discharge summaries. Okay.
+
+Ronnie Cruz
+12 minutes 53 seconds12:53
+Ronnie Cruz 12 minutes 53 seconds
+Huh.
+Ronnie Cruz 13 minutes 4 seconds
+A
+Ronnie Cruz 13 minutes 8 seconds
+Right.
+Ronnie Cruz 13 minutes 11 seconds
+This is past seven days, correct? This is this.
+
+
+Shaun O'heron
+13 minutes 11 seconds13:11
+Shaun O'heron 13 minutes 11 seconds
+It is.
+
+Makeba Crawford
+13 minutes 14 seconds13:14
+Makeba Crawford 13 minutes 14 seconds
+Okay, that'll be for ER and then intention is 30.
+SO
+Shaun O'heron
+13 minutes 14 seconds13:14
+Shaun O'heron 13 minutes 14 seconds
+Alright, so...
+Shaun O'heron 13 minutes 17 seconds
+Right.
+
+Ronnie Cruz
+13 minutes 18 seconds13:18
+Ronnie Cruz 13 minutes 18 seconds
+Oh, inpatience 30. Okay, great. I did not know that. So.
+
+Makeba Crawford
+13 minutes 20 seconds13:20
+Makeba Crawford 13 minutes 20 seconds
+Yeah, we have 30 days. Yeah.
+SO
+Shaun O'heron
+13 minutes 22 seconds13:22
+Shaun O'heron 13 minutes 22 seconds
+And can we enter a filter based upon that, based upon the value in a specific field, ER versus inpatient running?
+
+Ronnie Cruz
+13 minutes 30 seconds13:30
+Ronnie Cruz 13 minutes 30 seconds
+Yes, yes, we'll be able to do that. You'll be able to customize it. And I do have, now if you guys don't have any other questions, if you want me to show some kind of mock-up app that I've created, kind of demoing what it looks like now. Oh yeah, go ahead.
+SO
+Shaun O'heron
+13 minutes 31 seconds13:31
+Shaun O'heron 13 minutes 31 seconds
+Okay, excellent.
+
+Makeba Crawford
+13 minutes 44 seconds13:44
+Makeba Crawford 13 minutes 44 seconds
+I have.
+Makeba Crawford 13 minutes 47 seconds
+Ronnie, I have two more, and then I promise I will be quiet. I know there goes Makeba. Okay, so in regards to, as you know, we also get the discharge summaries from SNFs and rehabs, and those are seven days as well. So will those, I just want to make sure that you are aware if it's like a rehab.
+
+Ronnie Cruz
+13 minutes 48 seconds13:48
+Ronnie Cruz 13 minutes 48 seconds
+Oh, oh, yeah, I'm sorry. I did not. I'm sorry. No, you're fine.
+SO
+Shaun O'heron
+13 minutes 55 seconds13:55
+Shaun O'heron 13 minutes 55 seconds
+I.
+
+Ronnie Cruz
+14 minutes 1 second14:01
+Ronnie Cruz 14 minutes 1 second
+Yes.
+
+Makeba Crawford
+14 minutes 7 seconds14:07
+Makeba Crawford 14 minutes 7 seconds
+or something like that. We only have seven days because that patient was discharged and then spent 21 days.
+Makeba Crawford 14 minutes 13 seconds
+You know, in the rehab, so we need some contact and within seven.
+
+Ronnie Cruz
+14 minutes 18 seconds14:18
+Ronnie Cruz 14 minutes 18 seconds
+Okay, so, okay, yeah, that's one of the questions that I had too, was sometimes we'll get a patient, they get discharged from a hospital, but go straight to, or they get transferred to a SNF or rehab. Now, are you guys still, do we have to wait till they get out of the SNF to reach out to them, or can we reach out to them now after they've gotten discharged from the ER?
+Ronnie Cruz 14 minutes 42 seconds
+Hey, I don't know exactly how that works.
+
+Makeba Crawford
+14 minutes 42 seconds14:42
+Makeba Crawford 14 minutes 42 seconds
+I work slow.
+Makeba Crawford 14 minutes 45 seconds
+Our workflow is sometimes we get the inpatient discharge and we'll reach out like a normal, you know, normal protocol. But if we call and we find out the patient is in rehab, we know that we'll get another discharge notification. We will drop that discharge in the chart, and then we'll circle back to get them in, because it's kind of like the clock starts over.
+
+Ronnie Cruz
+14 minutes 59 seconds14:59
+Ronnie Cruz 14 minutes 59 seconds
+OKOLI.
+Ronnie Cruz 15 minutes 7 seconds
+Uh-huh.
+
+Makeba Crawford
+15 minutes 8 seconds15:08
+Makeba Crawford 15 minutes 8 seconds
+If that's making sense. But we do need that initial discharge from the ER or hospital to drop that. It's called notification of, I forgot the whole term, but it's notifying the provider that this patient was in the ER or in inpatient. And then we'll follow up after. Yeah.
+
+Ronnie Cruz
+15 minutes 23 seconds15:23
+Ronnie Cruz 15 minutes 23 seconds
+Got you.
+SR
+Stephanie Resendez
+15 minutes 26 seconds15:26
+Stephanie Resendez 15 minutes 26 seconds
+So you should be Ronnie, it should just come through as an inpatient or ER discharge. It won't say SNF, it won't say anything like that initially. So I think in terms of, you know, you've seen the data, it'll just say inpatient from Wellstar or anything like that. And then we call and they'll let us know that we have, or we'll see it in the notes, but we'll still call to verify.
+
+Ronnie Cruz
+15 minutes 26 seconds15:26
+Ronnie Cruz 15 minutes 26 seconds
+Okay.
+SO
+Shaun O'heron
+15 minutes 31 seconds15:31
+Shaun O'heron 15 minutes 31 seconds
+Yeah.
+SR
+Stephanie Resendez
+15 minutes 48 seconds15:48
+Stephanie Resendez 15 minutes 48 seconds
+when they usually are discharged from the actual SNF, I think that's when I'll say specifically the skill learning facility or whatever it was that they were in whenever you receive that second discharge. So then we'll reach out again.
+
+Ronnie Cruz
+16 minutes 4 seconds16:04
+Ronnie Cruz 16 minutes 4 seconds
+Okay, yeah.
+SO
+Shaun O'heron
+16 minutes 5 seconds16:05
+Shaun O'heron 16 minutes 5 seconds
+Is the, do you have to put two separate discharge summaries and then one from the hospital and one from the acute rehab or the SNF, or is it always the hospital discharge that you're collecting and adding to the patient record?
+Stephanie Resendez
+16 minutes 5 seconds16:05
+Stephanie Resendez 16 minutes 5 seconds
+Yeah.
+Stephanie Resendez 16 minutes 19 seconds
+We only have access to the hospital. We don't have...
+SO
+Shaun O'heron
+16 minutes 22 seconds16:22
+Shaun O'heron 16 minutes 22 seconds
+OKOLI.
+SR
+Stephanie Resendez
+16 minutes 23 seconds16:23
+Stephanie Resendez 16 minutes 23 seconds
+the other component or ability to print those out. Usually we ask the patient to come in and bring any type of discharge or medication. So, you know, for the hospitals we don't have access to.
+Stephanie Resendez 16 minutes 39 seconds
+I think the other, the only other one that maybe Ronnie can just remove is home health. We do, for some reason, they do count them. I'll say inpatient or something like that, but really they're not. They just get discharged from their home health and then sometimes it's just that it gets renewed and they're consistently like that, but they were never.
+
+Ronnie Cruz
+16 minutes 49 seconds16:49
+Ronnie Cruz 16 minutes 49 seconds
+Mhm.
+SR
+Stephanie Resendez
+16 minutes 58 seconds16:58
+Stephanie Resendez 16 minutes 58 seconds
+Actually seen in the hospital, so those we don't reach out at all.
+SO
+Shaun O'heron
+17 minutes 2 seconds17:02
+Shaun O'heron 17 minutes 2 seconds
+So we can filter those out entirely because there's no action.
+
+Ronnie Cruz
+17 minutes 6 seconds17:06
+Ronnie Cruz 17 minutes 6 seconds
+Right, so they come in as inpatient, but the discharge hospital is like home health and things like that is what you're saying.
+SO
+Shaun O'heron
+17 minutes 15 seconds17:15
+Shaun O'heron 17 minutes 15 seconds
+I think, Stephanie, correct me if I'm wrong, but it shows them as being discharged from home health, but they never had an ER visit or an inpatient visit. Is that correct?
+SR
+Stephanie Resendez
+17 minutes 27 seconds17:27
+Stephanie Resendez 17 minutes 27 seconds
+It could have initially, but it could have been months ago, the year before.
+SO
+Shaun O'heron
+17 minutes 35 seconds17:35
+Shaun O'heron 17 minutes 35 seconds
+Okay, so...
+SR
+Stephanie Resendez
+17 minutes 35 seconds17:35
+Stephanie Resendez 17 minutes 35 seconds
+I think that renewed, yeah, if they get renewed a new order or referral, they'll mark it as discharged and then be done again.
+SO
+Shaun O'heron
+17 minutes 44 seconds17:44
+Shaun O'heron 17 minutes 44 seconds
+So we'll just categorically omit anything that is a home health discharge.
+
+Ronnie Cruz
+17 minutes 49 seconds17:49
+Ronnie Cruz 17 minutes 49 seconds
+Okay, so I have actually an example if you want. I'll show you, I'll share my screen just so that you guys can see that.
+
+Makeba Crawford
+17 minutes 51 seconds17:51
+Makeba Crawford 17 minutes 51 seconds
+Correct.
+
+Ronnie Cruz
+17 minutes 58 seconds17:58
+Ronnie Cruz 17 minutes 58 seconds
+Let me know if you're able to see my screen.
+SO
+Shaun O'heron
+18 minutes 1 second18:01
+Shaun O'heron 18 minutes 1 second
+Yep.
+
+Ronnie Cruz
+18 minutes 2 seconds18:02
+Ronnie Cruz 18 minutes 2 seconds
+Okay, so this person right here, Justina Wilson, looks like it was admitted for April 10th, discharged on the 14th, and the discharge hospital was Central Home Health. So under the rule that you had said, we would omit this, correct?
+Ronnie Cruz 18 minutes 19 seconds
+This would be omitted. Okay.
+SO
+Shaun O'heron
+18 minutes 21 seconds18:21
+Shaun O'heron 18 minutes 21 seconds
+Yep.
+
+Ronnie Cruz
+18 minutes 23 seconds18:23
+Ronnie Cruz 18 minutes 23 seconds
+Gotcha. Okay, we'll do that.
+Ronnie Cruz 18 minutes 26 seconds
+Um, let's see. Okay, so with that out of the way, do we have any other questions, concerns, anything like that?
+
+Makeba Crawford
+18 minutes 33 seconds18:33
+Makeba Crawford 18 minutes 33 seconds
+La.
+Makeba Crawford 18 minutes 35 seconds
+Last question. I know on last week, I think there was an issue with, was it Anthem or Aetna with an inclusion that kind of held a delay up with the discharge summaries. So will that affect the other payers like Humana and UHC discharges coming through on the portal?
+
+Ronnie Cruz
+18 minutes 56 seconds18:56
+Ronnie Cruz 18 minutes 56 seconds
+I have not, I don't think so. I don't think they've, I haven't heard anything from the other payers about that. So should be good.
+
+Makeba Crawford
+18 minutes 56 seconds18:56
+Makeba Crawford 18 minutes 56 seconds
+on the dashboard.
+
+Ronnie Cruz
+19 minutes 5 seconds19:05
+Ronnie Cruz 19 minutes 5 seconds
+on their end.
+SO
+Shaun O'heron
+19 minutes 6 seconds19:06
+Shaun O'heron 19 minutes 6 seconds
+My understanding is that last week's delay was based upon adding a new data stream, that that's not going to be something that's ongoing. Makeba, I think that was just fixed.
+
+Ronnie Cruz
+19 minutes 17 seconds19:17
+Ronnie Cruz 19 minutes 17 seconds
+Oh, yes, yes. That was me adding the new data stream in and yeah, and I have a pipeline going that automates all this every morning. So every morning about 930, 930 Eastern, because that's the last time we get the last payer that gives us data.
+Ronnie Cruz 19 minutes 36 seconds
+Well, 930 Central, so it might be 1030 Eastern. And we might be able to have this refresh like every so often instead, depending on how early you guys. I know you guys are on the East Coast on Eastern Time. So yeah, so basically 1030 in the morning is when you'll get the fresh.
+Makeba Crawford
+19 minutes 49 seconds19:49
+Makeba Crawford 19 minutes 49 seconds
+Yeah, yeah.
+
+Ronnie Cruz
+19 minutes 55 seconds19:55
+Ronnie Cruz 19 minutes 55 seconds
+data from this morning and everything and all that. So yeah, so there shouldn't be any issues and you should be able to work on it as normal, as is, just because we were just adding a new payer.
+
+Makeba Crawford
+20 minutes 3 seconds20:03
+Makeba Crawford 20 minutes 3 seconds
+OKOLI.
+Makeba Crawford 20 minutes 11 seconds
+Perfect. Thank you, Ronnie.
+
+Ronnie Cruz
+20 minutes 13 seconds20:13
+Ronnie Cruz 20 minutes 13 seconds
+Yeah, of course. So yeah, we want to flesh this out. So right now it's a dashboard. I know some of the constraints are like, for example, if you were to assign it to somebody, you get this like pause on it and it refreshes. This is just because we're using it as the dashboard. There's a lot of data. But what we're working on is fleshing this out and making it into an actual application.
+SR
+Stephanie Resendez
+20 minutes 13 seconds20:13
+Stephanie Resendez 20 minutes 13 seconds
+Thank you.
+
+Ronnie Cruz
+20 minutes 34 seconds20:34
+Ronnie Cruz 20 minutes 34 seconds
+So this is what it looks like. Maybe not much of A change, but here's what this would look like. You have your recent, your last six months, all discharges, and then, you know, you go here and it's...
+Ronnie Cruz 20 minutes 49 seconds
+Oh, if it works, it wants to work with me. Just a little mock-up, but we'll get this working. So what you would do is you would go here. Let's go to this person right here. You would get this little card that shows up, a detailed card of what's going on. You get patient and provider information here at the top.
+Ronnie Cruz 21 minutes 9 seconds
+their member ID, date of birth, phone number, practice, all that jazz, to get their hospitalization and diagnosis information right here, and then...
+Ronnie Cruz 21 minutes 19 seconds
+Yeah, outreach status. So right now we just have four. Obviously, we're going to work on adding those other two. But you'll have no outreach, outreach made, outreach complete, or failed. You'll add in some notes, and then you can log in your attempts right here.
+Ronnie Cruz 21 minutes 36 seconds
+So for example, if we just said outreach complete, no notes.
+Ronnie Cruz 21 minutes 42 seconds
+should save and we should be able to see that there. And as you can see in the table, you'll have it auto-populate with outreach complete. And the cool thing is, if you ever want to go in and look at what you've completed, you can do that.
+Ronnie Cruz 21 minutes 58 seconds
+Same thing with outreach made, or if you want to look at both, you can do so as well. And it's kind of color-coded as well.
+Ronnie Cruz 22 minutes 5 seconds
+So this is kind of what we're working on and eventually it'll end up being some kind of application where you can go in and do this.
+SR
+Stephanie Resendez
+22 minutes 8 seconds22:08
+Stephanie Resendez 22 minutes 8 seconds
+Yeah.
+
+Ronnie Cruz
+22 minutes 14 seconds22:14
+Ronnie Cruz 22 minutes 14 seconds
+And then, you know, we'll work on creating that other workflow for those ones that are past seven days or 30 days for inpatient.
+SO
+Shaun O'heron
+22 minutes 25 seconds22:25
+Shaun O'heron 22 minutes 25 seconds
+and the...
+Shaun O'heron 22 minutes 27 seconds
+other question that I have here.
+
+Ronnie Cruz
+22 minutes 29 seconds22:29
+Ronnie Cruz 22 minutes 29 seconds
+Yeah.
+SO
+Shaun O'heron
+22 minutes 30 seconds22:30
+Shaun O'heron 22 minutes 30 seconds
+For the...
+Shaun O'heron 22 minutes 33 seconds
+We are going to need to define within the workflow document, this is for the team more so than for you, Ronnie, except the potential for automation components here, what each of these statuses means. As we're bringing on a new team member in a week, and she'll be primarily working this and the metadherence.
+Shaun O'heron 22 minutes 55 seconds
+We're going to want to make sure once we're diving into full-time use of this for our...
+Shaun O'heron 23 minutes 1 second
+Big 4 payer TCM components.
+Shaun O'heron 23 minutes 6 seconds
+Would.
+Shaun O'heron 23 minutes 10 seconds
+So when we're looking at failed, failed would mean that it was delivered timely.
+Shaun O'heron 23 minutes 16 seconds
+and that for a...
+Shaun O'heron 23 minutes 20 seconds
+ER.
+Shaun O'heron 23 minutes 22 seconds
+It should go into failed status if it's greater than a week.
+Shaun O'heron 23 minutes 26 seconds
+and it should be removed from this queue, preferably automatically.
+
+Ronnie Cruz
+23 minutes 32 seconds23:32
+Ronnie Cruz 23 minutes 32 seconds
+Yes.
+SO
+Shaun O'heron
+23 minutes 32 seconds23:32
+Shaun O'heron 23 minutes 32 seconds
+For.
+Shaun O'heron 23 minutes 34 seconds
+A...
+Shaun O'heron 23 minutes 36 seconds
+Inpatient.
+Shaun O'heron 23 minutes 41 seconds
+at 30 days, it should automatically go into failed status and remove from this queue. Makeba and Stephanie will let me know if I'm missing something or I'm oversimplifying, but I want to make sure that things are pulled out of this queue once they're not workable so that we can maintain a
+Shaun O'heron 24 minutes 1 second
+a clear view on what needs to be worked.
+Shaun O'heron 24 minutes 6 seconds
+Because one of the things that as a team, Ronnie, we encountered with team members that are not with us, is challenges around identifying what was workable and what wasn't. So as we're onboarding new team members and trying to engage a system here,
+
+Ronnie Cruz
+24 minutes 7 seconds24:07
+Ronnie Cruz 24 minutes 7 seconds
+Yeah.
+
+Makeba Crawford
+24 minutes 8 seconds24:08
+Makeba Crawford 24 minutes 8 seconds
+Yeah.
+SO
+Shaun O'heron
+24 minutes 25 seconds24:25
+Shaun O'heron 24 minutes 25 seconds
+I want to make sure that we make it clearer for them as to what is possible to be worked and to succeed at versus what isn't.
+
+Ronnie Cruz
+24 minutes 35 seconds24:35
+Ronnie Cruz 24 minutes 35 seconds
+Gotcha. No, I'm writing all this down and making sure that work. It's this is not something that ends up being complex, too complex or anything like that. So, so yeah, no, I understand and we can we can definitely mock something up for that.
+SO
+Shaun O'heron
+24 minutes 48 seconds24:48
+Shaun O'heron 24 minutes 48 seconds
+Temp.
+Shaun O'heron 24 minutes 50 seconds
+Stephanie Makeba, anything that I'm missing there? Anything that we need to include as like an additional consideration?
+
+Makeba Crawford
+25 minutes25:00
+Makeba Crawford 25 minutes
+No, I don't think so. I think you hit it on the nose.
+SO
+Shaun O'heron
+25 minutes 3 seconds25:03
+Shaun O'heron 25 minutes 3 seconds
+OKOLI.
+SR
+Stephanie Resendez
+25 minutes 3 seconds25:03
+Stephanie Resendez 25 minutes 3 seconds
+Yeah. I think, like I said, if there are the very rare, unusual discharges, whatever the reason, if we're able just to put a note, and I think then we can just see which category fits the best. But I think the majority of the time is just going to be those called outrage or attempt or failed.
+SO
+Shaun O'heron
+25 minutes 23 seconds25:23
+Shaun O'heron 25 minutes 23 seconds
+And what I'm thinking is...
+SR
+Stephanie Resendez
+25 minutes 24 seconds25:24
+Stephanie Resendez 25 minutes 24 seconds
+I think.
+SO
+Shaun O'heron
+25 minutes 29 seconds25:29
+Shaun O'heron 25 minutes 29 seconds
+No outreach would be the default status where no attempts were made yet. Outreach made would be that we had initiated at least one attempt to contact up to three and after three, we would mark it as outreach complete. Or if we were successful and we got them scheduled,
+
+Ronnie Cruz
+25 minutes 43 seconds25:43
+Ronnie Cruz 25 minutes 43 seconds
+Huh.
+SO
+Shaun O'heron
+25 minutes 49 seconds25:49
+Shaun O'heron 25 minutes 49 seconds
+we would move it to outreach complete as well.
+SR
+Stephanie Resendez
+25 minutes 56 seconds25:56
+Stephanie Resendez 25 minutes 56 seconds
+Yeah.
+
+Ronnie Cruz
+25 minutes 56 seconds25:56
+Ronnie Cruz 25 minutes 56 seconds
+Right, and then you're able to see how many outreach attempts there were. So it saves. So for example, if I log in another attempt and save it, you save it, go back in, you go down there and you're like, oh, I made a second attempt to it. Okay, well, we have one more. And I think after the third one, it stops. I guess it goes into something else.
+SO
+Shaun O'heron
+26 minutes 11 seconds26:11
+Shaun O'heron 26 minutes 11 seconds
+Okay.
+
+Ronnie Cruz
+26 minutes 16 seconds26:16
+Ronnie Cruz 26 minutes 16 seconds
+Or we can figure out what we want to do with that record after three attempts. What we want to do with it.
+SO
+Shaun O'heron
+26 minutes 23 seconds26:23
+Shaun O'heron 26 minutes 23 seconds
+Prentiss.
+
+Ronnie Cruz
+26 minutes 23 seconds26:23
+Ronnie Cruz 26 minutes 23 seconds
+I do have a question though. For reaching out, I know Citadel, you give a list of, well, they give a list of patients to the practices and then they do the outreach. But for ALO, you guys reach out, you guys reach out directly to these patients. Do you guys go into the EMR to get their phone number or do you guys use this data or the data that I send you for the phone numbers to reach out and call them?
+SO
+Shaun O'heron
+26 minutes 25 seconds26:25
+Shaun O'heron 26 minutes 25 seconds
+Mm.
+Shaun O'heron 26 minutes 38 seconds
+Right.
+SR
+Stephanie Resendez
+26 minutes 45 seconds26:45
+Stephanie Resendez 26 minutes 45 seconds
+DMR.
+
+Ronnie Cruz
+26 minutes 46 seconds26:46
+Ronnie Cruz 26 minutes 46 seconds
+The EMR is the EMR. Did you notice the EMR data? The EMR phone numbers are more accurate.
+SR
+Stephanie Resendez
+26 minutes 47 seconds26:47
+Stephanie Resendez 26 minutes 47 seconds
+Call.
+Stephanie Resendez 26 minutes 51 seconds
+Yeah.
+Stephanie Resendez 26 minutes 53 seconds
+Yes, especially because the majority of our patients are older and they have somebody, some caregiver under their HIPAA. So we need to make sure that those phone numbers are usually in their account. And we also want to make sure that that document is scanned and given us permission. A lot of these patients are 80, 90 year old, 70.
+Stephanie Resendez 27 minutes 13 seconds
+and they are usually not answering their own phone. So if this is their primary number for that patient is usually the one we might not reach them on to.
+
+
+Ronnie Cruz
+27 minutes 23 seconds27:23
+Ronnie Cruz 27 minutes 23 seconds
+Gotcha. How much of A hassle, how much time does it take for you to go into the EMR and get that information? Does it take a long time? Would it be, I guess my question is, would it be really helpful for us to be able to get that phone number from the EMR and put it on here for this patient?
+SR
+Stephanie Resendez
+27 minutes 40 seconds27:40
+Stephanie Resendez 27 minutes 40 seconds
+I don't think so, only because we still want to check the EMR, especially for ALOS and sometimes the clinics reach out already. There might be a TE or outreach or appointment already made by the patient themselves. Just want to wait, it is protocol to check their chart to see what's going on before outreaching anyways.
+
+Ronnie Cruz
+28 minutes 1 second28:01
+Ronnie Cruz 28 minutes 1 second
+Okay, so it's already, it's already, it's already there, so it's not okay, not a big clip. Okay, okay, great, great, great. I just want to understand your workflow. Yeah, yeah, that was one of the, that when you had told me and I put some thought into what Citadel and then the ALO team, what how the differences in their workflow is, you know, with ALO we have.
+SR
+Stephanie Resendez
+28 minutes 2 seconds28:02
+Stephanie Resendez 28 minutes 2 seconds
+Yes.
+Stephanie Resendez 28 minutes 5 seconds
+Mhm.
+SO
+Shaun O'heron
+28 minutes 8 seconds28:08
+Shaun O'heron 28 minutes 8 seconds
+We do appreciate the thought, though.
+
+Ronnie Cruz
+28 minutes 21 seconds28:21
+Ronnie Cruz 28 minutes 21 seconds
+direct connection to the EMR. It's not, it's pretty easy. We have a good contact and good relationship with them. So to be able to do that would be a big lift. But if it's not a big hassle operationally, then it's not a big deal and not that big of a deal to do.
+SR
+Stephanie Resendez
+28 minutes 39 seconds28:39
+Stephanie Resendez 28 minutes 39 seconds
+Ronnie, I did want to ask, I have noticed that sometimes some of the hospital disposition where they went are blamed. And I see it more often with Anthem. So that makes me having to go through all the portals we can to figure out which hospital where it was
+Stephanie Resendez 29 minutes 1 second
+that they were discharged to, and I don't know, and it's not every patient, it's, and then, and then they're there, and it's not an unusual hospital, we will start with Piedmont. So I don't know why sometimes they don't have that. And that would, that does kind of delay things, having to research where it was they ended up.
+SO
+Shaun O'heron
+29 minutes 21 seconds29:21
+Shaun O'heron 29 minutes 21 seconds
+The.
+SR
+Stephanie Resendez
+29 minutes 21 seconds29:21
+Stephanie Resendez 29 minutes 21 seconds
+Go to.
+
+Ronnie Cruz
+29 minutes 23 seconds29:23
+Ronnie Cruz 29 minutes 23 seconds
+Gotcha, let's see, let's take a look, this position.
+Ronnie Cruz 29 minutes 31 seconds
+Two.
+Ronnie Cruz 29 minutes 37 seconds
+OK, so this is disposition unknown, and then, ohh, you would get none for that, like right here, right?
+Ronnie Cruz 29 minutes 46 seconds
+And, and, um, okay, and you have to go and hunt that down, that information down. Are you able to usually come up with that information?
+SR
+Stephanie Resendez
+29 minutes 46 seconds29:46
+Stephanie Resendez 29 minutes 46 seconds
+Yes.
+Stephanie Resendez 29 minutes 52 seconds
+Yeah.
+Stephanie Resendez 29 minutes 55 seconds
+I've noticed that a lot of them are Wellstar. I've noticed that that's kind of been my default whenever it's blank and it's one of those those patients is to start with Wellstar. Of course, I have had some Piedmont, but I think kind of that's where I've been finding most of those patients is under the Wellstar.
+Stephanie Resendez 30 minutes 16 seconds
+Well.
+
+Ronnie Cruz
+30 minutes 17 seconds30:17
+Ronnie Cruz 30 minutes 17 seconds
+Gotcha. Okay, that's if basically this data comes from straight from Anthem. So if Anthem does not provide that data, that's something that Anthem is just lacking on and I'm not sure what they're doing, but this is a good point to bring up whenever we're talking with them.
+Ronnie Cruz 30 minutes 36 seconds
+I know that we just started.
+Ronnie Cruz 30 minutes 40 seconds
+Bringing them in.
+Ronnie Cruz 30 minutes 42 seconds
+On our ADT file, so before we would have to, so before we, you know, probably like last week, since last week and before, is I would go, I would go into the portal. Well, I would write a script in the and they would go in the portal itself and download the reports, but now we're getting, we're getting the files straight from the source now, which...
+Ronnie Cruz 31 minutes 2 seconds
+has more data and it enriches the data that we have in already. So maybe we can do a wait and see maybe in two weeks, three weeks, or a month from now and see if that's still an issue. And if so, we can go and ask them what's going on and then go from there.
+Ronnie Cruz 31 minutes 21 seconds
+But this is this is something that, yeah, this is something that unfortunately I think is just an issue with Anthem on their on their end, and how important is it to have a discharge hospital field populated?
+SR
+Stephanie Resendez
+31 minutes 28 seconds31:28
+Stephanie Resendez 31 minutes 28 seconds
+Shah.
+Stephanie Resendez 31 minutes 37 seconds
+That's, yeah, I think that's one of the top things, because that's where we get the discharge summary from.
+
+Ronnie Cruz
+31 minutes 43 seconds31:43
+Ronnie Cruz 31 minutes 43 seconds
+Okay.
+SR
+Stephanie Resendez
+31 minutes 43 seconds31:43
+Stephanie Resendez 31 minutes 43 seconds
+For.
+Stephanie Resendez 31 minutes 45 seconds
+And we're able to remove everything.
+
+Ronnie Cruz
+31 minutes 45 seconds31:45
+Ronnie Cruz 31 minutes 45 seconds
+Yep.
+Ronnie Cruz 31 minutes 47 seconds
+So, this is in the top of the discharge on there, OK?
+SR
+Stephanie Resendez
+31 minutes 52 seconds31:52
+Stephanie Resendez 31 minutes 52 seconds
+So patient name, date of birth, the discharge date, and at least where they went, where they were, what hospital they were at.
+
+Ronnie Cruz
+32 minutes 2 seconds32:02
+Ronnie Cruz 32 minutes 2 seconds
+Gotcha. All right, that makes sense. Now, I do see some that are in like Florida sometimes. Are you still able to pull that?
+SR
+Stephanie Resendez
+32 minutes 3 seconds32:03
+Stephanie Resendez 32 minutes 3 seconds
+Yeah.
+Stephanie Resendez 32 minutes 6 seconds
+It.
+Stephanie Resendez 32 minutes 10 seconds
+No, we're only able to pull from.
+Stephanie Resendez 32 minutes 14 seconds
+some of the hospitals, those patients that we can't, like, we don't, well, we might get more side, but like Florida, they go somewhere else. We just call them and at least we know, hey, you know, you were in the hospital. See, you were at this hospital. And they're like, oh yeah, I was in Florida. I was on vacation or whatever.
+
+Ronnie Cruz
+32 minutes 33 seconds32:33
+Ronnie Cruz 32 minutes 33 seconds
+Uh-huh.
+SR
+Stephanie Resendez
+32 minutes 34 seconds32:34
+Stephanie Resendez 32 minutes 34 seconds
+And then if they have this stuff, they bring it or the office ask for it. But
+Stephanie Resendez 32 minutes 41 seconds
+Yeah, so we do outreach those.
+
+Ronnie Cruz
+32 minutes 45 seconds32:45
+Ronnie Cruz 32 minutes 45 seconds
+OKOLI.
+SR
+Stephanie Resendez
+32 minutes 45 seconds32:45
+Stephanie Resendez 32 minutes 45 seconds
+But like I said, I haven't been able to find it, but it does take time.
+Stephanie Resendez 32 minutes 50 seconds
+Do that manually.
+
+Ronnie Cruz
+32 minutes 51 seconds32:51
+Ronnie Cruz 32 minutes 51 seconds
+Gotcha. Okay, so I'll keep it noted. We just added the a new Anthem data feed just recently. So hopefully it gets better and if it doesn't, then we'll reach out to them and like, what's going on here, like, and get that conversation going. So.
+Ronnie Cruz 33 minutes 10 seconds
+Yeah, do you guys have any other questions, any concerns? I know that I think I've emailed you guys, but we did do active admins now. So on the dashboard, you're able to go in and look at and see patients that are coming down the pipeline, so that are actively admitted, but they haven't been discharged.
+Ronnie Cruz 33 minutes 30 seconds
+and just kind of do that. So we're going to keep the dashboard. If there's anything that you'd like me to add to the dashboard, let me know. I can do that. That's not an issue at all. And then eventually we'll transition over to the app once we start getting it nice and polished and the way that we want to see it.
+Ronnie Cruz 33 minutes 50 seconds
+Um, and and and then we'll let you guys play around with the data and play around with the application and see how you guys like it and then go from there.
+SR
+Stephanie Resendez
+34 minutes34:00
+Stephanie Resendez 34 minutes
+Yeah, that's good.
+
+Ronnie Cruz
+34 minutes 2 seconds34:02
+Ronnie Cruz 34 minutes 2 seconds
+Yeah, thank you so much. I appreciate it. And congratulations on that. Kudos. That was cool. I didn't know that you were able to, you found a patient, right, that was low on oxygen?
+SR
+Stephanie Resendez
+34 minutes 12 seconds34:12
+Stephanie Resendez 34 minutes 12 seconds
+Ohh.
+Stephanie Resendez 34 minutes 13 seconds
+Yeah, see, that's why we call these patients and I was like, no, you need to go to the ER, please. So they did. So that's, yeah. So I think this is one of the reasons why all this stuff is important and why we, if we can get it the most up to date, I think it's the most beneficial for the patient.
+
+Ronnie Cruz
+34 minutes 24 seconds34:24
+Ronnie Cruz 34 minutes 24 seconds
+Yeah.
+SR
+Stephanie Resendez
+34 minutes 33 seconds34:33
+Stephanie Resendez 34 minutes 33 seconds
+So, thank you.
+
+Ronnie Cruz
+34 minutes 33 seconds34:33
+Ronnie Cruz 34 minutes 33 seconds
+Right, right. No, I got some really good information from you guys. I appreciate you guys' feedback. I will start looking at it. I have like a little transcript that I'm taking notes on. So I'm going to take all this information and then use it as the next.
+Ronnie Cruz 34 minutes 51 seconds
+wave of the next phase of the project of just getting this going and then hopefully we get it polished and working and then we'll let you guys test it out, see what you guys like, what you don't like, and then we'll keep working on it and then yeah, we'll be there. We'll get there. So yeah, and you know, just know that unfortunately the data feeds sometimes
+Ronnie Cruz 35 minutes 13 seconds
+aren't the best, but we are currently working on getting like the most, you know, recent stuff and talking with some of the...
+Ronnie Cruz 35 minutes 24 seconds
+talking with some of the hospitals and whatnot. So hopefully we can get an up-to-date, you know, maybe even real-time later in the future of these that happen so that you guys can work on them and get to it quicker.
+Ronnie Cruz 35 minutes 40 seconds
+Alright, cool. Well, if you guys have any other questions, go, yes.
+
+Stephanie Resendez
+35 minutes 40 seconds35:40
+Stephanie Resendez 35 minutes 40 seconds
+Yeah.
+
+Makeba Crawford
+35 minutes 41 seconds35:41
+Makeba Crawford 35 minutes 41 seconds
+Thank you, Ronnie.
+Makeba Crawford 35 minutes 46 seconds
+This is going to be totally off this dashboard here. I wanted to ask one quick question about the other dashboard for you, HC, if you don't mind.
+
+Ronnie Cruz
+35 minutes 50 seconds35:50
+Ronnie Cruz 35 minutes 50 seconds
+Ohh.
+Ronnie Cruz 35 minutes 53 seconds
+Yeah, yeah, right, this dashboard, right?
+
+Makeba Crawford
+35 minutes 58 seconds35:58
+Makeba Crawford 35 minutes 58 seconds
+No, your access station. The other one for UHC.
+
+Ronnie Cruz
+36 minutes 1 second36:01
+Ronnie Cruz 36 minutes 1 second
+Oh, yes, yes, yes.
+
+Makeba Crawford
+36 minutes 5 seconds36:05
+Makeba Crawford 36 minutes 5 seconds
+So, will there be a point where we'll be able to see claims on that dashboard?
+
+Ronnie Cruz
+36 minutes 13 seconds36:13
+Ronnie Cruz 36 minutes 13 seconds
+Um, claims and like just the claims for this for a patient or...
+
+Makeba Crawford
+36 minutes 20 seconds36:20
+Makeba Crawford 36 minutes 20 seconds
+Yeah. Because you, you know, when we had what light beam, when we're looking at the, okay. So when we're looking at high cost and high ER utilization, and we don't see the discharge summary or any follow up visit, and we're trying to figure out where is this high cost coming from, we were able to look into light beam and kind of look at claims and where
+
+Ronnie Cruz
+36 minutes 24 seconds36:24
+Ronnie Cruz 36 minutes 24 seconds
+Mya, yes.
+
+Makeba Crawford
+36 minutes 41 seconds36:41
+Makeba Crawford 36 minutes 41 seconds
+the patient was seeing either another provider, whatever. Will that portal get to that point at any time, or will it just be a place to do the upload?
+
+Ronnie Cruz
+36 minutes 45 seconds36:45
+Ronnie Cruz 36 minutes 45 seconds
+Mm.
+Ronnie Cruz 36 minutes 53 seconds
+I think it'd be a place to do the upload right now. Right now we're working on with another team. It was it was alluded to in the all hands with Ensamada and they're the ones building. They're gathering all the payers data and do it and have like a one-stop shop where.
+
+Makeba Crawford
+36 minutes 55 seconds36:55
+Makeba Crawford 36 minutes 55 seconds
+Okay.
+Makeba Crawford 37 minutes 5 seconds
+Mm.
+
+Ronnie Cruz
+37 minutes 12 seconds37:12
+Ronnie Cruz 37 minutes 12 seconds
+able to get dashboards and whatnot, and then eventually we'll probably be able to do something like that.
+Ronnie Cruz 37 minutes 18 seconds
+So yeah, so they'll probably do that. I know that if that's something that you guys want to see or if there's anything like that, you know, in the meantime, depending on how long it would take or how much of an urge it need it is, we can definitely work something out. But that hasn't not been a conversation that we've had with anybody.
+
+Makeba Crawford
+37 minutes 18 seconds37:18
+Makeba Crawford 37 minutes 18 seconds
+Perfect, OKOLI.
+
+Ronnie Cruz
+37 minutes 37 seconds37:37
+Ronnie Cruz 37 minutes 37 seconds
+Um, for iPad, so this is, this is, I did not know that that was a...
+Ronnie Cruz 37 minutes 44 seconds
+One of the things that Lightbeam had done.
+
+Makeba Crawford
+37 minutes 46 seconds37:46
+Makeba Crawford 37 minutes 46 seconds
+And it's very helpful when we're trying to figure, you know, the high cost patients out under that payer.
+
+Ronnie Cruz
+37 minutes 52 seconds37:52
+Ronnie Cruz 37 minutes 52 seconds
+Gotcha, gotcha. We do have a report for that, but yeah, okay, well, I'll actually relay that to Trevor and see what he says about that, but for UHC. So, I mean, we have the data, we do have the data, so we can definitely give you that information.
+
+Makeba Crawford
+37 minutes 54 seconds37:54
+Makeba Crawford 37 minutes 54 seconds
+Mm-hmm.
+SR
+Stephanie Resendez
+38 minutes 5 seconds38:05
+Stephanie Resendez 38 minutes 5 seconds
+Ronnie.
+
+Makeba Crawford
+38 minutes 5 seconds38:05
+Makeba Crawford 38 minutes 5 seconds
+Thank you.
+SR
+Stephanie Resendez
+38 minutes 9 seconds38:09
+Stephanie Resendez 38 minutes 9 seconds
+Ready for this?
+
+Makeba Crawford
+38 minutes 10 seconds38:10
+Makeba Crawford 38 minutes 10 seconds
+Okay, that would be wonderful.
+
+Ronnie Cruz
+38 minutes 12 seconds38:12
+Ronnie Cruz 38 minutes 12 seconds
+Mhm.
+SR
+Stephanie Resendez
+38 minutes 12 seconds38:12
+Stephanie Resendez 38 minutes 12 seconds
+How often is the data going to be released again? Was it, did y'all say quarterly or, because we're, you know, let's say I upload, you know, a colorectal report and it's one of those that were done outside of the clinic or an EED, so it's not
+Stephanie Resendez 38 minutes 31 seconds
+you know, they're probably not going to receive it unless they get it sent by us. How often is this data getting sent over to them?
+
+Ronnie Cruz
+38 minutes 40 seconds38:40
+Ronnie Cruz 38 minutes 40 seconds
+To the the the payers.
+SR
+Stephanie Resendez
+38 minutes 42 seconds38:42
+Stephanie Resendez 38 minutes 42 seconds
+Yes, to close the gap.
+
+Ronnie Cruz
+38 minutes 44 seconds38:44
+Ronnie Cruz 38 minutes 44 seconds
+This, so what, what I've been, um, what I was...
+Ronnie Cruz 38 minutes 49 seconds
+What I've inferred is that usually we would close it on our end. So on our end, it's closed. They would keep it open. But then there's a period of where we where maybe some of the data does not match up and then we tell them, hey, we have a ton of these attestations and these attestations are all held in the database somewhere.
+Ronnie Cruz 39 minutes 8 seconds
+and we just send it to them and then they sort through it and then they give us credit for it. So it's like there's a period. I don't know what when that period is. It might be actually during this time where you send the attestation from last from last year and you send it to them and then they give us credit for it.
+Ronnie Cruz 39 minutes 26 seconds
+So it's not like it's not like it's done like, you know, within the next day or next week or next month. I think it's all done in like a certain period of time after the year, the measurement year is done.
+SR
+Stephanie Resendez
+39 minutes 26 seconds39:26
+Stephanie Resendez 39 minutes 26 seconds
+Because, yeah.
+Stephanie Resendez 39 minutes 37 seconds
+Okay, because we're going to keep getting, let's say I've already uploaded I have the colorectal. This patient's going to keep popping up the rest of the year as, but I guess you'll close it here, but on their side, it'll continue to show as open until you guys, you know.
+Stephanie Resendez 39 minutes 56 seconds
+Let them know that you have it available, I guess.
+
+Ronnie Cruz
+39 minutes 59 seconds39:59
+Ronnie Cruz 39 minutes 59 seconds
+Gotcha. On which side are you talking about? On the EMR or...
+SR
+Stephanie Resendez
+40 minutes40:00
+Stephanie Resendez 40 minutes
+I have a classroom.
+Stephanie Resendez 40 minutes 3 seconds
+on the reports that we get directly from them.
+
+Ronnie Cruz
+40 minutes 6 seconds40:06
+Ronnie Cruz 40 minutes 6 seconds
+From UHC.
+SR
+Stephanie Resendez
+40 minutes 8 seconds40:08
+Stephanie Resendez 40 minutes 8 seconds
+Because that's how our kind of works it. And so this, like, for example, car, Terrell, I upload their colorectal, it's going to keep showing up until they receive it from the upload I did. So I was wondering,
+
+Ronnie Cruz
+40 minutes 9 seconds40:09
+Ronnie Cruz 40 minutes 9 seconds
+Yes.
+SR
+Stephanie Resendez
+40 minutes 26 seconds40:26
+Stephanie Resendez 40 minutes 26 seconds
+how long you guys were kind of waiting to process that over to them.
+
+Ronnie Cruz
+40 minutes 31 seconds40:31
+Ronnie Cruz 40 minutes 31 seconds
+Yeah, from what I heard is that it's done on a yearly, like on a yearly thing, on a yearly cadence, but let me reach out to Trevor and see what he has and what he says and what information he gives me on that, and then I'll get back to you on that.
+SR
+Stephanie Resendez
+40 minutes 50 seconds40:50
+Stephanie Resendez 40 minutes 50 seconds
+Because I think for now.
+
+Makeba Crawford
+40 minutes 50 seconds40:50
+Makeba Crawford 40 minutes 50 seconds
+Wait a minute, did you say on a yearly cater?
+
+Ronnie Cruz
+40 minutes 55 seconds40:55
+Ronnie Cruz 40 minutes 55 seconds
+Uh, I believe so.
+
+Makeba Crawford
+40 minutes 57 seconds40:57
+Makeba Crawford 40 minutes 57 seconds
+Hello!
+Makeba Crawford 40 minutes 58 seconds
+So if we're uploading for this measurement year, it won't be sent over till next year, next measurement year?
+
+Ronnie Cruz
+41 minutes 6 seconds41:06
+Ronnie Cruz 41 minutes 6 seconds
+That, that's what I had inferred. I don't, I don't want to give any wrong information, so let let me actually clear that up and and get back to you on that.
+
+Makeba Crawford
+41 minutes 16 seconds41:16
+Makeba Crawford 41 minutes 16 seconds
+OKOLI.
+SO
+Shaun O'heron
+41 minutes 17 seconds41:17
+Shaun O'heron 41 minutes 17 seconds
+Yeah, I don't feel pressured to answer here. My other call was very short, so I'm back, guys. Don't feel pressured to answer here. Feel free, any questions that we're posing. If you need to go and get some clarity, feel free to do that. Just please make sure that you send it back to Makeba, Stephanie, and I. Actually,
+
+Ronnie Cruz
+41 minutes 17 seconds41:17
+Ronnie Cruz 41 minutes 17 seconds
+NM.
+SO
+Shaun O'heron
+41 minutes 38 seconds41:38
+Shaun O'heron 41 minutes 38 seconds
+If you can provide the confirmation on how this is structured to the practice transformation specialists as well, the entire team, because that'll be relevant for what their expectations are for payer reported information.
+
+Ronnie Cruz
+41 minutes 46 seconds41:46
+Ronnie Cruz 41 minutes 46 seconds
+Yeah.
+Ronnie Cruz 41 minutes 56 seconds
+Gotcha. Yeah, I know that we had talked about this in another meeting and, you know, they were talking about it being done, but let me go and clarify that. So, you know, before I say anything, I don't want to promise you guys anything. So let me go and clarify it. I'll send you guys back an email about that and relay that information to Trevor.
+SO
+Shaun O'heron
+42 minutes 1 second42:01
+Shaun O'heron 42 minutes 1 second
+Mhm.
+SR
+Stephanie Resendez
+42 minutes 15 seconds42:15
+Stephanie Resendez 42 minutes 15 seconds
+Okay, because like that way, you know, like usually for like right now we kind of take...
+Stephanie Resendez 42 minutes 22 seconds
+the portals and the payer, what they send us directly as more face value. Just because at least the other portals, they do update very quickly, well, you know, within a reasonable time. So, and then it reflects on their side. So if we're not going to be sending this, then I know at least
+
+Ronnie Cruz
+42 minutes 27 seconds42:27
+Ronnie Cruz 42 minutes 27 seconds
+That's true, right? Yeah.
+
+Stephanie Resendez
+42 minutes 44 seconds42:44
+Stephanie Resendez 42 minutes 44 seconds
+That.
+Stephanie Resendez 42 minutes 46 seconds
+they're going to consistently be sending the same measure.
+Stephanie Resendez 42 minutes 50 seconds
+So if that's in turn going to be this app is going to be more face value, like when I click on that patient's name and that measure is no longer there, then maybe being able to work off this than what they provide. I'm just trying to make sure I'm working on the, we're working on who has the most correct data. So we're not double tripling the same patient over and over.
+
+Ronnie Cruz
+42 minutes 51 seconds42:51
+Ronnie Cruz 42 minutes 51 seconds
+Yes.
+SR
+Stephanie Resendez
+43 minutes 12 seconds43:12
+Stephanie Resendez 43 minutes 12 seconds
+Morgan.
+SO
+Shaun O'heron
+43 minutes 13 seconds43:13
+Shaun O'heron 43 minutes 13 seconds
+Shah.
+
+Ronnie Cruz
+43 minutes 13 seconds43:13
+Ronnie Cruz 43 minutes 13 seconds
+Okay, understood and definitely. So I will definitely get that information and answer from you. And then also, Makeba, about the dashboard and some kind of reporting. We can definitely look into that as well to see if that helps out, especially with what you said about high cost patients.
+Ronnie Cruz 43 minutes 33 seconds
+I believe.
+
+Makeba Crawford
+43 minutes 35 seconds43:35
+Makeba Crawford 43 minutes 35 seconds
+Yes, I appreciate that, Ronnie.
+
+Ronnie Cruz
+43 minutes 38 seconds43:38
+Ronnie Cruz 43 minutes 38 seconds
+Yeah, yeah, for sure. We definitely do something like that right now with Trevor. They've been using it, but, you know, we can create something for you guys as well. So it shouldn't be an issue. So I'll relay that back and I'll email all you guys and just get you guys.
+
+Makeba Crawford
+43 minutes 51 seconds43:51
+Makeba Crawford 43 minutes 51 seconds
+Wonderful.
+
+Ronnie Cruz
+43 minutes 57 seconds43:57
+Ronnie Cruz 43 minutes 57 seconds
+Update on that information.
+
+Makeba Crawford
+44 minutes44:00
+Makeba Crawford 44 minutes
+Thank you.
+SR
+Stephanie Resendez
+44 minutes 1 second44:01
+Stephanie Resendez 44 minutes 1 second
+Bill.
+
+Ronnie Cruz
+44 minutes 1 second44:01
+Ronnie Cruz 44 minutes 1 second
+Yeah, of course. Of course. Do you guys have any other questions for me?
+SR
+Stephanie Resendez
+44 minutes 6 seconds44:06
+Stephanie Resendez 44 minutes 6 seconds
+I think that was all for me. Thank you so much.
+
+Ronnie Cruz
+44 minutes 9 seconds44:09
+Ronnie Cruz 44 minutes 9 seconds
+Yeah, and I appreciate you guys feedback and information and I'll use this and we'll go to the next phase. And Shaun, I was just, I think while you were gone, I was just letting them know that I'm going to use this feedback to go into phase, the next phase of my project, polish a lot of things out, get some more feedback, and then eventually
+
+Makeba Crawford
+44 minutes 10 seconds44:10
+Makeba Crawford 44 minutes 10 seconds
+Yeah, thank you.
+
+Ronnie Cruz
+44 minutes 28 seconds44:28
+Ronnie Cruz 44 minutes 28 seconds
+you know, we'll have them demo and test out the demo, or the draft of it, and then get some more feedback, and then, you know, eventually roll this out.
+SO
+Shaun O'heron
+44 minutes 40 seconds44:40
+Shaun O'heron 44 minutes 40 seconds
+Excellent, thank you, Ronnie. This is going to be, I mean, it's already just having access to the dashboard has been a big step up from being to, you know, you having to go in and manually grab it and send it out when you get time, and a big step up for being able to add that fourth pair as well.
+
+Ronnie Cruz
+44 minutes 49 seconds44:49
+Ronnie Cruz 44 minutes 49 seconds
+Ohh.
+SO
+Shaun O'heron
+44 minutes 59 seconds44:59
+Shaun O'heron 44 minutes 59 seconds
+We just really appreciate the work that you're doing here and the time that you took today to get this feedback so that the end users can have a product that is most workable.
+
+Ronnie Cruz
+45 minutes 11 seconds45:11
+Ronnie Cruz 45 minutes 11 seconds
+Oh, yeah, of course. And then, you know, thanks to you guys for the feedback, because without the feedback, you know, it's not a really good product without you guys' feedback and getting that information and all that. So I appreciate you guys as well. So thank you so much. And if you guys ever see anything, need anything, please feel free to reach out. My door is open, metaphorically.
+Ronnie Cruz 45 minutes 31 seconds
+So if my inbox is open, you know, so don't ever feel like you can't reach out or anything like that.
+SO
+Shaun O'heron
+45 minutes 38 seconds45:38
+Shaun O'heron 45 minutes 38 seconds
+Thanks for the good feedback today, guys.
+
+Ronnie Cruz
+45 minutes 40 seconds45:40
+Ronnie Cruz 45 minutes 40 seconds
+Thank you. You guys have a good rest of your day.
+SR
+Stephanie Resendez
+45 minutes 41 seconds45:41
+Stephanie Resendez 45 minutes 41 seconds
+Thank you.
+
+Makeba Crawford
+45 minutes 42 seconds45:42
+Makeba Crawford 45 minutes 42 seconds
+Thank you.
+SO
+Shaun O'heron
+45 minutes 42 seconds45:42
+Shaun O'heron 45 minutes 42 seconds
+Good day.
+SR
+Stephanie Resendez
+45 minutes 44 seconds45:44
+Stephanie Resendez 45 minutes 44 seconds
+You too.
+SO
+Shaun O'heron
+45 minutes 44 seconds45:44
+Shaun O'heron 45 minutes 44 seconds
+You too?
+
+Makeba Crawford
+45 minutes 44 seconds45:44
+Makeba Crawford 45 minutes 44 seconds
+You too, Ronnie.
+
+Ronnie Cruz
+45 minutes 45 seconds45:45
+Ronnie Cruz 45 minutes 45 seconds
+See ya. Bye.
+SR
+Stephanie Resendez
+45 minutes 46 seconds45:46
+Stephanie Resendez 45 minutes 46 seconds
+Yeah.
+
+Makeba Crawford
+45 minutes 48 seconds45:48
+Makeba Crawford 45 minutes 48 seconds
+Bye bye.
