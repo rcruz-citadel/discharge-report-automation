@@ -72,12 +72,12 @@ export interface LogAttemptResponse {
 }
 
 export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
-  no_outreach: 'No Contact',
-  outreach_made: 'Attempted',
-  outreach_complete: 'Complete',
+  no_outreach: 'No Outreach',
+  outreach_made: 'Outreach Made',
+  outreach_complete: 'Outreach Complete',
   failed: 'Failed',
-  late_delivery: 'Late Record',
-  no_outreach_required: 'Not Required',
+  late_delivery: 'Late Delivery',
+  no_outreach_required: 'No Outreach Needed',
 }
 
 export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
@@ -126,22 +126,22 @@ export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
     btnText: '#c53030',
   },
   late_delivery: {
-    dot: '#d69e2e',
-    pillBg: '#fefcbf',
-    pillText: '#975a16',
-    rowTint: 'rgba(214,158,46,0.04)',
-    btnBg: '#fefcbf',
-    btnBorder: '#d69e2e',
-    btnText: '#975a16',
-  },
-  no_outreach_required: {
     dot: '#4299e1',
     pillBg: '#ebf8ff',
     pillText: '#2b6cb0',
-    rowTint: 'transparent',
+    rowTint: 'rgba(66,153,225,0.04)',
     btnBg: '#ebf8ff',
     btnBorder: '#90cdf4',
     btnText: '#2b6cb0',
+  },
+  no_outreach_required: {
+    dot: '#9f7aea',
+    pillBg: '#faf5ff',
+    pillText: '#6b46c1',
+    rowTint: 'transparent',
+    btnBg: '#faf5ff',
+    btnBorder: '#d6bcfa',
+    btnText: '#6b46c1',
   },
 }
 
