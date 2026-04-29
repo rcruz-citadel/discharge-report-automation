@@ -13,7 +13,7 @@ export function LobMultiSelect({ options, value, onChange }: LobMultiSelectProps
       options={options}
       value={value}
       onChange={onChange}
-      placeholder="All LOBs"
+      placeholder="All plan types"
     />
   )
 }

@@ -39,7 +39,7 @@ export function DateRangePicker({
   return (
     <div className="flex flex-col gap-2">
       <div>
-        <label style={labelStyle}>From Date</label>
+        <label style={labelStyle}>Discharge From</label>
         <input
           type="date"
           value={dateFrom ?? ''}
@@ -50,7 +50,7 @@ export function DateRangePicker({
         />
       </div>
       <div>
-        <label style={labelStyle}>To Date</label>
+        <label style={labelStyle}>Discharge To</label>
         <input
           type="date"
           value={dateTo ?? ''}

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useRef, type FormEvent } from 'react'
 import type { DischargeRecord, OutreachStatus } from '../../types/discharge'
 import { OUTREACH_STATUS_COLORS, OUTREACH_STATUS_LABELS, getDaysRemaining, getQueueBucket } from '../../types/discharge'
 import { useUpsertOutreach, useAttempts, useLogAttempt } from '../../hooks/useOutreach'
@@ -52,11 +52,14 @@ interface AttemptSectionProps {
 function AttemptSection({ eventId, dischargeDate, onAutoComplete }: AttemptSectionProps) {
   const { data: attempts = [], isLoading } = useAttempts(eventId, dischargeDate)
   const mutation = useLogAttempt(eventId, dischargeDate)
+  const [attemptSaved, setAttemptSaved] = useState(false)
   const atMax = attempts.length >= 3
 
   const handleLog = () => {
     mutation.mutate(undefined, {
       onSuccess: (data) => {
+        setAttemptSaved(true)
+        setTimeout(() => setAttemptSaved(false), 2000)
         if (data.auto_completed && onAutoComplete) {
           onAutoComplete()
         }
@@ -82,7 +85,7 @@ function AttemptSection({ eventId, dischargeDate, onAutoComplete }: AttemptSecti
       </div>
 
       {isLoading ? (
-        <p className="text-[12px] text-text-muted">Loading...</p>
+        <div className="h-3 skeleton rounded w-2/3" />
       ) : attempts.length === 0 ? (
         <p className="text-[12px] text-text-muted italic">No attempts logged yet.</p>
       ) : (
@@ -91,7 +94,7 @@ function AttemptSection({ eventId, dischargeDate, onAutoComplete }: AttemptSecti
             <li key={a.id} className="flex items-start gap-2 text-[12px]">
               <span
                 className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white mt-0.5"
-                style={{ backgroundColor: '#132e45' }}
+                style={{ backgroundColor: '#4a7a96' }}
               >
                 {a.attempt_number}
               </span>
@@ -114,13 +117,23 @@ function AttemptSection({ eventId, dischargeDate, onAutoComplete }: AttemptSecti
           disabled={mutation.isPending}
           className="text-[12px] font-semibold px-3 py-1.5 rounded-md transition-colors disabled:opacity-60"
           style={{
-            backgroundColor: '#edf2f7',
-            color: '#132e45',
-            border: '1.5px solid #d0dae3',
+            backgroundColor: '#fff3e0',
+            color: '#c05621',
+            border: '1.5px solid #e07b2a',
+          }}
+          onMouseEnter={e => {
+            if (!mutation.isPending) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fed7aa'
+          }}
+          onMouseLeave={e => {
+            if (!mutation.isPending) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#fff3e0'
           }}
         >
           {mutation.isPending ? 'Logging...' : '+ Log Attempt'}
         </button>
+      )}
+
+      {attemptSaved && (
+        <p className="text-[11px] font-semibold mt-1" style={{ color: '#276749' }}>&#10003; Attempt logged</p>
       )}
 
       {mutation.isError && (
@@ -136,7 +149,17 @@ function AttemptSection({ eventId, dischargeDate, onAutoComplete }: AttemptSecti
 
 function DaysRemainingBanner({ row }: { row: DischargeRecord }) {
   const bucket = getQueueBucket(row)
-  if (bucket === 'low_priority') return null
+  if (bucket === 'low_priority') {
+    return (
+      <div
+        className="flex items-center justify-between px-3 py-2 rounded-md text-[12px] font-semibold mb-3"
+        style={{ backgroundColor: '#edf2f7', color: '#718096' }}
+      >
+        <span>TCM window</span>
+        <span>Expired — drop summary in EMR</span>
+      </div>
+    )
+  }
 
   const daysLeft = getDaysRemaining(row)
   const isER = row.stay_type?.toLowerCase().includes('emergency')
@@ -147,9 +170,9 @@ function DaysRemainingBanner({ row }: { row: DischargeRecord }) {
   let label: string
 
   if (daysLeft <= 0) {
-    bg = '#fed7d7'; color = '#c53030'; label = 'Window closed'
+    bg = '#feebc8'; color = '#c05621'; label = 'Window closed'
   } else if (daysLeft === 1) {
-    bg = '#fed7d7'; color = '#c53030'; label = '1 day left'
+    bg = '#feebc8'; color = '#c05621'; label = '1 day left'
   } else if (daysLeft <= 3) {
     bg = '#fefcbf'; color = '#975a16'; label = `${daysLeft} days left`
   } else {
@@ -214,11 +237,15 @@ interface OutreachStatusFormProps {
   onCancel: () => void
 }
 
+const PRIMARY_STATUSES: OutreachStatus[] = ['no_outreach', 'outreach_made', 'outreach_complete']
+const EXCEPTION_STATUSES: OutreachStatus[] = ['failed', 'late_delivery', 'no_outreach_required']
+
 export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusFormProps) {
   const [status, setStatus] = useState<OutreachStatus>(row.outreach_status)
   const [notes, setNotes] = useState(row.outreach_notes)
   const [summaryDropped, setSummaryDropped] = useState(row.discharge_summary_dropped)
   const mutation = useUpsertOutreach()
+  const closeAfterSave = useRef(false)
 
   const bucket = getQueueBucket(row)
   // Show checkbox when status is failed OR record is in low-priority queue —
@@ -235,18 +262,41 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
       discharge_summary_dropped: summaryDropped,
     })
     onSuccess(row.patient_name ?? 'Patient')
+    if (closeAfterSave.current) {
+      closeAfterSave.current = false
+      onCancel()
+    }
   }
 
-  const statuses: OutreachStatus[] = [
-    'no_outreach',
-    'outreach_made',
-    'outreach_complete',
-    'failed',
-    'late_delivery',
-    'no_outreach_required',
-  ]
-
   const tip = STATUS_TIPS[status]
+
+  const renderStatusButton = (s: OutreachStatus) => {
+    const isSelected = status === s
+    const colors = OUTREACH_STATUS_COLORS[s]
+    return (
+      <button
+        key={s}
+        type="button"
+        role="radio"
+        aria-checked={isSelected}
+        disabled={mutation.isPending}
+        onClick={() => setStatus(s)}
+        className="flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-md text-[12.5px] font-semibold transition-all duration-150 disabled:opacity-60"
+        style={{
+          backgroundColor: isSelected ? colors.btnBg : '#f7f9fb',
+          border: `1.5px solid ${isSelected ? colors.btnBorder : '#d0dae3'}`,
+          color: isSelected ? colors.btnText : '#2a3f50',
+        }}
+      >
+        <span
+          className="w-2 h-2 rounded-full shrink-0"
+          style={{ backgroundColor: isSelected ? colors.dot : '#cbd5e0' }}
+          aria-hidden="true"
+        />
+        {OUTREACH_STATUS_LABELS[s]}
+      </button>
+    )
+  }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -258,34 +308,16 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
         <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">
           Outreach Status
         </p>
-        <div className="grid grid-cols-3 gap-2" role="group" aria-label="Outreach status">
-          {statuses.map(s => {
-            const isSelected = status === s
-            const colors = OUTREACH_STATUS_COLORS[s]
-            return (
-              <button
-                key={s}
-                type="button"
-                role="radio"
-                aria-checked={isSelected}
-                disabled={mutation.isPending}
-                onClick={() => setStatus(s)}
-                className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-[11px] font-semibold transition-all duration-150 disabled:opacity-60"
-                style={{
-                  backgroundColor: isSelected ? colors.btnBg : '#f7f9fb',
-                  border: `1.5px solid ${isSelected ? colors.btnBorder : '#d0dae3'}`,
-                  color: isSelected ? colors.btnText : '#2a3f50',
-                }}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: isSelected ? colors.dot : '#cbd5e0' }}
-                  aria-hidden="true"
-                />
-                {OUTREACH_STATUS_LABELS[s]}
-              </button>
-            )
-          })}
+        <div role="group" aria-label="Outreach status">
+          <div className="grid grid-cols-3 gap-2">
+            {PRIMARY_STATUSES.map(renderStatusButton)}
+          </div>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-2 mb-1">
+            Exceptions
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {EXCEPTION_STATUSES.map(renderStatusButton)}
+          </div>
         </div>
         {tip && (
           <p className="text-[11px] text-text-muted mt-2 italic">{tip}</p>
@@ -327,16 +359,19 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
 
       {/* Discharge summary dropped checkbox — shown for failed status or low priority records */}
       {showSummaryDropped && (
-        <label className="flex items-center gap-2 cursor-pointer group">
+        <label className="flex items-start gap-2 cursor-pointer group">
           <input
             type="checkbox"
             checked={summaryDropped}
             onChange={e => setSummaryDropped(e.target.checked)}
             disabled={mutation.isPending}
-            className="w-4 h-4 rounded accent-navy disabled:opacity-60 cursor-pointer"
+            className="w-4 h-4 rounded accent-navy disabled:opacity-60 cursor-pointer mt-0.5"
           />
           <span className="text-[13px] font-semibold text-text-primary group-hover:text-navy transition-colors">
-            Discharge Summary Dropped in EMR
+            <span>Discharge Summary Dropped in EMR</span>
+            <span className="block text-[11px] font-normal" style={{ color: '#718096' }}>
+              Check this after pasting the summary into the patient's chart
+            </span>
           </span>
         </label>
       )}
@@ -368,12 +403,12 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
           className="px-3 py-2 rounded-md text-[12px] font-medium"
           style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}
         >
-          Failed to save. Please try again.
+          Could not save — check your connection and try again.
         </div>
       )}
 
-      {/* Save / Cancel */}
-      <div className="flex gap-2">
+      {/* Save / Cancel — sticky bar */}
+      <div className="sticky bottom-0 bg-surface pt-2 pb-1 border-t border-border-light mt-auto flex gap-2">
         <Button
           type="submit"
           variant="primary"
@@ -382,6 +417,16 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
           className="flex-1 py-2 text-[14px]"
         >
           Save
+        </Button>
+        <Button
+          type="submit"
+          variant="primary"
+          isLoading={mutation.isPending}
+          disabled={mutation.isPending}
+          onClick={() => { closeAfterSave.current = true }}
+          className="flex-1 py-2 text-[13px]"
+        >
+          Save &amp; Close
         </Button>
         <Button
           type="button"

@@ -32,8 +32,15 @@ const CSV_COLUMNS = [
 const TAB_DESCRIPTIONS: Record<TabId, string> = {
   immediate: 'Discharged within the last 48 hours — outreach needed now',
   active: 'Past 48-hour window but still within the 7/30-day TCM deadline',
-  low_priority: 'Past TCM deadline — drop discharge summary in EMR when possible',
+  low_priority: 'Past TCM deadline — drop the discharge summary in the EMR when possible',
   manager: 'Manager Dashboard',
+}
+
+const TAB_LABELS: Record<TabId, string> = {
+  immediate: 'Immediate',
+  active: 'Active',
+  low_priority: 'Past Deadline',
+  manager: 'Manager',
 }
 
 export function DashboardPage() {
@@ -55,7 +62,7 @@ export function DashboardPage() {
   const tabs: Array<{ id: TabId; label: string; count?: number }> = [
     { id: 'immediate', label: 'Immediate' },
     { id: 'active', label: 'Active' },
-    { id: 'low_priority', label: 'Low Priority' },
+    { id: 'low_priority', label: 'Past Deadline' },
     ...(isManager ? [{ id: 'manager' as TabId, label: 'Manager' }] : []),
   ]
 
@@ -167,7 +174,7 @@ export function DashboardPage() {
         }
       >
         <div className="flex flex-col gap-4">
-          <AppHeader userName={user?.name} />
+          <AppHeader userName={user?.name} loadedAt={dischargData?.loaded_at} />
 
           {/* Tab strip */}
           <div
@@ -179,6 +186,7 @@ export function DashboardPage() {
             {tabs.map(tab => {
               const isActive = activeTab === tab.id
               const count = tab.id !== 'manager' ? tabCounts[tab.id as keyof typeof tabCounts] : undefined
+              const isImmediateUrgent = tab.id === 'immediate' && !isActive && (count ?? 0) > 0
               return (
                 <button
                   key={tab.id}
@@ -187,10 +195,13 @@ export function DashboardPage() {
                   aria-controls={`tabpanel-${tab.id}`}
                   onClick={() => handleTabChange(tab.id)}
                   className="inline-flex items-center gap-2 px-[18px] py-[6px] rounded-[7px] text-[13.5px] font-semibold transition-colors duration-100"
-                  style={{
-                    backgroundColor: isActive ? '#132e45' : 'transparent',
-                    color: isActive ? '#ffffff' : '#1b4459',
-                  }}
+                  style={
+                    isActive
+                      ? { backgroundColor: '#132e45', color: '#ffffff' }
+                      : isImmediateUrgent
+                      ? { backgroundColor: 'transparent', color: '#1b4459', borderLeft: '3px solid #e53e3e', paddingLeft: '15px' }
+                      : { backgroundColor: 'transparent', color: '#1b4459' }
+                  }
                   onMouseEnter={e => {
                     if (!isActive)
                       (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(19,46,69,0.08)'
@@ -204,10 +215,13 @@ export function DashboardPage() {
                   {count !== undefined && (
                     <span
                       className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{
-                        backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : 'rgba(19,46,69,0.12)',
-                        color: isActive ? '#fff' : '#1b4459',
-                      }}
+                      style={
+                        isActive
+                          ? { backgroundColor: 'rgba(255,255,255,0.25)', color: '#fff' }
+                          : isImmediateUrgent
+                          ? { backgroundColor: '#fed7d7', color: '#c53030' }
+                          : { backgroundColor: 'rgba(19,46,69,0.12)', color: '#1b4459' }
+                      }
                     >
                       {count.toLocaleString()}
                     </span>
@@ -238,7 +252,7 @@ export function DashboardPage() {
                 {/* Record count + title */}
                 <div className="flex items-center gap-2 mt-3">
                   <h2 className="text-[16px] font-bold text-text-primary capitalize">
-                    {activeTab.replace('_', ' ')}
+                    {TAB_LABELS[activeTab]}
                   </h2>
                   <span
                     className="px-2 py-0.5 rounded-full text-[12px] font-semibold text-white"

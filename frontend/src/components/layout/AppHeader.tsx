@@ -1,5 +1,6 @@
 interface AppHeaderProps {
   userName?: string
+  loadedAt?: string
 }
 
 /**
@@ -7,7 +8,7 @@ interface AppHeaderProps {
  * Logo and welcome sit above the banner on a clean line.
  * Spec: 5.5 Header Bar
  */
-export function AppHeader({ userName }: AppHeaderProps) {
+export function AppHeader({ userName, loadedAt }: AppHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
       {/* Top row: logo + welcome */}
@@ -37,7 +38,9 @@ export function AppHeader({ userName }: AppHeaderProps) {
             Discharge Report Dashboard
           </h1>
           <p className="text-[12.5px] text-[#a8c4d8] mt-0.5">
-            Live discharge activity — filter, explore, and export
+            {loadedAt
+              ? `Data as of ${new Date(loadedAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · Click any row to update outreach status`
+              : 'Click any row to update outreach status'}
           </p>
         </div>
         {/* Right orange accent bar */}

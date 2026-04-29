@@ -24,9 +24,9 @@ function DaysLeftBadge({ row }: { row: DischargeRecord }) {
   let label: string
 
   if (days <= 0) {
-    bg = '#fed7d7'; color = '#c53030'; label = 'Overdue'
+    bg = '#feebc8'; color = '#c05621'; label = 'Overdue'
   } else if (days === 1) {
-    bg = '#fed7d7'; color = '#c53030'; label = '1d left'
+    bg = '#feebc8'; color = '#c05621'; label = '1d left'
   } else if (days <= 3) {
     bg = '#fefcbf'; color = '#975a16'; label = `${days}d left`
   } else {
@@ -46,7 +46,7 @@ function DaysLeftBadge({ row }: { row: DischargeRecord }) {
 export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
   {
     id: 'days_left',
-    header: 'Window',
+    header: 'Deadline',
     size: 90,
     cell: ({ row }) => <DaysLeftBadge row={row.original} />,
     sortingFn: (a, b) => getDaysRemaining(a.original) - getDaysRemaining(b.original),
@@ -125,7 +125,7 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
   },
   {
     accessorKey: 'outreach_status',
-    header: 'Status',
+    header: 'Outreach',
     size: 160,
     cell: ({ row }) => (
       <StatusPill status={row.original.outreach_status} />

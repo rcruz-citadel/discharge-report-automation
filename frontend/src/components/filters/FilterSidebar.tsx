@@ -25,13 +25,13 @@ export function FilterSidebar({ meta, metaError, filters, onFilterChange, onAssi
     return (
       <div
         className="flex flex-col gap-2 px-1 py-2 rounded-md"
-        style={{ backgroundColor: 'rgba(229,62,62,0.12)', border: '1px solid rgba(229,62,62,0.3)' }}
+        style={{ backgroundColor: 'rgba(254,215,170,0.3)', border: '1px solid rgba(214,158,46,0.4)' }}
       >
-        <p className="text-[11px] font-semibold" style={{ color: '#fc8181' }}>
-          Filter options unavailable
+        <p className="text-[11px] font-semibold" style={{ color: '#975a16' }}>
+          Filters temporarily unavailable
         </p>
-        <p className="text-[10px]" style={{ color: '#feb2b2' }}>
-          Could not load filter data. Reload the page to try again.
+        <p className="text-[10px]" style={{ color: '#b7791f' }}>
+          Could not load filter options — you can still browse records.
         </p>
       </div>
     )

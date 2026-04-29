@@ -87,8 +87,12 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
           onClick={onClose}
           aria-label="Close detail panel"
           className="w-7 h-7 flex items-center justify-center rounded-md text-[#a8c4d8] hover:text-white hover:bg-white/10 transition-colors"
+          style={{ border: '1px solid rgba(255,255,255,0.15)' }}
         >
-          ✕
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+            <line x1="1" y1="1" x2="10" y2="10"/>
+            <line x1="10" y1="1" x2="1" y2="10"/>
+          </svg>
         </button>
       </div>
 
@@ -96,7 +100,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
       <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
         {/* Section 1 — Patient demographics, provider & contact */}
         <div className="px-5 py-4 border-b border-border-light">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
+          <p className="text-[11.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
             Patient &amp; Provider
           </p>
           <div className="grid grid-cols-3 gap-3 mb-3">
@@ -113,7 +117,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
 
         {/* Section 2 — Hospital & diagnosis */}
         <div className="px-5 py-4 border-b border-border-light">
-          <p className="text-[10.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
+          <p className="text-[11.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>
             Hospitalization &amp; Diagnosis
           </p>
           <div className="grid grid-cols-3 gap-3 mb-3">

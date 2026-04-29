@@ -62,15 +62,13 @@ export function Sidebar({ filters, onClearFilters, hasActiveFilters }: SidebarPr
         )}
         <button
           onClick={logout}
-          className="w-full py-1.5 px-3 rounded-md text-[13px] text-[#d6e6f0] font-medium transition-colors duration-150"
-          style={{ border: '1.5px solid #1b4459' }}
+          className="w-full py-1 px-3 text-left text-[12px] font-normal rounded-md transition-colors"
+          style={{ color: '#7ea8c0' }}
           onMouseEnter={e => {
-            ;(e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1b4459'
             ;(e.currentTarget as HTMLButtonElement).style.color = '#ffffff'
           }}
           onMouseLeave={e => {
-            ;(e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'
-            ;(e.currentTarget as HTMLButtonElement).style.color = '#d6e6f0'
+            ;(e.currentTarget as HTMLButtonElement).style.color = '#7ea8c0'
           }}
         >
           Sign Out

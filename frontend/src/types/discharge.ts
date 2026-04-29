@@ -72,11 +72,11 @@ export interface LogAttemptResponse {
 }
 
 export const OUTREACH_STATUS_LABELS: Record<OutreachStatus, string> = {
-  no_outreach: 'No Outreach',
-  outreach_made: 'Outreach Made',
-  outreach_complete: 'Outreach Complete',
+  no_outreach: 'No Contact',
+  outreach_made: 'Attempted',
+  outreach_complete: 'Complete',
   failed: 'Failed',
-  late_delivery: 'Late Delivery',
+  late_delivery: 'Late Record',
   no_outreach_required: 'Not Required',
 }
 
@@ -135,13 +135,13 @@ export const OUTREACH_STATUS_COLORS: Record<OutreachStatus, {
     btnText: '#975a16',
   },
   no_outreach_required: {
-    dot: '#a0aec0',
-    pillBg: '#f7fafc',
-    pillText: '#4a5568',
+    dot: '#4299e1',
+    pillBg: '#ebf8ff',
+    pillText: '#2b6cb0',
     rowTint: 'transparent',
-    btnBg: '#f7fafc',
-    btnBorder: '#a0aec0',
-    btnText: '#4a5568',
+    btnBg: '#ebf8ff',
+    btnBorder: '#90cdf4',
+    btnText: '#2b6cb0',
   },
 }
 
