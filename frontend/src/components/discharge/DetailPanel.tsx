@@ -12,13 +12,19 @@ interface DetailPanelProps {
 interface FieldProps {
   label: string
   value: string | number | null | undefined
+  wrap?: boolean
 }
 
-function Field({ label, value }: FieldProps) {
+function Field({ label, value, wrap }: FieldProps) {
   return (
     <div className="min-w-0">
       <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-[14.4px] font-semibold text-text-primary truncate" title={orDash(value as string)}>{orDash(value as string)}</p>
+      <p
+        className={`text-[14.4px] font-semibold text-text-primary ${wrap ? 'break-words leading-snug' : 'truncate'}`}
+        title={wrap ? undefined : orDash(value as string)}
+      >
+        {orDash(value as string)}
+      </p>
     </div>
   )
 }
@@ -122,7 +128,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
           </div>
           {(row.dx_code || row.description) && (
             <div className="mt-3">
-              <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} />
+              <Field label="Diagnosis" value={row.dx_code ? `${row.dx_code} — ${row.description}` : row.description} wrap />
             </div>
           )}
         </div>
