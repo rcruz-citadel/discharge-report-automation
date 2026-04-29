@@ -70,7 +70,14 @@ export function DashboardPage() {
   const sidebarFiltered = useMemo(() => {
     if (!dischargData?.records) return []
 
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10)
+
     return dischargData.records.filter(row => {
+      // Exclude records with discharge dates far in the future (data entry errors)
+      if (row.discharge_date > tomorrowStr) return false
+
       if (filters.practices.length > 0 && !filters.practices.includes(row.practice ?? '')) return false
       if (filters.payers.length > 0 && !filters.payers.includes(row.payer_name ?? '')) return false
       if (filters.lobNames.length > 0 && !filters.lobNames.includes(row.lob_name ?? '')) return false
