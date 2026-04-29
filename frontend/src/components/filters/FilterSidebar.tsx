@@ -12,6 +12,7 @@ interface FilterSidebarProps {
   metaError?: boolean
   filters: FilterState
   onFilterChange: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void
+  onAssigneeChange: (name: string) => void
 }
 
 /**
@@ -19,7 +20,7 @@ interface FilterSidebarProps {
  * Assignee selection scopes the Practice options to that person's practices.
  * Spec: 5.5 Sidebar filter logic
  */
-export function FilterSidebar({ meta, metaError, filters, onFilterChange }: FilterSidebarProps) {
+export function FilterSidebar({ meta, metaError, filters, onFilterChange, onAssigneeChange }: FilterSidebarProps) {
   if (metaError) {
     return (
       <div
@@ -57,11 +58,7 @@ export function FilterSidebar({ meta, metaError, filters, onFilterChange }: Filt
       <AssigneeSelect
         assignees={meta.assignees}
         value={filters.assignee}
-        onChange={v => {
-          onFilterChange('assignee', v)
-          // Clear practice filter when assignee changes (practices get re-scoped)
-          onFilterChange('practices', [])
-        }}
+        onChange={onAssigneeChange}
       />
 
       <PracticeMultiSelect

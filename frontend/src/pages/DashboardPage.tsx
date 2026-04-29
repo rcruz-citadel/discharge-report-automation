@@ -38,7 +38,7 @@ const TAB_DESCRIPTIONS: Record<TabId, string> = {
 
 export function DashboardPage() {
   const { user, isManager } = useAuth()
-  const { filters, setFilter, clearAll, hasActiveFilters } = useFilters()
+  const { filters, setFilter, setAssignee, clearAll, hasActiveFilters } = useFilters()
   const [activeTab, setActiveTab] = useState<TabId>('immediate')
   const [selectedRow, setSelectedRow] = useState<DischargeRecord | null>(null)
   const { show: showToast, ToastContainer } = useToast()
@@ -158,6 +158,7 @@ export function DashboardPage() {
                 metaError={metaError}
                 filters={filters}
                 onFilterChange={setFilter}
+                onAssigneeChange={setAssignee}
               />
             }
             onClearFilters={clearAll}

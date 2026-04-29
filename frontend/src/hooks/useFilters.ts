@@ -34,6 +34,27 @@ export function useFilters() {
     outreachStatuses: searchParams.getAll('outreachStatus') as OutreachStatus[],
   }
 
+  // Dedicated setter: changes assignee AND clears practices in one navigation so
+  // the two setSearchParams calls don't race and overwrite each other.
+  const setAssignee = useCallback(
+    (name: string) => {
+      setSearchParams(
+        prev => {
+          const next = new URLSearchParams(prev)
+          if (name === 'All' || !name) {
+            next.delete('assignee')
+          } else {
+            next.set('assignee', name)
+          }
+          next.delete('practice')
+          return next
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
+
   const setFilter = useCallback(
     <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
       setSearchParams(
@@ -107,5 +128,5 @@ export function useFilters() {
     filters.dateTo !== null ||
     filters.outreachStatuses.length > 0
 
-  return { filters, setFilter, clearAll, hasActiveFilters }
+  return { filters, setFilter, setAssignee, clearAll, hasActiveFilters }
 }
