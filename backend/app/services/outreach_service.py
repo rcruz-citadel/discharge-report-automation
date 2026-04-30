@@ -88,7 +88,13 @@ async def upsert_outreach(
     )
     row = result.mappings().one()
 
-    # Append activity log (non-critical — don't fail the request if this errors)
+    # Commit the upsert before attempting the activity log.
+    # If the activity log insert fails (e.g. table missing in staging schema),
+    # it aborts the PostgreSQL transaction — a subsequent commit() would silently
+    # ROLLBACK everything. Committing first keeps the critical write durable.
+    await db.commit()
+
+    # Append activity log (non-critical — logged but never fails the request)
     try:
         metadata = json.dumps({
             "event_id": event_id,
@@ -99,10 +105,10 @@ async def upsert_outreach(
             _LOG_ACTIVITY_QUERY,
             {"user_email": updated_by, "metadata_json": metadata},
         )
+        await db.commit()
     except Exception as exc:
         logger.warning("activity_log insert failed (non-critical): %s", exc)
-
-    await db.commit()
+        await db.rollback()
 
     return OutreachRecord(
         event_id=row["event_id"],
