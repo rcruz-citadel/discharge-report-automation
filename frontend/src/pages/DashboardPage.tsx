@@ -155,9 +155,7 @@ export function DashboardPage() {
 
   const handleStatusToggle = (status: OutreachStatus) => {
     const current = filters.outreachStatuses
-    const next = current.includes(status)
-      ? current.filter(s => s !== status)
-      : [...current, status]
+    const next = current.length === 1 && current[0] === status ? [] : [status]
     setFilter('outreachStatuses', next)
   }
 

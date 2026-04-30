@@ -9,6 +9,7 @@ export function useUpsertOutreach() {
   return useMutation<OutreachRecord, Error, OutreachUpsertPayload>({
     mutationFn: upsertOutreach,
     onSuccess: (_data, variables) => {
+      // Optimistic patch for immediate UI feedback
       queryClient.setQueryData(DISCHARGES_QUERY_KEY, (old: { records: OutreachUpsertPayload[] } | undefined) => {
         if (!old) return old
         return {
@@ -31,6 +32,8 @@ export function useUpsertOutreach() {
           ),
         }
       })
+      // Background refetch to confirm the save persisted in the DB
+      queryClient.invalidateQueries({ queryKey: DISCHARGES_QUERY_KEY })
     },
   })
 }
