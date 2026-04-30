@@ -52,7 +52,7 @@ export function useLogAttempt(eventId: string, dischargeDate: string) {
     mutationFn: () => logAttempt(eventId, dischargeDate),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['attempts', eventId, dischargeDate] })
-      // If 3rd attempt auto-completed the record, patch the cache
+      // If 3rd attempt auto-completed the record, patch the cache immediately
       if (data.auto_completed) {
         queryClient.setQueryData(DISCHARGES_QUERY_KEY, (old: { records: { event_id: string; discharge_date: string; outreach_status?: string }[] } | undefined) => {
           if (!old) return old
@@ -66,6 +66,8 @@ export function useLogAttempt(eventId: string, dischargeDate: string) {
           }
         })
       }
+      // Background refetch to sync discharge state (attempt count + auto-complete status)
+      queryClient.invalidateQueries({ queryKey: DISCHARGES_QUERY_KEY })
     },
   })
 }
