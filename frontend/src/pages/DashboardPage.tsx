@@ -106,7 +106,7 @@ export function DashboardPage() {
       const bucket = getQueueBucket(row)
       if (bucket === 'immediate') immediate.push(row)
       else if (bucket === 'active') active.push(row)
-      else low_priority.push(row)
+      else if (row.discharge_date >= '2026-02-01') low_priority.push(row)
     }
 
     const byUrgency = (a: DischargeRecord, b: DischargeRecord) =>
