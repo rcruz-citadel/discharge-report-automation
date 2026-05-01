@@ -33,8 +33,8 @@ SELECT
     p.full_name AS provider_name,
     COALESCE(
         l.parent_org,
-        uhc_l.parent_org,
-        pm_tin."Practice_Name"
+        pm_tin."Practice_Name",
+        fuzzy_name."Practice_Name"
     ) AS practice,
     pt.address AS patient_address,
     pt.city,
@@ -52,20 +52,10 @@ FROM discharge_event de
     LEFT JOIN patient pt ON pt.patient_id = de.patient_id
     LEFT JOIN diagnosis_code d ON d.dx_id = de.dx_id
     LEFT JOIN location l ON l.location_id = p.location_id
-    -- UHC attribution fallback: UHC discharge reports omit provider NPI,
-    -- so we resolve practice via the monthly attribution table when provider_id is NULL.
-    LEFT JOIN LATERAL (
-        SELECT pcp_npi
-        FROM uhc_patient_attribution_monthly
-        WHERE patient_id = de.patient_id::text
-        ORDER BY as_of_date DESC
-        LIMIT 1
-    ) uhc_attr ON (de.provider_id IS NULL)
-    LEFT JOIN provider uhc_p ON uhc_p.npi = uhc_attr.pcp_npi
-    LEFT JOIN location uhc_l ON uhc_l.location_id = uhc_p.location_id
-    -- TIN fallback: for payers that include attributed_tin in their feed,
-    -- use it to derive practice name when provider_id and UHC attribution both miss.
+    -- Fallback practice resolution for records where provider_id is NULL.
+    -- Only join stg_discharge_event for those rows to avoid the fan-out cost.
     LEFT JOIN stg_discharge_event sde ON sde.event_id = de.event_id AND de.provider_id IS NULL
+    -- TIN fallback: payer-reported attributed_tin maps directly to a practice group.
     LEFT JOIN LATERAL (
         SELECT "Practice_Name"
         FROM provider_mapping
@@ -73,6 +63,16 @@ FROM discharge_event de
           AND "Practice_Name" IS NOT NULL
         LIMIT 1
     ) pm_tin ON (sde.event_id IS NOT NULL)
+    -- Fuzzy name fallback: trigram similarity ≥ 0.6 avoids false positives on
+    -- short/common names while resolving distinctive names (e.g. Makhani, Llopart Herrera).
+    LEFT JOIN LATERAL (
+        SELECT "Practice_Name"
+        FROM provider_mapping
+        WHERE similarity(lower(sde.provider_full_name), lower("Provider")) >= 0.6
+          AND "Practice_Name" IS NOT NULL
+        ORDER BY similarity(lower(sde.provider_full_name), lower("Provider")) DESC
+        LIMIT 1
+    ) fuzzy_name ON (sde.event_id IS NOT NULL AND pm_tin."Practice_Name" IS NULL)
     LEFT JOIN {_SCHEMA}.outreach_status o
         ON o.event_id = de.event_id
         AND o.discharge_date = de.discharge_date
