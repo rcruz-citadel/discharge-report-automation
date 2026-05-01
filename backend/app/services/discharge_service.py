@@ -31,7 +31,11 @@ SELECT
     py.payer_name,
     lob.lob_name,
     p.full_name AS provider_name,
-    l.parent_org AS practice,
+    COALESCE(
+        l.parent_org,
+        uhc_l.parent_org,
+        pm_tin."Practice_Name"
+    ) AS practice,
     pt.address AS patient_address,
     pt.city,
     pt.zip_code::character varying(5) AS zip_code,
@@ -48,6 +52,27 @@ FROM discharge_event de
     LEFT JOIN patient pt ON pt.patient_id = de.patient_id
     LEFT JOIN diagnosis_code d ON d.dx_id = de.dx_id
     LEFT JOIN location l ON l.location_id = p.location_id
+    -- UHC attribution fallback: UHC discharge reports omit provider NPI,
+    -- so we resolve practice via the monthly attribution table when provider_id is NULL.
+    LEFT JOIN LATERAL (
+        SELECT pcp_npi
+        FROM uhc_patient_attribution_monthly
+        WHERE patient_id = de.patient_id::text
+        ORDER BY as_of_date DESC
+        LIMIT 1
+    ) uhc_attr ON (de.provider_id IS NULL)
+    LEFT JOIN provider uhc_p ON uhc_p.npi = uhc_attr.pcp_npi
+    LEFT JOIN location uhc_l ON uhc_l.location_id = uhc_p.location_id
+    -- TIN fallback: for payers that include attributed_tin in their feed,
+    -- use it to derive practice name when provider_id and UHC attribution both miss.
+    LEFT JOIN stg_discharge_event sde ON sde.event_id = de.event_id AND de.provider_id IS NULL
+    LEFT JOIN LATERAL (
+        SELECT "Practice_Name"
+        FROM provider_mapping
+        WHERE "Attributed_TIN" = sde.attributed_tin
+          AND "Practice_Name" IS NOT NULL
+        LIMIT 1
+    ) pm_tin ON (sde.event_id IS NOT NULL)
     LEFT JOIN {_SCHEMA}.outreach_status o
         ON o.event_id = de.event_id
         AND o.discharge_date = de.discharge_date
