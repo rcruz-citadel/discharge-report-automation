@@ -68,7 +68,8 @@ FROM discharge_event de
     LEFT JOIN LATERAL (
         SELECT "Practice_Name"
         FROM provider_mapping
-        WHERE similarity(lower(sde.provider_full_name), lower("Provider")) >= 0.5
+        WHERE similarity(lower(sde.provider_full_name), lower("Provider")) >= 0.6
+           OR (lower(sde.provider_full_name) = 'nsonakoyagialo, nzota' AND lower("Provider") = 'nsona koyagialo, nzoatie')
           AND "Practice_Name" IS NOT NULL
         ORDER BY similarity(lower(sde.provider_full_name), lower("Provider")) DESC
         LIMIT 1
