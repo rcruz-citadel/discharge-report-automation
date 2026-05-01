@@ -13,18 +13,34 @@ interface FieldProps {
   label: string
   value: string | number | null | undefined
   wrap?: boolean
+  warn?: boolean
+  warnTitle?: string
 }
 
-function Field({ label, value, wrap }: FieldProps) {
+function Field({ label, value, wrap, warn, warnTitle }: FieldProps) {
+  const display = orDash(value as string)
+  const isEmpty = display === '—'
+  const showWarning = warn && isEmpty
+
   return (
     <div className="min-w-0">
       <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-0.5">{label}</p>
-      <p
-        className={`text-[14.4px] font-semibold text-text-primary ${wrap ? 'break-words leading-snug' : 'truncate'}`}
-        title={wrap ? undefined : orDash(value as string)}
-      >
-        {orDash(value as string)}
-      </p>
+      {showWarning ? (
+        <span
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+          style={{ backgroundColor: '#fefcbf', color: '#975a16' }}
+          title={warnTitle}
+        >
+          ⚠ Unknown
+        </span>
+      ) : (
+        <p
+          className={`text-[14.4px] font-semibold text-text-primary ${wrap ? 'break-words leading-snug' : 'truncate'}`}
+          title={wrap ? undefined : display}
+        >
+          {display}
+        </p>
+      )}
     </div>
   )
 }
@@ -106,7 +122,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
           <div className="grid grid-cols-3 gap-3 mb-3">
             <Field label="Member ID" value={row.insurance_member_id} />
             <Field label="Date of Birth" value={row.birth_date} />
-            <Field label="Phone" value={row.phone} />
+            <Field label="Phone" value={row.phone && row.phone !== '0' ? row.phone : null} />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <Field label="Practice" value={row.practice} />
@@ -121,7 +137,7 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
             Hospitalization &amp; Diagnosis
           </p>
           <div className="grid grid-cols-3 gap-3 mb-3">
-            <Field label="Hospital" value={row.discharge_hospital} />
+            <Field label="Hospital" value={row.discharge_hospital} warn warnTitle="Hospital unknown — check payer portal" />
             <Field label="Admit Date" value={row.admit_date ? formatDate(row.admit_date) : null} />
             <Field label="Discharge Date" value={formatDate(row.discharge_date)} />
           </div>

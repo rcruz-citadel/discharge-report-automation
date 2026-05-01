@@ -95,7 +95,21 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
     accessorKey: 'discharge_hospital',
     header: 'Hospital',
     size: 180,
-    cell: ({ getValue }) => orDash(getValue<string | null>()),
+    cell: ({ getValue }) => {
+      const val = getValue<string | null>()
+      if (!val) {
+        return (
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+            style={{ backgroundColor: '#fefcbf', color: '#975a16' }}
+            title="Hospital unknown — check payer portal"
+          >
+            ⚠ Unknown
+          </span>
+        )
+      }
+      return val
+    },
   },
   {
     accessorKey: 'length_of_stay',
