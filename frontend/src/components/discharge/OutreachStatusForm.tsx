@@ -238,7 +238,9 @@ interface OutreachStatusFormProps {
 }
 
 const PRIMARY_STATUSES: OutreachStatus[] = ['no_outreach', 'outreach_made', 'outreach_complete']
-const EXCEPTION_STATUSES: OutreachStatus[] = ['failed', 'late_delivery', 'no_outreach_required']
+const EXCEPTION_STATUSES: OutreachStatus[] = ['no_outreach_required']
+
+const SYSTEM_SET_STATUSES: OutreachStatus[] = ['failed', 'late_delivery']
 
 export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusFormProps) {
   const [status, setStatus] = useState<OutreachStatus>(row.outreach_status)
@@ -298,8 +300,40 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
     )
   }
 
+  const isSystemStatus = SYSTEM_SET_STATUSES.includes(row.outreach_status)
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {/* System-set status badge — shown when status was set automatically */}
+      {isSystemStatus && (() => {
+        const colors = OUTREACH_STATUS_COLORS[row.outreach_status]
+        return (
+          <div
+            className="flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-semibold"
+            style={{
+              backgroundColor: colors.btnBg,
+              border: `1.5px solid ${colors.btnBorder}`,
+              color: colors.btnText,
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{ backgroundColor: colors.dot }}
+              aria-hidden="true"
+            />
+            <span>
+              System Status: {OUTREACH_STATUS_LABELS[row.outreach_status]}
+              <span
+                className="ml-1 font-normal"
+                style={{ opacity: 0.75 }}
+              >
+                — set automatically
+              </span>
+            </span>
+          </div>
+        )
+      })()}
+
       {/* Days remaining banner */}
       <DaysRemainingBanner row={row} />
 
@@ -312,11 +346,11 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
           <div className="grid grid-cols-3 gap-2">
             {PRIMARY_STATUSES.map(renderStatusButton)}
           </div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-2 mb-1">
-            Exceptions
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-3 mb-1">
+            Exception
           </p>
-          <div className="grid grid-cols-3 gap-2">
-            {EXCEPTION_STATUSES.map(renderStatusButton)}
+          <div>
+            {renderStatusButton('no_outreach_required')}
           </div>
         </div>
         {tip && (
