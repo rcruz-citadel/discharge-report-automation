@@ -320,13 +320,22 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
               aria-hidden="true"
             />
             <span>
-              System Status: {OUTREACH_STATUS_LABELS[row.outreach_status]}
-              <span
-                className="ml-1 font-normal"
-                style={{ opacity: 0.75 }}
-              >
-                — set automatically
-              </span>
+              {OUTREACH_STATUS_LABELS[row.outreach_status]}
+              {row.outreach_status === 'failed' && row.failure_reason === 'missed_48h' && (
+                <span className="ml-1 font-normal" style={{ opacity: 0.75 }}>
+                  — notification on time, 48h window missed
+                </span>
+              )}
+              {row.outreach_status === 'failed' && row.failure_reason === 'missed_tcm_window' && (
+                <span className="ml-1 font-normal" style={{ opacity: 0.75 }}>
+                  — full TCM window expired
+                </span>
+              )}
+              {row.outreach_status === 'late_delivery' && (
+                <span className="ml-1 font-normal" style={{ opacity: 0.75 }}>
+                  — ADT arrived late, outreach still possible
+                </span>
+              )}
             </span>
           </div>
         )

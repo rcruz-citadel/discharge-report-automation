@@ -48,7 +48,8 @@ SELECT
     COALESCE(o.notes, '')                          AS outreach_notes,
     o.updated_by                                   AS outreach_updated_by,
     o.updated_at                                   AS outreach_updated_at,
-    COALESCE(o.discharge_summary_dropped, FALSE)   AS discharge_summary_dropped
+    COALESCE(o.discharge_summary_dropped, FALSE)   AS discharge_summary_dropped,
+    o.failure_reason                               AS failure_reason
 FROM discharge_event de
     LEFT JOIN provider p ON p.provider_id = de.provider_id
     LEFT JOIN payer py ON py.payer_id = de.payer_id
@@ -132,6 +133,7 @@ async def get_all_discharges(db: AsyncSession) -> DischargesResponse:
             outreach_updated_by=row["outreach_updated_by"],
             outreach_updated_at=row["outreach_updated_at"],
             discharge_summary_dropped=bool(row["discharge_summary_dropped"]),
+            failure_reason=row["failure_reason"],
         )
         for row in rows
     ]

@@ -19,6 +19,7 @@ from app.routers.manager import router as manager_router
 from app.routers.meta import router as meta_router
 from app.routers.outreach import router as outreach_router
 from app.tasks.auto_fail import run_auto_fail
+from app.tasks.auto_flag_missed_48h import run_auto_flag_missed_48h
 from app.tasks.auto_late_delivery import run_auto_late_delivery
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -67,8 +68,10 @@ def create_app() -> FastAPI:
         await _cleanup_expired_sessions()
         await _run_auto_fail_once()
         await _run_auto_late_delivery_once()
+        await _run_auto_flag_missed_48h_once()
         asyncio.create_task(_auto_fail_loop())
         asyncio.create_task(_auto_late_delivery_loop())
+        asyncio.create_task(_auto_flag_missed_48h_loop())
 
     async def _cleanup_expired_sessions() -> None:
         """Delete expired session rows on startup. Keeps the table lean."""
@@ -123,6 +126,29 @@ def create_app() -> FastAPI:
                     await run_auto_late_delivery(db)
             except Exception as exc:
                 logger.error("auto_late_delivery loop error: %s", exc)
+
+    async def _run_auto_flag_missed_48h_once() -> None:
+        """Run missed-48h flag on startup."""
+        try:
+            async with AsyncSessionLocal() as db:
+                updated, inserted = await run_auto_flag_missed_48h(db)
+                logger.info(
+                    "Startup auto_flag_missed_48h complete: updated=%d inserted=%d",
+                    updated,
+                    inserted,
+                )
+        except Exception as exc:
+            logger.warning("Startup auto_flag_missed_48h skipped: %s", exc)
+
+    async def _auto_flag_missed_48h_loop() -> None:
+        """Re-run missed-48h flag every 24 hours."""
+        while True:
+            await asyncio.sleep(24 * 60 * 60)
+            try:
+                async with AsyncSessionLocal() as db:
+                    await run_auto_flag_missed_48h(db)
+            except Exception as exc:
+                logger.error("auto_flag_missed_48h loop error: %s", exc)
 
     # ── Health check ───────────────────────────────────────────────────────────
     @app.get("/api/health", tags=["health"])

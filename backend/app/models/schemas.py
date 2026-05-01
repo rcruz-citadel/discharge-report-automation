@@ -66,6 +66,7 @@ class DischargeRecord(BaseModel):
     outreach_updated_by: Optional[str] = None
     outreach_updated_at: Optional[datetime] = None
     discharge_summary_dropped: bool = False
+    failure_reason: Optional[str] = None
 
 
 class DischargesResponse(BaseModel):

@@ -20,9 +20,10 @@ _SCHEMA = get_settings().app_schema
 # Update existing outreach_status rows that are past their window
 _UPDATE_QUERY = text(f"""
 UPDATE {_SCHEMA}.outreach_status o
-SET status     = 'failed',
-    updated_by = 'system',
-    updated_at  = now()
+SET status         = 'failed',
+    failure_reason = 'missed_tcm_window',
+    updated_by     = 'system',
+    updated_at     = now()
 FROM discharge_event de
 WHERE o.event_id       = de.event_id
   AND o.discharge_date = de.discharge_date
@@ -40,11 +41,12 @@ WHERE o.event_id       = de.event_id
 # Insert failed rows for records with no outreach row yet but past their window
 _INSERT_QUERY = text(f"""
 INSERT INTO {_SCHEMA}.outreach_status
-    (event_id, discharge_date, status, updated_by, updated_at, discharge_summary_dropped)
+    (event_id, discharge_date, status, failure_reason, updated_by, updated_at, discharge_summary_dropped)
 SELECT
     de.event_id,
     de.discharge_date,
     'failed',
+    'missed_tcm_window',
     'system',
     now(),
     FALSE
