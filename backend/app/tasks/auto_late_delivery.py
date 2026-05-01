@@ -27,14 +27,13 @@ SET status     = 'late_delivery',
     updated_by = 'system',
     updated_at = now()
 FROM discharge_event de
-JOIN discharge_master dm
-    ON dm.event_id = de.event_id
+JOIN discharge_app.discharge_event_ingestion dei ON dei.event_id = de.event_id
 WHERE o.event_id       = de.event_id
   AND o.discharge_date = de.discharge_date
   AND o.status         = 'no_outreach'
   AND de.discharge_date IS NOT NULL
-  AND dm.first_ingested_date IS NOT NULL
-  AND (dm.first_ingested_date - de.discharge_date::date) > 2
+  AND dei.first_ingested_date IS NOT NULL
+  AND (dei.first_ingested_date - de.discharge_date::date) > 2
   AND (
     de.discharge_hospital IS NULL
     OR (
@@ -63,14 +62,13 @@ SELECT
     now(),
     FALSE
 FROM discharge_event de
-JOIN discharge_master dm
-    ON dm.event_id = de.event_id
+JOIN discharge_app.discharge_event_ingestion dei ON dei.event_id = de.event_id
 LEFT JOIN {_SCHEMA}.outreach_status o
     ON o.event_id = de.event_id AND o.discharge_date = de.discharge_date
 WHERE o.event_id IS NULL
   AND de.discharge_date IS NOT NULL
-  AND dm.first_ingested_date IS NOT NULL
-  AND (dm.first_ingested_date - de.discharge_date::date) > 2
+  AND dei.first_ingested_date IS NOT NULL
+  AND (dei.first_ingested_date - de.discharge_date::date) > 2
   AND (
     de.discharge_hospital IS NULL
     OR (
