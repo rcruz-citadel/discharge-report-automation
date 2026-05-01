@@ -30,7 +30,7 @@ SELECT
     de.length_of_stay,
     py.payer_name,
     lob.lob_name,
-    p.full_name AS provider_name,
+    COALESCE(p.full_name, sde.provider_full_name) AS provider_name,
     COALESCE(
         l.parent_org,
         pm_tin."Practice_Name",
