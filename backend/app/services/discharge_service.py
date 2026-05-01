@@ -30,7 +30,11 @@ SELECT
     de.length_of_stay,
     py.payer_name,
     lob.lob_name,
-    COALESCE(p.full_name, sde.provider_full_name) AS provider_name,
+    COALESCE(
+        p.full_name,
+        NULLIF(trim(COALESCE(fuzzy_name.first_name, '') || ' ' || COALESCE(fuzzy_name.last_name, '')), ''),
+        sde.provider_full_name
+    ) AS provider_name,
     COALESCE(
         l.parent_org,
         pm_tin."Practice_Name",
@@ -66,7 +70,7 @@ FROM discharge_event de
     -- Fuzzy name fallback: trigram similarity ≥ 0.6 avoids false positives on
     -- short/common names while resolving distinctive names (e.g. Makhani, Llopart Herrera).
     LEFT JOIN LATERAL (
-        SELECT "Practice_Name"
+        SELECT "Practice_Name", first_name, last_name
         FROM provider_mapping
         WHERE similarity(lower(sde.provider_full_name), lower("Provider")) >= 0.6
            OR (lower(sde.provider_full_name) = 'nsonakoyagialo, nzota' AND lower("Provider") = 'nsona koyagialo, nzoatie')
