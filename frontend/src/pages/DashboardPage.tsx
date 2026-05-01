@@ -254,7 +254,7 @@ export function DashboardPage() {
                 {/* Stat chips */}
                 <StatChipRow records={filteredRows} />
 
-                {/* Record count + title */}
+                {/* Record count + title + export */}
                 <div className="flex items-center gap-2 mt-3">
                   <h2 className="text-[16px] font-bold text-text-primary capitalize">
                     {TAB_LABELS[activeTab]}
@@ -265,6 +265,16 @@ export function DashboardPage() {
                   >
                     {filteredRows.length.toLocaleString()}
                   </span>
+                  <button
+                    onClick={() => exportToCsv(
+                      filteredRows as unknown as Record<string, unknown>[],
+                      CSV_COLUMNS,
+                      `discharge_report_${fileTimestamp()}.csv`
+                    )}
+                    className="ml-auto px-3 py-1 text-[12px] font-medium text-text-secondary rounded-md border border-border hover:border-navy hover:text-navy transition-colors"
+                  >
+                    Export CSV ({filteredRows.length.toLocaleString()} rows)
+                  </button>
                 </div>
 
                 {/* Legend / filter */}
@@ -298,19 +308,6 @@ export function DashboardPage() {
                   )}
                 </div>
 
-                {/* Export button */}
-                <div className="flex justify-start mt-2">
-                  <button
-                    onClick={() => exportToCsv(
-                      filteredRows as unknown as Record<string, unknown>[],
-                      CSV_COLUMNS,
-                      `discharge_report_${fileTimestamp()}.csv`
-                    )}
-                    className="px-4 py-2 text-[13px] font-medium text-text-secondary rounded-md border border-border hover:border-navy hover:text-navy transition-colors"
-                  >
-                    Export CSV ({filteredRows.length.toLocaleString()} rows)
-                  </button>
-                </div>
               </>
             )}
           </div>

@@ -461,7 +461,7 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
         </Button>
         <Button
           type="submit"
-          variant="primary"
+          variant="secondary"
           isLoading={mutation.isPending}
           disabled={mutation.isPending}
           onClick={() => { closeAfterSave.current = true }}
