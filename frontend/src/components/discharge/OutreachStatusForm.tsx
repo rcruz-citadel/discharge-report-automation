@@ -238,8 +238,6 @@ interface OutreachStatusFormProps {
 }
 
 const PRIMARY_STATUSES: OutreachStatus[] = ['no_outreach', 'outreach_made', 'outreach_complete']
-const EXCEPTION_STATUSES: OutreachStatus[] = ['no_outreach_required']
-
 const SYSTEM_SET_STATUSES: OutreachStatus[] = ['failed', 'late_delivery']
 
 export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusFormProps) {
