@@ -14,11 +14,12 @@ import { DetailPanel } from '../components/discharge/DetailPanel'
 import { StatChipRow } from '../components/ui/StatChipRow'
 import { OutreachLegend } from '../components/discharge/OutreachLegend'
 import { ManagerDashboard } from '../components/manager/ManagerDashboard'
+import { HelpGuide } from '../components/help/HelpGuide'
 import { useToast } from '../components/ui/Toast'
 import { fetchMetaFilters } from '../api/meta'
 import { exportToCsv, fileTimestamp } from '../lib/utils'
 
-type TabId = 'immediate' | 'active' | 'low_priority' | 'manager'
+type TabId = 'immediate' | 'active' | 'low_priority' | 'manager' | 'help'
 
 const CSV_COLUMNS = [
   'patient_name', 'birth_date', 'insurance_member_id', 'phone',
@@ -34,6 +35,7 @@ const TAB_DESCRIPTIONS: Record<TabId, string> = {
   active: 'Past 48-hour window but still within the 7/30-day TCM deadline',
   low_priority: 'Past TCM deadline — drop the discharge summary in the EMR when possible',
   manager: 'Manager Dashboard',
+  help: 'Coordinator guide — tabs, statuses, deadlines, and workflow',
 }
 
 const TAB_LABELS: Record<TabId, string> = {
@@ -41,6 +43,7 @@ const TAB_LABELS: Record<TabId, string> = {
   active: 'Active',
   low_priority: 'Past Deadline',
   manager: 'Manager',
+  help: 'Help',
 }
 
 export function DashboardPage() {
@@ -64,6 +67,7 @@ export function DashboardPage() {
     { id: 'active', label: 'Active' },
     { id: 'low_priority', label: 'Past Deadline' },
     ...(isManager ? [{ id: 'manager' as TabId, label: 'Manager' }] : []),
+    { id: 'help', label: 'Help' },
   ]
 
   // Apply sidebar filters (no date tab cutoff — tabs handle that now)
@@ -126,6 +130,7 @@ export function DashboardPage() {
 
   const filteredRows: DischargeRecord[] =
     activeTab === 'manager' ? [] :
+    activeTab === 'help' ? [] :
     activeTab === 'immediate' ? queues.immediate :
     activeTab === 'active' ? queues.active :
     queues.low_priority
@@ -242,7 +247,9 @@ export function DashboardPage() {
             role="tabpanel"
             aria-label={TAB_DESCRIPTIONS[activeTab]}
           >
-            {activeTab === 'manager' ? (
+            {activeTab === 'help' ? (
+              <HelpGuide />
+            ) : activeTab === 'manager' ? (
               <ManagerDashboard />
             ) : (
               <>
