@@ -166,6 +166,6 @@ export function getQueueBucket(row: DischargeRecord): QueueBucket {
   const ageDays = Math.floor((today.getTime() - discharge.getTime()) / (1000 * 60 * 60 * 24))
   if (ageDays <= 2) return 'immediate'
   const deadline = row.stay_type?.toLowerCase().includes('emergency') ? 7 : 30
-  if (ageDays < deadline) return 'active'
+  if (ageDays <= deadline) return 'active'
   return 'low_priority'
 }
