@@ -23,10 +23,8 @@ function DaysLeftBadge({ row }: { row: DischargeRecord }) {
   let color: string
   let label: string
 
-  if (days < 0) {
+  if (days <= 0) {
     bg = '#feebc8'; color = '#c05621'; label = 'Overdue'
-  } else if (days === 0) {
-    bg = '#fed7d7'; color = '#c53030'; label = 'Due Today'
   } else if (days === 1) {
     bg = '#feebc8'; color = '#c05621'; label = '1d left'
   } else if (days <= 3) {
