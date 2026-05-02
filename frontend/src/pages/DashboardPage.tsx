@@ -102,13 +102,10 @@ export function DashboardPage() {
     const active: DischargeRecord[] = []
     const low_priority: DischargeRecord[] = []
 
-    const doneStatuses = new Set(['outreach_complete', 'no_outreach_required'])
-
     for (const row of sidebarFiltered) {
       const bucket = getQueueBucket(row)
-      const done = doneStatuses.has(row.outreach_status)
-      if (bucket === 'immediate' && !done) immediate.push(row)
-      else if (bucket === 'active' && !done) active.push(row)
+      if (bucket === 'immediate') immediate.push(row)
+      else if (bucket === 'active') active.push(row)
       else if (row.discharge_date >= '2026-02-01') low_priority.push(row)
     }
 
