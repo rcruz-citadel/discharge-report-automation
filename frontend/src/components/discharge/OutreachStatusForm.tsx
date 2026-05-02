@@ -304,40 +304,57 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {/* System-set status badge — shown when status was set automatically */}
       {isSystemStatus && (() => {
-        const colors = OUTREACH_STATUS_COLORS[row.outreach_status]
+        const isMissed48h = row.outreach_status === 'failed' && row.failure_reason === 'missed_48h'
+
+        // missed_48h uses amber (warning) — window still open, action required
+        // all other system statuses use their own palette
+        const colors = isMissed48h
+          ? { bg: '#fefcbf', border: '#d69e2e', text: '#975a16', dot: '#d69e2e' }
+          : (() => {
+              const c = OUTREACH_STATUS_COLORS[row.outreach_status]
+              return { bg: c.btnBg, border: c.btnBorder, text: c.btnText, dot: c.dot }
+            })()
+
+        const label = isMissed48h
+          ? '48h Window Missed'
+          : row.outreach_status === 'failed'
+          ? 'TCM Window Closed'
+          : OUTREACH_STATUS_LABELS[row.outreach_status]
+
+        const subtitle = isMissed48h
+          ? 'TCM window still open — outreach required'
+          : row.outreach_status === 'failed'
+          ? 'Outreach window has expired — no further action required'
+          : 'ADT arrived late, outreach still possible'
+
         return (
-          <div
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-semibold"
-            style={{
-              backgroundColor: colors.btnBg,
-              border: `1.5px solid ${colors.btnBorder}`,
-              color: colors.btnText,
-            }}
-          >
-            <span
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{ backgroundColor: colors.dot }}
-              aria-hidden="true"
-            />
-            <span>
-              {OUTREACH_STATUS_LABELS[row.outreach_status]}
-              {row.outreach_status === 'failed' && row.failure_reason === 'missed_48h' && (
+          <>
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-semibold"
+              style={{
+                backgroundColor: colors.bg,
+                border: `1.5px solid ${colors.border}`,
+                color: colors.text,
+              }}
+            >
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: colors.dot }}
+                aria-hidden="true"
+              />
+              <span>
+                {label}
                 <span className="ml-1 font-normal" style={{ opacity: 0.75 }}>
-                  — notification on time, 48h window missed
+                  — {subtitle}
                 </span>
-              )}
-              {row.outreach_status === 'failed' && row.failure_reason === 'missed_tcm_window' && (
-                <span className="ml-1 font-normal" style={{ opacity: 0.75 }}>
-                  — full TCM window expired
-                </span>
-              )}
-              {row.outreach_status === 'late_delivery' && (
-                <span className="ml-1 font-normal" style={{ opacity: 0.75 }}>
-                  — ADT arrived late, outreach still possible
-                </span>
-              )}
-            </span>
-          </div>
+              </span>
+            </div>
+            {isMissed48h && (
+              <p className="text-[11px] italic" style={{ color: '#718096' }}>
+                The 48-hour window passed, but the TCM window is still open. Continue outreach.
+              </p>
+            )}
+          </>
         )
       })()}
 
