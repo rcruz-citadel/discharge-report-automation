@@ -145,12 +145,15 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
       const { outreach_status, failure_reason } = row.original
       if (outreach_status === 'failed' && failure_reason === 'missed_48h') {
         return (
-          <span
-            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold"
-            style={{ backgroundColor: '#fefcbf', color: '#975a16', border: '1px solid #d69e2e' }}
-          >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#e07b2a', flexShrink: 0, display: 'inline-block' }} />
-            48h Missed
+          <span className="inline-flex items-center gap-2">
+            <StatusPill status="no_outreach" />
+            <span
+              className="inline-flex items-center gap-1"
+              style={{ fontSize: 10, fontWeight: 500, color: '#975a16' }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#d69e2e', flexShrink: 0, display: 'inline-block' }} />
+              48h Missed
+            </span>
           </span>
         )
       }
