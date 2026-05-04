@@ -307,7 +307,11 @@ export function DashboardPage() {
                 <OutreachLegend
                   activeStatuses={filters.outreachStatuses}
                   onToggle={handleStatusToggle}
-                  resolvedOnly={activeTab === 'resolved'}
+                  variant={
+                    activeTab === 'resolved' ? 'resolved' :
+                    activeTab === 'low_priority' ? 'past_deadline' :
+                    'queue'
+                  }
                 />
 
                 {/* Table + detail panel split layout */}

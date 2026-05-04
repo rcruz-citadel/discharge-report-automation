@@ -1,29 +1,31 @@
 import { OUTREACH_STATUS_COLORS, OUTREACH_STATUS_LABELS } from '../../types/discharge'
 import type { OutreachStatus } from '../../types/discharge'
 
-const ALL_STATUSES: OutreachStatus[] = [
-  'no_outreach',
-  'outreach_made',
-  'outreach_complete',
-  'failed',
-  'late_delivery',
-  'no_outreach_required',
-]
+const QUEUE_STATUSES: OutreachStatus[] = ['no_outreach', 'outreach_made']
+
+const PAST_DEADLINE_STATUSES: OutreachStatus[] = ['failed']
 
 const RESOLVED_ONLY_STATUSES: OutreachStatus[] = [
   'outreach_complete',
   'no_outreach_required',
 ]
 
+type LegendVariant = 'queue' | 'past_deadline' | 'resolved' | 'all'
+
 interface OutreachLegendProps {
   activeStatuses: OutreachStatus[]
   onToggle: (status: OutreachStatus) => void
-  /** When true, shows only the two resolved statuses as filter pills. */
+  variant?: LegendVariant
+  /** @deprecated use variant='resolved' */
   resolvedOnly?: boolean
 }
 
-export function OutreachLegend({ activeStatuses, onToggle, resolvedOnly }: OutreachLegendProps) {
-  const statuses = resolvedOnly ? RESOLVED_ONLY_STATUSES : ALL_STATUSES
+export function OutreachLegend({ activeStatuses, onToggle, variant, resolvedOnly }: OutreachLegendProps) {
+  const statuses =
+    variant === 'queue' ? QUEUE_STATUSES :
+    variant === 'past_deadline' ? PAST_DEADLINE_STATUSES :
+    (variant === 'resolved' || resolvedOnly) ? RESOLVED_ONLY_STATUSES :
+    QUEUE_STATUSES
   return (
     <div
       className="flex items-center gap-2 flex-wrap"
