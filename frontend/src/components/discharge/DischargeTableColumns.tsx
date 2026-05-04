@@ -155,9 +155,11 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
         )
       }
       if (outreach_status === 'late_delivery') {
+        const bucket = getQueueBucket(row.original)
+        const pillStatus = bucket === 'low_priority' ? 'failed' : 'no_outreach'
         return (
           <span className="inline-flex items-center gap-2">
-            <StatusPill status="no_outreach" />
+            <StatusPill status={pillStatus} />
             <span
               className="inline-flex items-center gap-1"
               style={{ fontSize: 10, fontWeight: 500, color: '#3b82f6' }}
