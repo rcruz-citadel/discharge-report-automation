@@ -142,37 +142,36 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
     header: 'Outreach',
     size: 160,
     cell: ({ row }) => {
-      const { outreach_status, failure_reason } = row.original
+      const { outreach_status, failure_reason, original_failure_reason } = row.original
+
+      // Translate system statuses to coordinator-friendly pill
+      let pillStatus = outreach_status
       if (outreach_status === 'failed' && failure_reason === 'missed_48h') {
-        return (
-          <span className="inline-flex items-center gap-2">
-            <StatusPill status="no_outreach" />
-            <span
-              className="inline-flex items-center gap-1"
-              style={{ fontSize: 10, fontWeight: 500, color: '#975a16' }}
-            >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#d69e2e', flexShrink: 0, display: 'inline-block' }} />
-              48h Missed
-            </span>
-          </span>
-        )
-      }
-      if (outreach_status === 'late_delivery') {
+        pillStatus = 'no_outreach'
+      } else if (outreach_status === 'late_delivery') {
         const bucket = getQueueBucket(row.original)
-        const pillStatus = bucket === 'low_priority' ? 'failed' : 'no_outreach'
+        pillStatus = bucket === 'low_priority' ? 'failed' : 'no_outreach'
+      }
+
+      // Context badge persists based on original_failure_reason, even after status changes
+      const showMissed48h = original_failure_reason === 'missed_48h'
+      const showLateAdt = original_failure_reason === 'late_delivery'
+
+      if (showMissed48h || showLateAdt) {
         return (
           <span className="inline-flex items-center gap-2">
             <StatusPill status={pillStatus} />
             <span
               className="inline-flex items-center gap-1"
-              style={{ fontSize: 10, fontWeight: 500, color: '#3b82f6' }}
+              style={{ fontSize: 10, fontWeight: 500, color: showMissed48h ? '#975a16' : '#3b82f6' }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#93c5fd', flexShrink: 0, display: 'inline-block' }} />
-              Late ADT
+              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: showMissed48h ? '#d69e2e' : '#93c5fd', flexShrink: 0, display: 'inline-block' }} />
+              {showMissed48h ? '48h Missed' : 'Late ADT'}
             </span>
           </span>
         )
       }
+
       return <StatusPill status={outreach_status} />
     },
   },
