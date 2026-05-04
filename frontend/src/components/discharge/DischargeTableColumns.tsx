@@ -154,6 +154,20 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
           </span>
         )
       }
+      if (outreach_status === 'late_delivery') {
+        return (
+          <span className="inline-flex items-center gap-2">
+            <StatusPill status="no_outreach" />
+            <span
+              className="inline-flex items-center gap-1"
+              style={{ fontSize: 10, fontWeight: 500, color: '#3b82f6' }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#93c5fd', flexShrink: 0, display: 'inline-block' }} />
+              Late ADT
+            </span>
+          </span>
+        )
+      }
       return <StatusPill status={outreach_status} />
     },
   },
