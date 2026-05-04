@@ -144,21 +144,26 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
     cell: ({ row }) => {
       const { outreach_status, failure_reason, original_failure_reason } = row.original
 
+      const bucket = getQueueBucket(row.original)
+
       // Translate system statuses to coordinator-friendly pill
       let pillStatus = outreach_status
       if (outreach_status === 'failed' && failure_reason === 'missed_48h') {
         pillStatus = 'no_outreach'
       } else if (outreach_status === 'late_delivery') {
-        const bucket = getQueueBucket(row.original)
         pillStatus = bucket === 'low_priority' ? 'failed' : 'no_outreach'
       }
 
-      // Context badge: driven by original_failure_reason (persists after status changes)
-      // Falls back to current status/failure_reason for pre-backfill records
-      const showMissed48h = original_failure_reason === 'missed_48h' ||
+      // Context badge: persists through status changes but hides once resolved
+      const isResolved = bucket === 'resolved'
+      const showMissed48h = !isResolved && (
+        original_failure_reason === 'missed_48h' ||
         (outreach_status === 'failed' && failure_reason === 'missed_48h')
-      const showLateAdt = original_failure_reason === 'late_delivery' ||
+      )
+      const showLateAdt = !isResolved && (
+        original_failure_reason === 'late_delivery' ||
         outreach_status === 'late_delivery'
+      )
 
       if (showMissed48h || showLateAdt) {
         return (
