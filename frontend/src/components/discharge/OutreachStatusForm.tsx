@@ -361,26 +361,38 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
       {/* Days remaining banner */}
       <DaysRemainingBanner row={row} />
 
-      {/* Status segmented button group */}
-      <div>
-        <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">
-          Outreach Status
-        </p>
-        <div role="group" aria-label="Outreach status">
-          <div className="grid grid-cols-3 gap-2">
-            {PRIMARY_STATUSES.map(renderStatusButton)}
-          </div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-3 mb-1">
-            Exception
+      {/* Status segmented button group — hidden for past deadline records */}
+      {bucket !== 'low_priority' && (
+        <div>
+          <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">
+            Outreach Status
           </p>
-          <div>
-            {renderStatusButton('no_outreach_required')}
+          <div role="group" aria-label="Outreach status">
+            <div className="grid grid-cols-3 gap-2">
+              {PRIMARY_STATUSES.map(renderStatusButton)}
+            </div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-text-muted mt-3 mb-1">
+              Exception
+            </p>
+            <div>
+              {renderStatusButton('no_outreach_required')}
+            </div>
           </div>
+          {tip && (
+            <p className="text-[11px] text-text-muted mt-2 italic">{tip}</p>
+          )}
         </div>
-        {tip && (
-          <p className="text-[11px] text-text-muted mt-2 italic">{tip}</p>
-        )}
-      </div>
+      )}
+
+      {/* Past deadline — discharge summary drop is the only action */}
+      {bucket === 'low_priority' && (
+        <div
+          className="px-3 py-2 rounded-md text-[12px]"
+          style={{ backgroundColor: '#f7f9fb', border: '1px solid #d0dae3', color: '#556e81' }}
+        >
+          TCM window has expired. The only remaining action is to drop the discharge summary in the EMR chart for partial credit.
+        </div>
+      )}
 
       {/* Notes textarea */}
       <div>
@@ -434,15 +446,17 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
         </label>
       )}
 
-      {/* Attempt tracking */}
-      <AttemptSection
-        eventId={row.event_id}
-        dischargeDate={row.discharge_date}
-        onAutoComplete={() => setStatus('outreach_complete')}
-      />
+      {/* Attempt tracking — hidden for past deadline records */}
+      {bucket !== 'low_priority' && (
+        <AttemptSection
+          eventId={row.event_id}
+          dischargeDate={row.discharge_date}
+          onAutoComplete={() => setStatus('outreach_complete')}
+        />
+      )}
 
-      {/* Workflow help */}
-      <WorkflowHelp />
+      {/* Workflow help — hidden for past deadline records */}
+      {bucket !== 'low_priority' && <WorkflowHelp />}
 
       {/* Last updated */}
       {row.outreach_updated_by && (
