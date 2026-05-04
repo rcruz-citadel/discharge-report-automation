@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 _SCHEMA = get_settings().app_schema
 
 _GET_OUTREACH_QUERY = text(f"""
-SELECT event_id, discharge_date, status, notes, updated_by, updated_at, discharge_summary_dropped
+SELECT event_id, discharge_date, status, notes, updated_by, updated_at,
+       discharge_summary_dropped, failure_reason, original_failure_reason
 FROM {_SCHEMA}.outreach_status
 WHERE event_id = :event_id
   AND discharge_date = :discharge_date
@@ -20,21 +21,36 @@ WHERE event_id = :event_id
 
 _UPSERT_OUTREACH_QUERY = text(f"""
 INSERT INTO {_SCHEMA}.outreach_status
-    (event_id, discharge_date, status, updated_by, updated_at, notes, discharge_summary_dropped)
+    (event_id, discharge_date, status, updated_by, updated_at, notes, discharge_summary_dropped,
+     original_failure_reason)
 VALUES
-    (:event_id, :discharge_date, :status, :updated_by, now(), :notes, :discharge_summary_dropped)
+    (:event_id, :discharge_date, :status, :updated_by, now(), :notes, :discharge_summary_dropped,
+     NULL)
 ON CONFLICT (event_id, discharge_date) DO UPDATE
     SET status                    = EXCLUDED.status,
         updated_by                = EXCLUDED.updated_by,
         updated_at                = now(),
         notes                     = EXCLUDED.notes,
-        discharge_summary_dropped = EXCLUDED.discharge_summary_dropped
-RETURNING event_id, discharge_date, status, notes, updated_by, updated_at, discharge_summary_dropped
+        discharge_summary_dropped = EXCLUDED.discharge_summary_dropped,
+        -- Clear failure_reason when coordinator overrides a failed record
+        failure_reason            = CASE
+            WHEN EXCLUDED.status = 'failed' THEN {_SCHEMA}.outreach_status.failure_reason
+            ELSE NULL
+        END
+RETURNING event_id, discharge_date, status, notes, updated_by, updated_at,
+          discharge_summary_dropped, failure_reason, original_failure_reason
 """)
 
 _LOG_ACTIVITY_QUERY = text(f"""
 INSERT INTO {_SCHEMA}.user_activity_log (user_email, action, metadata_json)
 VALUES (:user_email, 'outreach_update', :metadata_json)
+""")
+
+_LOG_STATUS_HISTORY_QUERY = text(f"""
+INSERT INTO {_SCHEMA}.status_history
+    (event_id, discharge_date, old_status, new_status, old_failure_reason, changed_by)
+VALUES
+    (:event_id, :discharge_date, :old_status, :new_status, :old_failure_reason, :changed_by)
 """)
 
 
@@ -71,9 +87,19 @@ async def upsert_outreach(
     """Upsert outreach status for one discharge event.
 
     Runs atomically via ON CONFLICT DO UPDATE. Last write wins.
-    Also appends a row to user_activity_log for audit/manager metrics.
+    When a coordinator overrides a system-failed record, failure_reason is
+    cleared on the main row and logged to status_history for audit/reporting.
     """
     import json
+
+    # Capture current state before overwrite so we can log the transition
+    prev = await db.execute(
+        _GET_OUTREACH_QUERY,
+        {"event_id": event_id, "discharge_date": payload.discharge_date},
+    )
+    prev_row = prev.mappings().one_or_none()
+    old_status = prev_row["status"] if prev_row else None
+    old_failure_reason = prev_row["failure_reason"] if prev_row else None
 
     result = await db.execute(
         _UPSERT_OUTREACH_QUERY,
@@ -88,14 +114,24 @@ async def upsert_outreach(
     )
     row = result.mappings().one()
 
-    # Commit the upsert before attempting the activity log.
-    # If the activity log insert fails (e.g. table missing in staging schema),
-    # it aborts the PostgreSQL transaction — a subsequent commit() would silently
-    # ROLLBACK everything. Committing first keeps the critical write durable.
+    # Commit the upsert before attempting non-critical side effects.
+    # If a subsequent insert fails it aborts the transaction — committing first
+    # keeps the critical write durable regardless.
     await db.commit()
 
-    # Append activity log (non-critical — logged but never fails the request)
+    # Log status transition to status_history and activity_log (non-critical)
     try:
+        await db.execute(
+            _LOG_STATUS_HISTORY_QUERY,
+            {
+                "event_id": event_id,
+                "discharge_date": payload.discharge_date,
+                "old_status": old_status,
+                "new_status": payload.status,
+                "old_failure_reason": old_failure_reason,
+                "changed_by": updated_by,
+            },
+        )
         metadata = json.dumps({
             "event_id": event_id,
             "discharge_date": str(payload.discharge_date),
@@ -107,7 +143,7 @@ async def upsert_outreach(
         )
         await db.commit()
     except Exception as exc:
-        logger.warning("activity_log insert failed (non-critical): %s", exc)
+        logger.warning("status_history/activity_log insert failed (non-critical): %s", exc)
         await db.rollback()
 
     return OutreachRecord(

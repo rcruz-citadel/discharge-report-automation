@@ -132,6 +132,23 @@ export function DetailPanel({ row, onClose, onSaveSuccess, isResolved }: DetailP
           </div>
         )}
 
+        {/* Original failure indicator — shown when a coordinator has overridden a previously auto-flagged record */}
+        {row.original_failure_reason && row.outreach_status !== 'failed' && (
+          <div
+            className="shrink-0 px-4 py-2 text-[11.5px]"
+            style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #e9ecef', color: '#6c757d' }}
+          >
+            Originally auto-flagged:{' '}
+            <span className="font-medium">
+              {row.original_failure_reason === 'missed_48h'
+                ? 'missed 48h window'
+                : row.original_failure_reason === 'missed_tcm_window'
+                ? 'missed TCM window'
+                : 'late delivery'}
+            </span>
+          </div>
+        )}
+
         {/* Section 1 — Patient demographics, provider & contact */}
         <div className="px-5 py-4 border-b border-border-light">
           <p className="text-[11.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>

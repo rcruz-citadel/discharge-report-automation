@@ -22,6 +22,7 @@ export interface DischargeRecord {
   outreach_updated_at: string | null  // ISO datetime string
   discharge_summary_dropped: boolean
   failure_reason: 'missed_48h' | 'missed_tcm_window' | null
+  original_failure_reason: 'missed_48h' | 'missed_tcm_window' | 'late_delivery' | null
 }
 
 export type OutreachStatus =

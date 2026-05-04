@@ -41,11 +41,12 @@ WHERE o.event_id       = de.event_id
 # Insert failed rows for records with no outreach row yet but past their window
 _INSERT_QUERY = text(f"""
 INSERT INTO {_SCHEMA}.outreach_status
-    (event_id, discharge_date, status, failure_reason, updated_by, updated_at, discharge_summary_dropped)
+    (event_id, discharge_date, status, failure_reason, original_failure_reason, updated_by, updated_at, discharge_summary_dropped)
 SELECT
     de.event_id,
     de.discharge_date,
     'failed',
+    'missed_tcm_window',
     'missed_tcm_window',
     'system',
     now(),
