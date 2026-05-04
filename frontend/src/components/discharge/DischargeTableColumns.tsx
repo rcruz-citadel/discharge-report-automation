@@ -153,9 +153,12 @@ export const dischargeColumns: ColumnDef<DischargeRecord>[] = [
         pillStatus = bucket === 'low_priority' ? 'failed' : 'no_outreach'
       }
 
-      // Context badge persists based on original_failure_reason, even after status changes
-      const showMissed48h = original_failure_reason === 'missed_48h'
-      const showLateAdt = original_failure_reason === 'late_delivery'
+      // Context badge: driven by original_failure_reason (persists after status changes)
+      // Falls back to current status/failure_reason for pre-backfill records
+      const showMissed48h = original_failure_reason === 'missed_48h' ||
+        (outreach_status === 'failed' && failure_reason === 'missed_48h')
+      const showLateAdt = original_failure_reason === 'late_delivery' ||
+        outreach_status === 'late_delivery'
 
       if (showMissed48h || showLateAdt) {
         return (
