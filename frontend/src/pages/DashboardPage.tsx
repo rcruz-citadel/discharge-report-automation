@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { DischargeRecord, OutreachStatus } from '../types/discharge'
-import { getDaysRemaining, getQueueBucket } from '../types/discharge'
+import { getDaysRemaining, getQueueBucket, RESOLVED_STATUSES } from '../types/discharge'
 import { useDischarges } from '../hooks/useDischarges'
 import { useFilters } from '../hooks/useFilters'
 import { useAuth } from '../auth/useAuth'
@@ -19,7 +19,7 @@ import { useToast } from '../components/ui/Toast'
 import { fetchMetaFilters } from '../api/meta'
 import { exportToCsv, fileTimestamp } from '../lib/utils'
 
-type TabId = 'immediate' | 'active' | 'low_priority' | 'manager' | 'help'
+type TabId = 'immediate' | 'active' | 'low_priority' | 'resolved' | 'manager' | 'help'
 
 const CSV_COLUMNS = [
   'patient_name', 'birth_date', 'insurance_member_id', 'phone',
@@ -34,6 +34,7 @@ const TAB_DESCRIPTIONS: Record<TabId, string> = {
   immediate: 'Discharged within the last 48 hours — outreach needed now',
   active: 'Past 48-hour window but still within the 7/30-day TCM deadline',
   low_priority: 'Past TCM deadline — drop the discharge summary in the EMR when possible',
+  resolved: 'Outreach complete or no outreach required — sorted by most recently resolved',
   manager: 'Manager Dashboard',
   help: 'Coordinator guide — tabs, statuses, deadlines, and workflow',
 }
@@ -42,6 +43,7 @@ const TAB_LABELS: Record<TabId, string> = {
   immediate: 'Immediate',
   active: 'Active',
   low_priority: 'Past Deadline',
+  resolved: 'Resolved',
   manager: 'Manager',
   help: 'Help',
 }
@@ -66,6 +68,7 @@ export function DashboardPage() {
     { id: 'immediate', label: 'Immediate' },
     { id: 'active', label: 'Active' },
     { id: 'low_priority', label: 'Past Deadline' },
+    { id: 'resolved', label: 'Resolved' },
     ...(isManager ? [{ id: 'manager' as TabId, label: 'Manager' }] : []),
     { id: 'help', label: 'Help' },
   ]
@@ -105,10 +108,12 @@ export function DashboardPage() {
     const immediate: DischargeRecord[] = []
     const active: DischargeRecord[] = []
     const low_priority: DischargeRecord[] = []
+    const resolved: DischargeRecord[] = []
 
     for (const row of sidebarFiltered) {
       const bucket = getQueueBucket(row)
-      if (bucket === 'immediate') immediate.push(row)
+      if (bucket === 'resolved') resolved.push(row)
+      else if (bucket === 'immediate') immediate.push(row)
       else if (bucket === 'active') active.push(row)
       else if (row.discharge_date >= '2026-02-01') low_priority.push(row)
     }
@@ -116,16 +121,25 @@ export function DashboardPage() {
     const byUrgency = (a: DischargeRecord, b: DischargeRecord) =>
       getDaysRemaining(a) - getDaysRemaining(b)
 
+    // Resolved: most recently updated first
+    const byResolvedAt = (a: DischargeRecord, b: DischargeRecord) => {
+      const aAt = a.outreach_updated_at ?? ''
+      const bAt = b.outreach_updated_at ?? ''
+      return bAt.localeCompare(aAt)
+    }
+
     immediate.sort(byUrgency)
     active.sort(byUrgency)
+    resolved.sort(byResolvedAt)
 
-    return { immediate, active, low_priority }
+    return { immediate, active, low_priority, resolved }
   }, [sidebarFiltered])
 
   const tabCounts = {
     immediate: queues.immediate.length,
     active: queues.active.length,
     low_priority: queues.low_priority.length,
+    resolved: queues.resolved.length,
   }
 
   const filteredRows: DischargeRecord[] =
@@ -133,6 +147,7 @@ export function DashboardPage() {
     activeTab === 'help' ? [] :
     activeTab === 'immediate' ? queues.immediate :
     activeTab === 'active' ? queues.active :
+    activeTab === 'resolved' ? queues.resolved :
     queues.low_priority
 
   // Pull latest version of selected row — search all records, not just current tab,
@@ -154,8 +169,12 @@ export function DashboardPage() {
     setSelectedRow(prev => (prev?.event_id === row.event_id ? null : row))
   }
 
-  const handleSaveSuccess = (patientName: string) => {
-    showToast(`Status updated for ${patientName}`, 'success')
+  const handleSaveSuccess = (patientName: string, newStatus?: OutreachStatus) => {
+    const movedToResolved = newStatus && RESOLVED_STATUSES.has(newStatus)
+    const message = movedToResolved
+      ? `Status saved — record moved to Resolved tab.`
+      : `Status updated for ${patientName}`
+    showToast(message, 'success')
   }
 
   const handleStatusToggle = (status: OutreachStatus) => {
@@ -195,7 +214,7 @@ export function DashboardPage() {
           >
             {tabs.map(tab => {
               const isActive = activeTab === tab.id
-              const count = tab.id !== 'manager' ? tabCounts[tab.id as keyof typeof tabCounts] : undefined
+              const count = (tab.id !== 'manager' && tab.id !== 'help') ? tabCounts[tab.id as keyof typeof tabCounts] : undefined
               const isImmediateUrgent = tab.id === 'immediate' && !isActive && (count ?? 0) > 0
               return (
                 <button
@@ -288,6 +307,7 @@ export function DashboardPage() {
                 <OutreachLegend
                   activeStatuses={filters.outreachStatuses}
                   onToggle={handleStatusToggle}
+                  resolvedOnly={activeTab === 'resolved'}
                 />
 
                 {/* Table + detail panel split layout */}
@@ -310,6 +330,7 @@ export function DashboardPage() {
                         row={effectiveSelectedRow}
                         onClose={() => setSelectedRow(null)}
                         onSaveSuccess={handleSaveSuccess}
+                        isResolved={activeTab === 'resolved'}
                       />
                     </div>
                   )}

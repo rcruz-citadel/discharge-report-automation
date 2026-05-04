@@ -157,9 +157,16 @@ export function getDaysRemaining(row: DischargeRecord): number {
 }
 
 /** Queue bucket a record belongs to based on its discharge age vs TCM window. */
-export type QueueBucket = 'immediate' | 'active' | 'low_priority'
+export type QueueBucket = 'immediate' | 'active' | 'low_priority' | 'resolved'
+
+/** Statuses that route a record to the Resolved tab regardless of age. */
+export const RESOLVED_STATUSES: ReadonlySet<OutreachStatus> = new Set([
+  'outreach_complete',
+  'no_outreach_required',
+])
 
 export function getQueueBucket(row: DischargeRecord): QueueBucket {
+  if (RESOLVED_STATUSES.has(row.outreach_status)) return 'resolved'
   const discharge = new Date(row.discharge_date + 'T00:00:00')
   const today = new Date()
   today.setHours(0, 0, 0, 0)

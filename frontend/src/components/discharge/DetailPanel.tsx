@@ -6,7 +6,9 @@ import { formatDate, orDash } from '../../lib/utils'
 interface DetailPanelProps {
   row: DischargeRecord
   onClose: () => void
-  onSaveSuccess: (patientName: string) => void
+  onSaveSuccess: (patientName: string, newStatus?: import('../../types/discharge').OutreachStatus) => void
+  /** When true, shows an info banner indicating the record is in the Resolved tab. */
+  isResolved?: boolean
 }
 
 interface FieldProps {
@@ -50,7 +52,7 @@ function Field({ label, value, wrap, warn, warnTitle }: FieldProps) {
  * Shows patient info grid and the OutreachStatusForm.
  * Spec: 4.5 Table + Detail Panel Split Layout, 5.5 Detail Panel
  */
-export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
+export function DetailPanel({ row, onClose, onSaveSuccess, isResolved }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null)
 
   // Focus trap: move focus to first interactive element when panel opens
@@ -114,6 +116,22 @@ export function DetailPanel({ row, onClose, onSaveSuccess }: DetailPanelProps) {
 
       {/* Scrollable body — fills remaining height in the fixed-height column wrapper */}
       <div className="flex-1 flex flex-col overflow-y-auto min-h-0">
+        {/* Resolved banner — shown when the record is viewed from the Resolved tab */}
+        {isResolved && (
+          <div
+            className="shrink-0 flex items-center gap-2 px-4 py-2 text-[12px] font-semibold"
+            style={{ backgroundColor: '#f0fdf4', borderBottom: '1px solid #bbf7d0', color: '#166534' }}
+            role="status"
+          >
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="shrink-0">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span>
+              This record is resolved — update the status below to return it to your work queue.
+            </span>
+          </div>
+        )}
+
         {/* Section 1 — Patient demographics, provider & contact */}
         <div className="px-5 py-4 border-b border-border-light">
           <p className="text-[11.5px] font-bold uppercase tracking-wider mb-2" style={{ color: '#556e81' }}>

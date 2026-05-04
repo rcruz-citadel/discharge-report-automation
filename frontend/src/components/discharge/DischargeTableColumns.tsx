@@ -6,7 +6,7 @@ import { formatDate, orDash } from '../../lib/utils'
 
 function DaysLeftBadge({ row }: { row: DischargeRecord }) {
   const bucket = getQueueBucket(row)
-  if (bucket === 'low_priority') {
+  if (bucket === 'low_priority' || bucket === 'resolved') {
     return (
       <span
         className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold"

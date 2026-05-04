@@ -10,12 +10,20 @@ const ALL_STATUSES: OutreachStatus[] = [
   'no_outreach_required',
 ]
 
+const RESOLVED_ONLY_STATUSES: OutreachStatus[] = [
+  'outreach_complete',
+  'no_outreach_required',
+]
+
 interface OutreachLegendProps {
   activeStatuses: OutreachStatus[]
   onToggle: (status: OutreachStatus) => void
+  /** When true, shows only the two resolved statuses as filter pills. */
+  resolvedOnly?: boolean
 }
 
-export function OutreachLegend({ activeStatuses, onToggle }: OutreachLegendProps) {
+export function OutreachLegend({ activeStatuses, onToggle, resolvedOnly }: OutreachLegendProps) {
+  const statuses = resolvedOnly ? RESOLVED_ONLY_STATUSES : ALL_STATUSES
   return (
     <div
       className="flex items-center gap-2 flex-wrap"
@@ -25,7 +33,7 @@ export function OutreachLegend({ activeStatuses, onToggle }: OutreachLegendProps
       <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider mr-1">
         Filter:
       </span>
-      {ALL_STATUSES.map(status => {
+      {statuses.map(status => {
         const isActive = activeStatuses.includes(status)
         const colors = OUTREACH_STATUS_COLORS[status]
 

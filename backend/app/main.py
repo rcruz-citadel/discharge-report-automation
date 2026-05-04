@@ -67,9 +67,13 @@ def create_app() -> FastAPI:
             )
         await _cleanup_expired_sessions()
         await _run_auto_fail_once()
+        # late_delivery must run before missed_48h: late-ADT records are set to
+        # 'late_delivery' first so the missed_48h scan only fires for records
+        # whose ADT has not arrived yet or arrived on time.
         await _run_auto_late_delivery_once()
         await _run_auto_flag_missed_48h_once()
         asyncio.create_task(_auto_fail_loop())
+        # Same ordering in the daily loop.
         asyncio.create_task(_auto_late_delivery_loop())
         asyncio.create_task(_auto_flag_missed_48h_loop())
 
@@ -118,7 +122,7 @@ def create_app() -> FastAPI:
             logger.warning("Startup auto_late_delivery skipped: %s", exc)
 
     async def _auto_late_delivery_loop() -> None:
-        """Re-run auto-late-delivery every 24 hours."""
+        """Re-run auto-late-delivery every 24 hours (always before missed_48h loop)."""
         while True:
             await asyncio.sleep(24 * 60 * 60)
             try:
@@ -128,7 +132,7 @@ def create_app() -> FastAPI:
                 logger.error("auto_late_delivery loop error: %s", exc)
 
     async def _run_auto_flag_missed_48h_once() -> None:
-        """Run missed-48h flag on startup."""
+        """Run missed-48h flag on startup (after late_delivery has already run)."""
         try:
             async with AsyncSessionLocal() as db:
                 updated, inserted = await run_auto_flag_missed_48h(db)
@@ -141,7 +145,13 @@ def create_app() -> FastAPI:
             logger.warning("Startup auto_flag_missed_48h skipped: %s", exc)
 
     async def _auto_flag_missed_48h_loop() -> None:
-        """Re-run missed-48h flag every 24 hours."""
+        """Re-run missed-48h flag every 24 hours.
+
+        Offset by 60 seconds relative to the late_delivery loop so that
+        late_delivery is guaranteed to finish before missed_48h scans for
+        remaining 'no_outreach' rows.
+        """
+        await asyncio.sleep(60)  # small offset — late_delivery runs first
         while True:
             await asyncio.sleep(24 * 60 * 60)
             try:

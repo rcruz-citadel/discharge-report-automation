@@ -149,7 +149,7 @@ function AttemptSection({ eventId, dischargeDate, onAutoComplete }: AttemptSecti
 
 function DaysRemainingBanner({ row }: { row: DischargeRecord }) {
   const bucket = getQueueBucket(row)
-  if (bucket === 'low_priority') {
+  if (bucket === 'low_priority' || bucket === 'resolved') {
     return (
       <div
         className="flex items-center justify-between px-3 py-2 rounded-md text-[12px] font-semibold mb-3"
@@ -233,7 +233,7 @@ function WorkflowHelp() {
 
 interface OutreachStatusFormProps {
   row: DischargeRecord
-  onSuccess: (patientName: string) => void
+  onSuccess: (patientName: string, newStatus: OutreachStatus) => void
   onCancel: () => void
 }
 
@@ -248,9 +248,9 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
   const closeAfterSave = useRef(false)
 
   const bucket = getQueueBucket(row)
-  // Show checkbox when status is failed OR record is in low-priority queue —
+  // Show checkbox when status is failed OR record is past deadline (low_priority or resolved) —
   // coordinators may manually mark failed before the deadline expires.
-  const showSummaryDropped = status === 'failed' || bucket === 'low_priority'
+  const showSummaryDropped = status === 'failed' || bucket === 'low_priority' || bucket === 'resolved'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -261,7 +261,7 @@ export function OutreachStatusForm({ row, onSuccess, onCancel }: OutreachStatusF
       notes,
       discharge_summary_dropped: summaryDropped,
     })
-    onSuccess(row.patient_name ?? 'Patient')
+    onSuccess(row.patient_name ?? 'Patient', status)
     if (closeAfterSave.current) {
       closeAfterSave.current = false
       onCancel()
