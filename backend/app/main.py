@@ -101,7 +101,7 @@ def create_app() -> FastAPI:
     async def _auto_fail_loop() -> None:
         """Re-run auto-fail every 24 hours."""
         while True:
-            await asyncio.sleep(24 * 60 * 60)
+            await asyncio.sleep(60 * 60)
             try:
                 async with AsyncSessionLocal() as db:
                     await run_auto_fail(db)
@@ -124,7 +124,7 @@ def create_app() -> FastAPI:
     async def _auto_late_delivery_loop() -> None:
         """Re-run auto-late-delivery every 24 hours (always before missed_48h loop)."""
         while True:
-            await asyncio.sleep(24 * 60 * 60)
+            await asyncio.sleep(60 * 60)
             try:
                 async with AsyncSessionLocal() as db:
                     await run_auto_late_delivery(db)
@@ -153,7 +153,7 @@ def create_app() -> FastAPI:
         """
         await asyncio.sleep(60)  # small offset — late_delivery runs first
         while True:
-            await asyncio.sleep(24 * 60 * 60)
+            await asyncio.sleep(60 * 60)
             try:
                 async with AsyncSessionLocal() as db:
                     await run_auto_flag_missed_48h(db)
