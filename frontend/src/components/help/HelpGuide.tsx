@@ -82,6 +82,30 @@ function StatusRow({
   )
 }
 
+function ContextBadgeRow({
+  dotColor,
+  label,
+  textColor,
+  description,
+}: {
+  dotColor: string
+  label: string
+  textColor: string
+  description: string
+}) {
+  return (
+    <div className="flex items-start gap-4 py-3" style={{ borderBottom: '1px solid #edf2f7' }}>
+      <div className="shrink-0 w-40 flex items-center gap-1.5 pt-0.5">
+        <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0, display: 'inline-block' }} />
+        <span className="text-[11px] font-semibold" style={{ color: textColor }}>{label}</span>
+      </div>
+      <p className="text-[12px] leading-relaxed m-0" style={{ color: '#556e81' }}>
+        {description}
+      </p>
+    </div>
+  )
+}
+
 function DeadlineBadge({
   label,
   bg,
@@ -178,13 +202,37 @@ export function HelpGuide() {
           <StatusRow
             status="failed"
             who="System"
-            description="The TCM window has expired with no outreach completed. Set automatically overnight. Two sub-types: '48h Missed' (amber) means the 48-hour window passed but the 30-day window is still open — outreach is still possible. 'TCM Window Closed' (red) means the full window expired."
+            description="The TCM window has expired with no outreach completed. Set automatically by the system. Records may also show a context badge (48h Missed or Late ADT) — see the Context Badges section below for details."
           />
           <StatusRow
             status="late_delivery"
             who="System"
             description="The ADT notification arrived more than 2 days after discharge. The team could not have acted on the 48-hour window. Outreach is still possible within the remaining TCM window."
           />
+        </Card>
+      </Section>
+
+      {/* ── Context badges ── */}
+      <Section title="Context Badges">
+        <Card>
+          <p className="text-[12px] leading-relaxed mb-3" style={{ color: '#3d5468' }}>
+            Some records show a small badge next to their outreach status. These are informational — they explain <em>why</em> a record is flagged, not what to do differently. The action is always the same: make contact and mark it accordingly.
+          </p>
+          <ContextBadgeRow
+            dotColor="#d69e2e"
+            label="48h Missed"
+            textColor="#975a16"
+            description="The 48-hour first-contact window passed without outreach being initiated. The record was in the system in time — the window was missed. Outreach can still be made if the 30-day TCM window is open. These records appear in the Active tab."
+          />
+          <ContextBadgeRow
+            dotColor="#93c5fd"
+            label="Late ADT"
+            textColor="#3b82f6"
+            description="The insurance company sent the discharge notification late — more than 2 days after the patient was discharged. The team could not have acted on the 48-hour window because the record didn't exist yet. This is a payer data issue, not a coordinator miss. Outreach is still possible within the remaining TCM window."
+          />
+          <p className="text-[11px] mt-3 mb-0 leading-relaxed" style={{ color: '#a0aec0' }}>
+            These badges disappear once a record is resolved (marked Outreach Complete or No Outreach Required). The underlying data is always preserved for reporting.
+          </p>
         </Card>
       </Section>
 
